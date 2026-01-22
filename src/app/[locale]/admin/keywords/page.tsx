@@ -128,8 +128,7 @@ export default function KeywordsPage() {
     published: 0,
   });
 
-  // Content generation state
-  const [translateAll, setTranslateAll] = useState(false);
+  // Content generation state - translateAll removed (single-language generation only)
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -238,11 +237,11 @@ export default function KeywordsPage() {
     };
   }, [pollingInterval]);
 
-  // Generate content - uses async API with polling
+  // Generate content - Updated for single-language API
   const handleGenerateContent = async (keyword: Keyword) => {
     setSingleGenerating(keyword.id);
     setGeneratedPostId(null);
-    setShowNavigateOption(true);
+    setShowNavigateOption(false);
     setError(null);
 
     // Update keyword status to 'generating' immediately (optimistic update)
@@ -250,62 +249,48 @@ export default function KeywordsPage() {
       k.id === keyword.id ? { ...k, status: 'generating' as const } : k
     ));
 
-    // Start polling immediately (in case the main request times out)
-    const interval = setInterval(async () => {
-      const complete = await pollGenerationStatus(keyword.id);
-      if (complete) {
-        clearInterval(interval);
-        setPollingInterval(null);
-      }
-    }, 3000); // Poll every 3 seconds
-
-    setPollingInterval(interval);
-
     try {
-      // Start async generation - this will wait for completion
-      const response = await fetch('/api/content/generate-async', {
+      // Use new single-language API
+      const response = await fetch('/api/content/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          keyword_id: keyword.id,
+          keyword: keyword.keyword,
+          locale: keyword.locale,
+          category: keyword.category || 'general',
+          includeRAG: true,
+          includeImages: true,
+          imageCount: 3,
+          autoSave: true,
         }),
       });
 
       const data = await response.json();
 
-      // Clear polling if request completed successfully
-      if (interval) {
-        clearInterval(interval);
-        setPollingInterval(null);
-      }
-
       if (!data.success) {
-        throw new Error(data.error?.message || 'Content generation failed');
+        throw new Error(data.message || data.error || 'Content generation failed');
       }
 
       // Handle successful completion
-      if (data.data?.status === 'completed') {
-        setGeneratedPostId(data.data.blog_post_id);
+      if (data.saved && data.content?.id) {
+        setGeneratedPostId(data.content.id);
         setSingleGenerating(null);
-        setShowNavigateOption(false);
         fetchKeywords();
+      } else {
+        throw new Error('Content generated but not saved');
       }
 
     } catch (err) {
-      // If the request failed/timed out, polling will continue to check status
-      // Only show error if it's a real error, not a timeout
       const errorMessage = err instanceof Error ? err.message : 'Generation failed';
-      if (!errorMessage.includes('timeout') && !errorMessage.includes('network')) {
-        setError(errorMessage);
-        setSingleGenerating(null);
-        setShowNavigateOption(false);
-        if (interval) {
-          clearInterval(interval);
-          setPollingInterval(null);
-        }
-        fetchKeywords();
-      }
-      // For timeouts, let polling continue
+      setError(errorMessage);
+      setSingleGenerating(null);
+
+      // Reset keyword status
+      setKeywords(prev => prev.map(k =>
+        k.id === keyword.id ? { ...k, status: 'pending' as const } : k
+      ));
+
+      fetchKeywords();
     }
   };
 
@@ -340,7 +325,7 @@ export default function KeywordsPage() {
     setSelectedIds(newSelected);
   };
 
-  // Bulk generate content (parallel execution)
+  // Bulk generate content (parallel execution) - Updated for single-language API
   const handleBulkGenerate = async () => {
     const selectedKeywords = keywords.filter(k => selectedIds.has(k.id) && k.status === 'pending');
     if (selectedKeywords.length === 0) {
@@ -366,14 +351,18 @@ export default function KeywordsPage() {
 
       const batchPromises = batch.map(async (kw) => {
         try {
+          // Use new single-language API
           const response = await fetch('/api/content/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              keyword_id: kw.id,
-              translate_all: translateAll,
-              save_to_db: true,
-              preview_only: false,
+              keyword: kw.keyword,
+              locale: kw.locale,
+              category: kw.category || 'general',
+              includeRAG: true,
+              includeImages: true,
+              imageCount: 3,
+              autoSave: true,
             }),
           });
 
@@ -381,7 +370,7 @@ export default function KeywordsPage() {
           return {
             keyword: kw.keyword,
             success: data.success !== false,
-            error: data.error?.message,
+            error: data.message || data.error,
           };
         } catch (err) {
           return {
@@ -461,11 +450,13 @@ export default function KeywordsPage() {
               onClick={handleBulkGenerate}
               disabled={bulkGenerating}
               className="bg-green-600 hover:bg-green-700"
+              aria-label={bulkGenerating ? `생성 진행 중: ${selectedIds.size}개 키워드` : `${selectedIds.size}개 키워드 생성`}
+              aria-busy={bulkGenerating}
             >
               {bulkGenerating ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
               ) : (
-                <Play className="mr-2 h-4 w-4" />
+                <Play className="mr-2 h-4 w-4" aria-hidden="true" />
               )}
               Generate {selectedIds.size} Selected
             </Button>
@@ -498,11 +489,22 @@ export default function KeywordsPage() {
       )}
 
       {error && (
-        <div className="flex items-center gap-2 rounded-md bg-red-50 p-4 text-red-700" role="alert">
-          <AlertCircle className="h-5 w-5" />
+        <div
+          className="flex items-center gap-2 rounded-md bg-red-50 p-4 text-red-700"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
+          <AlertCircle className="h-5 w-5" aria-hidden="true" />
           <span>{error}</span>
-          <Button variant="ghost" size="sm" onClick={() => setError(null)} className="ml-auto">
-            <X className="h-4 w-4" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setError(null)}
+            className="ml-auto"
+            aria-label="Close error message"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
       )}
@@ -546,9 +548,14 @@ export default function KeywordsPage() {
       {generatedPostId && !singleGenerating && (
         <Card className="border-green-200 bg-green-50">
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
+            <div
+              className="flex items-center justify-between"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+                <CheckCircle className="h-6 w-6 text-green-600" aria-hidden="true" />
                 <div>
                   <h3 className="font-semibold text-green-800">콘텐츠가 생성되었습니다!</h3>
                   <p className="text-sm text-green-700">Content 페이지에서 미리보기하고 발행할 수 있습니다.</p>
@@ -559,6 +566,7 @@ export default function KeywordsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => { setGeneratedPostId(null); setShowNavigateOption(false); }}
+                  aria-label="Close success message"
                 >
                   닫기
                 </Button>
@@ -567,7 +575,7 @@ export default function KeywordsPage() {
                   onClick={handleGoToContent}
                   className="bg-green-600 hover:bg-green-700"
                 >
-                  <ExternalLink className="mr-2 h-4 w-4" />
+                  <ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" />
                   콘텐츠 확인하기
                 </Button>
               </div>
@@ -580,7 +588,13 @@ export default function KeywordsPage() {
       {bulkProgress && (
         <Card className="border-blue-200 bg-blue-50">
           <CardContent className="pt-6">
-            <div className="space-y-4">
+            <div
+              className="space-y-4"
+              role="status"
+              aria-live="polite"
+              aria-atomic="false"
+              aria-busy={bulkGenerating}
+            >
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">
                   {bulkGenerating ? '일괄 생성 진행 중...' : '일괄 생성 완료'}
@@ -590,12 +604,16 @@ export default function KeywordsPage() {
                   size="sm"
                   onClick={() => setBulkProgress(null)}
                   disabled={bulkGenerating}
+                  aria-label="Close progress notification"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </div>
-              <Progress value={(bulkProgress.completed / bulkProgress.total) * 100} />
-              <div className="flex gap-4 text-sm">
+              <Progress
+                value={(bulkProgress.completed / bulkProgress.total) * 100}
+                aria-label={`진행률: ${Math.round((bulkProgress.completed / bulkProgress.total) * 100)}%`}
+              />
+              <div className="flex gap-4 text-sm" aria-label="Progress details">
                 <span>진행: {bulkProgress.completed}/{bulkProgress.total}</span>
                 <span className="text-green-600">성공: {bulkProgress.succeeded}</span>
                 <span className="text-red-600">실패: {bulkProgress.failed}</span>
@@ -706,16 +724,7 @@ export default function KeywordsPage() {
             ))}
           </SelectContent>
         </Select>
-        <div className="flex items-center gap-2">
-          <Switch
-            id="translate-all"
-            checked={translateAll}
-            onCheckedChange={setTranslateAll}
-          />
-          <Label htmlFor="translate-all" className="text-sm">
-            Translate to all languages
-          </Label>
-        </div>
+        {/* Translate All switch removed - single-language generation only */}
       </div>
 
       {/* Keywords Table */}
@@ -820,15 +829,21 @@ export default function KeywordsPage() {
                           onClick={() => handleGenerateContent(keyword)}
                           disabled={singleGenerating === keyword.id}
                           className="gap-1"
+                          aria-label={
+                            singleGenerating === keyword.id
+                              ? `${keyword.keyword} 콘텐츠 생성 중`
+                              : `${keyword.keyword} 콘텐츠 ${keyword.status === 'pending' ? '생성' : '재생성'}`
+                          }
+                          aria-busy={singleGenerating === keyword.id}
                         >
                           {singleGenerating === keyword.id ? (
                             <>
-                              <Loader2 className="h-3 w-3 animate-spin" />
+                              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
                               Generating...
                             </>
                           ) : (
                             <>
-                              <Play className="h-3 w-3" />
+                              <Play className="h-3 w-3" aria-hidden="true" />
                               {keyword.status === 'pending' ? 'Generate' : 'Regenerate'}
                             </>
                           )}

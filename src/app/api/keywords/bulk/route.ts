@@ -1,12 +1,14 @@
 /**
- * Keywords Bulk Import API
+ * Keywords Bulk Import API - Enhanced V2
  *
  * POST /api/keywords/bulk - Bulk import keywords from CSV data
  *
  * Features:
- * - CSV 데이터 일괄 등록
+ * - CSV 데이터 일괄 등록 (V1 & V2 포맷 지원)
  * - 중복 체크 (로케일 + 키워드 조합)
  * - 트랜잭션 처리
+ * - 언어별 그룹화 통계
+ * - 경쟁도 및 우선순위 자동 계산
  * - 상세 결과 리포트
  */
 
@@ -18,13 +20,27 @@ import {
   APIError,
   ErrorCode,
   secureLog,
-  validateRequired,
 } from '@/lib/api/error-handler';
-import { parseCSV, type ParsedKeyword, type CSVParseOptions } from '@/lib/content/csv-parser';
+
+// V2 파서 import (V1도 하위 호환성을 위해 import)
+import {
+  parseCSVV2,
+  calculatePriority,
+  generateCSVTemplateV2,
+  generateLegacyTemplate,
+  type ParsedKeywordV2,
+  type CSVParseOptionsV2,
+  type CSVParseResultV2,
+} from '@/lib/content/csv-parser-v2';
+
 import type { Locale } from '@/lib/i18n/config';
 
-// 지원 로케일 목록
-const SUPPORTED_LOCALES: Locale[] = ['en', 'zh-TW', 'zh-CN', 'ja', 'th', 'mn', 'ru'];
+// =====================================================
+// CONSTANTS
+// =====================================================
+
+// 지원 로케일 목록 (ko 추가)
+const SUPPORTED_LOCALES: Locale[] = ['ko', 'en', 'zh-TW', 'zh-CN', 'ja', 'th', 'mn', 'ru'];
 
 // 지원 카테고리 목록
 const SUPPORTED_CATEGORIES = [
@@ -39,18 +55,23 @@ const SUPPORTED_CATEGORIES = [
   'hair-transplant',
 ];
 
+// =====================================================
+// TYPES
+// =====================================================
+
 interface BulkImportRequest {
   // CSV 문자열 또는 파싱된 키워드 배열
   csv_content?: string;
-  keywords?: ParsedKeyword[];
+  keywords?: ParsedKeywordV2[];
 
   // 옵션
-  locale: Locale;
+  locale?: Locale;              // Optional now (auto-detect)
   category?: string;
   delimiter?: string;
   skip_header?: boolean;
-  skip_duplicates?: boolean;   // 중복 키워드 스킵 여부
-  update_existing?: boolean;   // 기존 키워드 업데이트 여부
+  skip_duplicates?: boolean;    // 중복 키워드 스킵 여부
+  update_existing?: boolean;    // 기존 키워드 업데이트 여부
+  auto_detect_language?: boolean; // 언어 자동 감지 (기본: true)
 }
 
 interface BulkImportResult {
@@ -64,12 +85,23 @@ interface BulkImportResult {
     keyword: string;
     error: string;
   }>;
+  by_language: Record<string, {
+    total: number;
+    inserted: number;
+    updated: number;
+    skipped: number;
+    errors: number;
+  }>;
 }
+
+// =====================================================
+// POST HANDLER
+// =====================================================
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const adminSupabase = await createAdminClient(); // Use admin client for DB operations
+    const adminSupabase = await createAdminClient();
     const { searchParams } = new URL(request.url);
     const locale = searchParams.get('locale') || 'en';
 
@@ -80,31 +112,8 @@ export async function POST(request: NextRequest) {
       throw new APIError(ErrorCode.UNAUTHORIZED);
     }
 
-    // TEMPORARILY DISABLED: Admin role check
-    // TODO: Re-enable after fixing profiles table
-
     // Parse request body
     const body: BulkImportRequest = await request.json();
-
-    // Validate required fields
-    if (!body.locale) {
-      throw new APIError(
-        ErrorCode.VALIDATION_ERROR,
-        'locale 필드가 필요합니다.',
-        { field: 'locale' },
-        locale
-      );
-    }
-
-    // Validate locale
-    if (!SUPPORTED_LOCALES.includes(body.locale)) {
-      throw new APIError(
-        ErrorCode.VALIDATION_ERROR,
-        `지원하지 않는 로케일입니다. 지원 로케일: ${SUPPORTED_LOCALES.join(', ')}`,
-        { field: 'locale', value: body.locale },
-        locale
-      );
-    }
 
     // Validate category if provided
     if (body.category && !SUPPORTED_CATEGORIES.includes(body.category)) {
@@ -116,18 +125,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let keywords: ParsedKeyword[] = [];
+    let keywords: ParsedKeywordV2[] = [];
 
-    // CSV 문자열이 있으면 파싱
+    // CSV 문자열이 있으면 V2 파서로 파싱
     if (body.csv_content) {
-      const parseOptions: CSVParseOptions = {
-        delimiter: body.delimiter || '|',
-        locale: body.locale,
-        category: body.category || 'general',
-        skipHeader: body.skip_header !== false, // 기본값 true
+      const parseOptions: CSVParseOptionsV2 = {
+        delimiter: body.delimiter,
+        defaultCategory: body.category || 'general',
+        skipHeader: body.skip_header !== false,
+        autoDetectLanguage: body.auto_detect_language !== false,
       };
 
-      const parseResult = parseCSV(body.csv_content, parseOptions);
+      const parseResult: CSVParseResultV2 = parseCSVV2(body.csv_content, parseOptions);
 
       if (parseResult.errors.length > 0 && parseResult.data.length === 0) {
         throw new APIError(
@@ -136,6 +145,7 @@ export async function POST(request: NextRequest) {
           {
             errors: parseResult.errors,
             stats: parseResult.stats,
+            format_detected: parseResult.format_detected,
           },
           locale
         );
@@ -143,17 +153,20 @@ export async function POST(request: NextRequest) {
 
       keywords = parseResult.data;
 
-      secureLog('info', 'CSV parsed', {
+      secureLog('info', 'CSV parsed (V2)', {
         stats: parseResult.stats,
         errorCount: parseResult.errors.length,
+        format: parseResult.format_detected,
+        by_language: parseResult.stats.by_language,
       });
     }
     // 또는 직접 키워드 배열이 제공된 경우
     else if (body.keywords && Array.isArray(body.keywords)) {
       keywords = body.keywords.map(k => ({
         ...k,
-        locale: k.locale || body.locale,
+        language: k.language || body.locale || 'en',
         category: k.category || body.category || 'general',
+        priority: k.priority || calculatePriority(k.search_volume, k.competition),
       }));
     }
     else {
@@ -185,33 +198,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    secureLog('info', 'Starting bulk import', {
+    secureLog('info', 'Starting bulk import (V2)', {
       keywordCount: keywords.length,
-      locale: body.locale,
+      languageDistribution: keywords.reduce((acc, k) => {
+        acc[k.language] = (acc[k.language] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
       category: body.category,
       userId: user.id,
     });
 
-    // 기존 키워드 조회 (중복 체크용) - admin client 사용
-    const keywordNatives = keywords.map(k => k.keyword_native.toLowerCase());
+    // 기존 키워드 조회 (중복 체크용) - 모든 언어 대상
+    const allLanguages = [...new Set(keywords.map(k => k.language))];
+    const keywordTexts = keywords.map(k => k.keyword.toLowerCase());
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: existingKeywords } = await (adminSupabase.from('content_keywords') as any)
       .select('id, keyword, keyword_native, locale')
-      .eq('locale', body.locale)
-      .or(`keyword.in.(${keywordNatives.map(k => `"${k}"`).join(',')}),keyword_native.in.(${keywordNatives.map(k => `"${k}"`).join(',')})`);
+      .in('locale', allLanguages)
+      .or(`keyword.in.(${keywordTexts.map(k => `"${k}"`).join(',')}),keyword_native.in.(${keywordTexts.map(k => `"${k}"`).join(',')})`);
 
     const existingMap = new Map<string, { id: string; keyword: string }>();
     if (existingKeywords) {
       for (const ek of existingKeywords) {
-        const key1 = `${body.locale}:${(ek.keyword || '').toLowerCase()}`;
-        const key2 = `${body.locale}:${(ek.keyword_native || '').toLowerCase()}`;
+        const key1 = `${ek.locale}:${(ek.keyword || '').toLowerCase()}`;
+        const key2 = `${ek.locale}:${(ek.keyword_native || '').toLowerCase()}`;
         existingMap.set(key1, { id: ek.id, keyword: ek.keyword });
         existingMap.set(key2, { id: ek.id, keyword: ek.keyword_native });
       }
     }
 
-    // 결과 추적
+    // 결과 추적 (전체 + 언어별)
     const result: BulkImportResult = {
       total: keywords.length,
       inserted: 0,
@@ -220,14 +237,26 @@ export async function POST(request: NextRequest) {
       errors: 0,
       duplicates: [],
       error_details: [],
+      by_language: {},
     };
+
+    // 언어별 통계 초기화
+    for (const lang of allLanguages) {
+      result.by_language[lang] = {
+        total: keywords.filter(k => k.language === lang).length,
+        inserted: 0,
+        updated: 0,
+        skipped: 0,
+        errors: 0,
+      };
+    }
 
     // 배치 처리
     const toInsert: Array<Record<string, unknown>> = [];
-    const toUpdate: Array<{ id: string; data: Record<string, unknown> }> = [];
+    const toUpdate: Array<{ id: string; data: Record<string, unknown>; language: Locale }> = [];
 
     for (const kw of keywords) {
-      const lookupKey = `${body.locale}:${kw.keyword_native.toLowerCase()}`;
+      const lookupKey = `${kw.language}:${kw.keyword.toLowerCase()}`;
       const existing = existingMap.get(lookupKey);
 
       if (existing) {
@@ -236,82 +265,102 @@ export async function POST(request: NextRequest) {
           // 업데이트 모드
           toUpdate.push({
             id: existing.id,
+            language: kw.language,
             data: {
-              keyword_ko: kw.keyword_ko,
+              keyword_ko: kw.keyword_ko || kw.keyword,
               search_volume: kw.search_volume,
+              competition: kw.competition,
+              priority: kw.priority,
               category: kw.category || body.category || 'general',
               updated_at: new Date().toISOString(),
             },
           });
         } else if (body.skip_duplicates !== false) {
           // 스킵 모드 (기본값)
-          result.duplicates.push(kw.keyword_native);
+          result.duplicates.push(kw.keyword);
           result.skipped++;
+          result.by_language[kw.language].skipped++;
         } else {
           // 에러 모드
           result.error_details.push({
-            keyword: kw.keyword_native,
+            keyword: kw.keyword,
             error: '이미 존재하는 키워드입니다.',
           });
           result.errors++;
+          result.by_language[kw.language].errors++;
         }
       } else {
         // 새 키워드
         toInsert.push({
-          keyword: kw.keyword_native,          // 기존 keyword 컬럼 (검색용)
-          keyword_native: kw.keyword_native,   // 현지어 키워드
-          keyword_ko: kw.keyword_ko,           // 한국어 키워드
-          locale: body.locale,
-          target_locale: body.locale,
+          keyword: kw.keyword,
+          keyword_native: kw.keyword_native || kw.keyword,
+          keyword_ko: kw.keyword_ko || kw.keyword,
+          locale: kw.language,
+          target_locale: kw.language,
           category: kw.category || body.category || 'general',
           search_volume: kw.search_volume,
+          competition: kw.competition,
+          priority: kw.priority || calculatePriority(kw.search_volume, kw.competition),
           status: 'pending',
-          priority: calculatePriority(kw.search_volume),
+          language: kw.language, // Store for post-insert tracking
         });
       }
     }
 
     // 일괄 삽입 - adminSupabase 사용 (RLS 우회)
     if (toInsert.length > 0) {
-      console.log('[BULK API] Attempting to insert', toInsert.length, 'keywords');
-      console.log('[BULK API] First item:', JSON.stringify(toInsert[0], null, 2));
+      console.log('[BULK API V2] Attempting to insert', toInsert.length, 'keywords');
+      console.log('[BULK API V2] First item:', JSON.stringify(toInsert[0], null, 2));
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: inserted, error: insertError } = await (adminSupabase.from('content_keywords') as any)
-        .insert(toInsert)
-        .select('id, keyword_native');
+        .insert(toInsert.map(({ language, ...rest }) => rest)) // Remove tracking field
+        .select('id, keyword, locale');
 
-      console.log('[BULK API] Insert result - data:', inserted?.length, 'error:', insertError?.message);
+      console.log('[BULK API V2] Insert result - data:', inserted?.length, 'error:', insertError?.message);
 
       if (insertError) {
-        secureLog('error', 'Bulk insert error', { error: insertError.message, code: insertError.code, details: insertError.details });
+        secureLog('error', 'Bulk insert error (V2)', {
+          error: insertError.message,
+          code: insertError.code,
+          details: insertError.details,
+        });
 
-        // 개별 삽입 시도 (배치 실패 시 fallback) - adminSupabase 사용
+        // 개별 삽입 시도 (배치 실패 시 fallback)
         for (const item of toInsert) {
+          const { language, ...itemData } = item;
           try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { error: singleError } = await (adminSupabase.from('content_keywords') as any)
-              .insert(item);
+              .insert(itemData);
 
             if (singleError) {
               result.error_details.push({
-                keyword: item.keyword_native as string,
+                keyword: item.keyword as string,
                 error: singleError.message,
               });
               result.errors++;
+              result.by_language[language as Locale].errors++;
             } else {
               result.inserted++;
+              result.by_language[language as Locale].inserted++;
             }
           } catch (e) {
             result.error_details.push({
-              keyword: item.keyword_native as string,
+              keyword: item.keyword as string,
               error: e instanceof Error ? e.message : 'Unknown error',
             });
             result.errors++;
+            result.by_language[language as Locale].errors++;
           }
         }
       } else {
         result.inserted = inserted?.length || toInsert.length;
+
+        // Update language-specific stats
+        for (const item of toInsert) {
+          result.by_language[item.language as Locale].inserted++;
+        }
       }
     }
 
@@ -330,8 +379,10 @@ export async function POST(request: NextRequest) {
               error: updateError.message,
             });
             result.errors++;
+            result.by_language[update.language].errors++;
           } else {
             result.updated++;
+            result.by_language[update.language].updated++;
           }
         } catch (e) {
           result.error_details.push({
@@ -339,55 +390,67 @@ export async function POST(request: NextRequest) {
             error: e instanceof Error ? e.message : 'Unknown error',
           });
           result.errors++;
+          result.by_language[update.language].errors++;
         }
       }
     }
 
-    secureLog('info', 'Bulk import completed', {
+    secureLog('info', 'Bulk import completed (V2)', {
       result,
       userId: user.id,
     });
 
+    // Generate detailed message
+    let message = `총 ${result.total}개 중 ${result.inserted}개 등록`;
+    if (result.updated > 0) message += `, ${result.updated}개 업데이트`;
+    if (result.skipped > 0) message += `, ${result.skipped}개 스킵`;
+    if (result.errors > 0) message += `, ${result.errors}개 에러`;
+
+    // Add language breakdown
+    const langBreakdown = Object.entries(result.by_language)
+      .map(([lang, stats]) => `${lang}: ${stats.inserted}개`)
+      .join(', ');
+    message += ` | 언어별: ${langBreakdown}`;
+
     return createSuccessResponse({
       success: result.errors === 0,
       data: result,
-      message: `총 ${result.total}개 중 ${result.inserted}개 등록, ${result.updated}개 업데이트, ${result.skipped}개 스킵, ${result.errors}개 에러`,
+      message,
     });
   } catch (error) {
     return createErrorResponse(error);
   }
 }
 
-/**
- * 검색량 기반 우선순위 계산
- */
-function calculatePriority(searchVolume: number | null): number {
-  if (!searchVolume) return 1;
-
-  if (searchVolume >= 5000) return 5;
-  if (searchVolume >= 2000) return 4;
-  if (searchVolume >= 1000) return 3;
-  if (searchVolume >= 500) return 2;
-  return 1;
-}
+// =====================================================
+// GET HANDLER - Template Download
+// =====================================================
 
 /**
  * GET /api/keywords/bulk/template
- * CSV 템플릿 다운로드
+ * CSV 템플릿 다운로드 (V2 포맷 또는 레거시)
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const locale = (searchParams.get('locale') || 'en') as Locale;
+  const format = searchParams.get('format') || 'v2'; // 'v2' or 'legacy'
 
-  // 템플릿 생성
-  const { generateCSVTemplate } = await import('@/lib/content/csv-parser');
-  const template = generateCSVTemplate(locale);
+  let template: string;
+  let filename: string;
+
+  if (format === 'legacy') {
+    template = generateLegacyTemplate(locale);
+    filename = `keyword-template-legacy-${locale}.csv`;
+  } else {
+    template = generateCSVTemplateV2(true);
+    filename = `keyword-template-v2.csv`;
+  }
 
   return new Response(template, {
     status: 200,
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename="keyword-template-${locale}.csv"`,
+      'Content-Disposition': `attachment; filename="${filename}"`,
     },
   });
 }
