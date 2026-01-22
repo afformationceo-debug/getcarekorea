@@ -1,0 +1,287 @@
+{
+  "common": {
+    "appName": "GetCareKorea",
+    "tagline": "韓国の最高級医療への入り口",
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "retry": "再試行",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "view": "表示",
+    "close": "閉じる",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "search": "検索",
+    "filter": "フィルター",
+    "sort": "並べ替え",
+    "all": "すべて",
+    "none": "なし",
+    "yes": "はい",
+    "no": "いいえ",
+    "or": "または",
+    "and": "と",
+    "learnMore": "詳しく見る",
+    "seeAll": "すべて見る",
+    "viewDetails": "詳細を見る",
+    "getQuote": "無料見積もり",
+    "bookNow": "今すぐ予約",
+    "contactUs": "お問い合わせ",
+    "readMore": "続きを読む"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "hospitals": "病院",
+    "procedures": "施術",
+    "interpreters": "通訳",
+    "blog": "ブログ",
+    "about": "私たちについて",
+    "contact": "お問い合わせ",
+    "faq": "よくある質問",
+    "myAccount": "マイアカウント",
+    "signIn": "ログイン",
+    "signOut": "ログアウト",
+    "signUp": "登録"
+  },
+  "hero": {
+    "title": "韓国のプレミアム医療",
+    "subtitle": "トップクラスの病院と認定医療通訳をつなぐ",
+    "description": "手頃な価格で世界クラスの医療を体験。美容整形から総合健康診断まで、すべてをサポートします。",
+    "cta": "無料相談",
+    "ctaSecondary": "病院を探す",
+    "trustBadge": "{count}人以上の満足した患者",
+    "hospitalCount": "{count}以上の提携病院",
+    "interpreterCount": "{count}人以上の認定通訳"
+  },
+  "categories": {
+    "title": "診療科目",
+    "subtitle": "あなたのニーズに合った治療を見つける",
+    "plasticSurgery": "美容整形",
+    "dermatology": "皮膚科",
+    "dental": "歯科",
+    "ophthalmology": "眼科",
+    "hairTransplant": "植毛",
+    "healthCheckup": "健康診断",
+    "orthopedics": "整形外科",
+    "fertility": "不妊治療",
+    "weightLoss": "ダイエット",
+    "cardiology": "循環器科",
+    "oncology": "腫瘍科",
+    "traditionalMedicine": "東洋医学",
+    "wellness": "ウェルネス"
+  },
+  "hospitals": {
+    "title": "高評価の病院",
+    "subtitle": "JCI認定施設と経験豊富な専門医",
+    "searchPlaceholder": "病院、施術を検索...",
+    "filters": {
+      "specialty": "専門科目",
+      "city": "都市",
+      "language": "言語",
+      "rating": "評価",
+      "priceRange": "価格帯",
+      "certification": "認定"
+    },
+    "sort": {
+      "rating": "高評価順",
+      "reviews": "レビュー数順",
+      "featured": "おすすめ",
+      "newest": "新着順"
+    },
+    "card": {
+      "reviews": "{count}件のレビュー",
+      "specialists": "{count}人の専門医",
+      "languages": "対応言語：{languages}",
+      "from": "から"
+    },
+    "detail": {
+      "overview": "概要",
+      "doctors": "医師",
+      "procedures": "施術",
+      "reviews": "レビュー",
+      "location": "所在地",
+      "gallery": "ギャラリー",
+      "certifications": "認定",
+      "operatingHours": "診療時間",
+      "contactInfo": "連絡先",
+      "getDirections": "道順を取得"
+    },
+    "badges": {
+      "jci": "JCI認定",
+      "cctv": "CCTV完備",
+      "femaleDoctor": "女性医師",
+      "verified": "認証済み",
+      "featured": "おすすめ"
+    }
+  },
+  "interpreters": {
+    "title": "医療通訳",
+    "subtitle": "医療の旅をサポートするプロの通訳",
+    "searchPlaceholder": "言語、専門で検索...",
+    "filters": {
+      "language": "言語",
+      "specialty": "専門科目",
+      "availability": "空き状況",
+      "priceRange": "価格帯"
+    },
+    "card": {
+      "hourlyRate": "${rate}/時間",
+      "dailyRate": "${rate}/日",
+      "languages": "言語",
+      "bookings": "{count}件の予約実績",
+      "available": "今すぐ予約可能",
+      "unavailable": "現在予約不可"
+    },
+    "detail": {
+      "about": "紹介",
+      "experience": "経験",
+      "languages": "言語",
+      "specialties": "専門",
+      "reviews": "レビュー",
+      "availability": "空き状況",
+      "bookInterpreter": "通訳を予約"
+    }
+  },
+  "chat": {
+    "title": "AI医療コンサルタント",
+    "subtitle": "韓国の医療ツーリズムについて即座に回答",
+    "placeholder": "韓国の医療ツーリズムについて何でもお聞きください...",
+    "welcomeMessage": "こんにちは！AI医療ツーリズムコンサルタントです。適切な病院、施術、通訳を見つけるお手伝いをします。何を知りたいですか？",
+    "suggestions": [
+      "江南で最高の美容クリニックはどこですか？",
+      "韓国での鼻整形の費用はいくらですか？",
+      "韓国で治療を受けるには医療ビザが必要ですか？",
+      "日本語が話せる通訳を紹介してもらえますか？"
+    ],
+    "tryAsking": "こんな質問をしてみましょう：",
+    "thinking": "考え中...",
+    "error": "申し訳ありません、エラーが発生しました。もう一度お試しください。",
+    "feedback": {
+      "helpful": "役に立ちましたか？",
+      "yes": "はい",
+      "no": "いいえ"
+    }
+  },
+  "inquiry": {
+    "title": "無料相談",
+    "subtitle": "ご要望をお聞かせください。適切な病院をご紹介します",
+    "form": {
+      "name": "氏名",
+      "email": "メールアドレス",
+      "phone": "電話番号",
+      "messenger": "希望の連絡方法",
+      "procedure": "興味のある施術",
+      "message": "メッセージ",
+      "submit": "送信",
+      "submitting": "送信中..."
+    },
+    "success": {
+      "title": "ありがとうございます！",
+      "message": "お問い合わせを受け付けました。24時間以内にご連絡いたします。"
+    },
+    "messengers": {
+      "whatsapp": "WhatsApp",
+      "line": "LINE",
+      "wechat": "WeChat",
+      "telegram": "Telegram",
+      "email": "メール"
+    }
+  },
+  "reviews": {
+    "title": "患者レビュー",
+    "subtitle": "患者様の実体験",
+    "writeReview": "レビューを書く",
+    "verified": "認証済み患者",
+    "helpful": "参考になった",
+    "report": "報告",
+    "sortBy": "並べ替え",
+    "filters": {
+      "rating": "評価",
+      "procedure": "施術",
+      "date": "日付"
+    }
+  },
+  "blog": {
+    "title": "医療ツーリズムガイド",
+    "subtitle": "専門家の見解と役立つ情報",
+    "categories": {
+      "guides": "ガイド",
+      "tips": "ヒント",
+      "stories": "患者の声",
+      "news": "ニュース"
+    },
+    "readTime": "{minutes}分で読める",
+    "publishedOn": "{date}公開",
+    "relatedPosts": "関連記事"
+  },
+  "pricing": {
+    "title": "透明な価格設定",
+    "subtitle": "費用を比較して最大70%節約",
+    "comparisonTitle": "韓国 vs. 他国",
+    "priceRange": "{min} - {max}",
+    "startingFrom": "から",
+    "includesLabel": "含まれるもの",
+    "disclaimer": "価格は目安であり、個人の状況により異なる場合があります"
+  },
+  "footer": {
+    "about": {
+      "title": "GetCareKoreaについて",
+      "description": "2024年より、海外の患者様と韓国の優れた医療施設・プロの医療通訳をつないでいます。"
+    },
+    "quickLinks": {
+      "title": "クイックリンク",
+      "hospitals": "病院を探す",
+      "interpreters": "通訳を探す",
+      "procedures": "施術を見る",
+      "blog": "ブログを読む"
+    },
+    "support": {
+      "title": "サポート",
+      "faq": "よくある質問",
+      "contact": "お問い合わせ",
+      "privacy": "プライバシーポリシー",
+      "terms": "利用規約"
+    },
+    "contact": {
+      "title": "お問い合わせ",
+      "email": "support@getcarekorea.com",
+      "phone": "+82-2-XXX-XXXX",
+      "address": "韓国ソウル"
+    },
+    "newsletter": {
+      "title": "最新情報を受け取る",
+      "description": "最新のアップデートと限定オファーを受け取る",
+      "placeholder": "メールアドレスを入力",
+      "subscribe": "登録"
+    },
+    "copyright": "© {year} GetCareKorea. All rights reserved."
+  },
+  "errors": {
+    "notFound": {
+      "title": "ページが見つかりません",
+      "description": "お探しのページは存在しないか、移動された可能性があります。",
+      "backHome": "ホームに戻る"
+    },
+    "serverError": {
+      "title": "問題が発生しました",
+      "description": "技術的な問題が発生しています。後でもう一度お試しください。",
+      "retry": "再試行"
+    },
+    "unauthorized": {
+      "title": "アクセス拒否",
+      "description": "このページにアクセスする権限がありません。",
+      "signIn": "ログイン"
+    }
+  },
+  "meta": {
+    "homeTitle": "GetCareKorea - 韓国プレミアム医療ツーリズム",
+    "homeDescription": "韓国のトップクラスの病院と認定医療通訳をつなぐ。手頃な価格で世界クラスの医療を体験。",
+    "hospitalsTitle": "韓国のトップ病院 - GetCareKorea",
+    "hospitalsDescription": "韓国のJCI認定病院・クリニックを閲覧。価格比較、レビュー確認、医療の旅を予約。",
+    "interpretersTitle": "韓国の医療通訳 - GetCareKorea",
+    "interpretersDescription": "あなたの言語を話す認定医療通訳を見つける。韓国での医療の旅をプロがサポート。"
+  }
+}

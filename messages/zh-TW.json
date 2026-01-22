@@ -1,0 +1,287 @@
+{
+  "common": {
+    "appName": "GetCareKorea",
+    "tagline": "您的韓國頂級醫療之門",
+    "loading": "載入中...",
+    "error": "發生錯誤",
+    "retry": "重試",
+    "cancel": "取消",
+    "confirm": "確認",
+    "save": "儲存",
+    "delete": "刪除",
+    "edit": "編輯",
+    "view": "查看",
+    "close": "關閉",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "search": "搜尋",
+    "filter": "篩選",
+    "sort": "排序",
+    "all": "全部",
+    "none": "無",
+    "yes": "是",
+    "no": "否",
+    "or": "或",
+    "and": "和",
+    "learnMore": "了解更多",
+    "seeAll": "查看全部",
+    "viewDetails": "查看詳情",
+    "getQuote": "免費報價",
+    "bookNow": "立即預約",
+    "contactUs": "聯絡我們",
+    "readMore": "閱讀更多"
+  },
+  "navigation": {
+    "home": "首頁",
+    "hospitals": "醫院",
+    "procedures": "療程",
+    "interpreters": "口譯員",
+    "blog": "部落格",
+    "about": "關於我們",
+    "contact": "聯絡",
+    "faq": "常見問題",
+    "myAccount": "我的帳戶",
+    "signIn": "登入",
+    "signOut": "登出",
+    "signUp": "註冊"
+  },
+  "hero": {
+    "title": "韓國頂級醫療服務",
+    "subtitle": "連接您與頂級醫院及認證醫療口譯員",
+    "description": "以實惠的價格體驗世界級醫療服務。從整形手術到全面健康檢查，我們全程為您提供支援。",
+    "cta": "免費諮詢",
+    "ctaSecondary": "探索醫院",
+    "trustBadge": "{count}+ 滿意患者",
+    "hospitalCount": "{count}+ 合作醫院",
+    "interpreterCount": "{count}+ 認證口譯員"
+  },
+  "categories": {
+    "title": "醫療專科",
+    "subtitle": "找到適合您需求的治療",
+    "plasticSurgery": "整形外科",
+    "dermatology": "皮膚科",
+    "dental": "牙科",
+    "ophthalmology": "眼科",
+    "hairTransplant": "植髮",
+    "healthCheckup": "健康檢查",
+    "orthopedics": "骨科",
+    "fertility": "生殖醫學",
+    "weightLoss": "減重",
+    "cardiology": "心臟科",
+    "oncology": "腫瘤科",
+    "traditionalMedicine": "傳統醫學",
+    "wellness": "養生保健"
+  },
+  "hospitals": {
+    "title": "頂級醫院",
+    "subtitle": "JCI認證機構，經驗豐富的專家",
+    "searchPlaceholder": "搜尋醫院、療程...",
+    "filters": {
+      "specialty": "專科",
+      "city": "城市",
+      "language": "語言",
+      "rating": "評分",
+      "priceRange": "價格範圍",
+      "certification": "認證"
+    },
+    "sort": {
+      "rating": "最高評分",
+      "reviews": "最多評論",
+      "featured": "精選",
+      "newest": "最新"
+    },
+    "card": {
+      "reviews": "{count} 則評論",
+      "specialists": "{count} 位專家",
+      "languages": "語言：{languages}",
+      "from": "起價"
+    },
+    "detail": {
+      "overview": "概覽",
+      "doctors": "醫生",
+      "procedures": "療程",
+      "reviews": "評論",
+      "location": "位置",
+      "gallery": "相簿",
+      "certifications": "認證",
+      "operatingHours": "營業時間",
+      "contactInfo": "聯絡資訊",
+      "getDirections": "取得路線"
+    },
+    "badges": {
+      "jci": "JCI認證",
+      "cctv": "CCTV監控",
+      "femaleDoctor": "女醫生",
+      "verified": "已驗證",
+      "featured": "精選"
+    }
+  },
+  "interpreters": {
+    "title": "醫療口譯員",
+    "subtitle": "專業口譯員協助您的醫療之旅",
+    "searchPlaceholder": "按語言、專科搜尋...",
+    "filters": {
+      "language": "語言",
+      "specialty": "醫療專科",
+      "availability": "可用性",
+      "priceRange": "價格範圍"
+    },
+    "card": {
+      "hourlyRate": "${rate}/小時",
+      "dailyRate": "${rate}/天",
+      "languages": "語言",
+      "bookings": "{count} 次完成預約",
+      "available": "現在可用",
+      "unavailable": "目前不可用"
+    },
+    "detail": {
+      "about": "關於",
+      "experience": "經驗",
+      "languages": "語言",
+      "specialties": "專長",
+      "reviews": "評論",
+      "availability": "可用時間",
+      "bookInterpreter": "預約口譯員"
+    }
+  },
+  "chat": {
+    "title": "AI醫療顧問",
+    "subtitle": "即時獲得韓國醫療旅遊相關解答",
+    "placeholder": "詢問任何關於韓國醫療旅遊的問題...",
+    "welcomeMessage": "您好！我是您的AI醫療旅遊顧問。我可以幫您找到合適的醫院、療程或口譯員。有什麼想了解的嗎？",
+    "suggestions": [
+      "江南區最好的整形診所有哪些？",
+      "韓國隆鼻手術費用是多少？",
+      "在韓國就醫需要醫療簽證嗎？",
+      "可以推薦會說中文的口譯員嗎？"
+    ],
+    "tryAsking": "試試問：",
+    "thinking": "思考中...",
+    "error": "抱歉，發生錯誤。請重試。",
+    "feedback": {
+      "helpful": "這有幫助嗎？",
+      "yes": "有",
+      "no": "沒有"
+    }
+  },
+  "inquiry": {
+    "title": "免費諮詢",
+    "subtitle": "告訴我們您的需求，我們將為您連接合適的醫院",
+    "form": {
+      "name": "姓名",
+      "email": "電子郵件",
+      "phone": "電話號碼",
+      "messenger": "偏好的通訊軟體",
+      "procedure": "感興趣的療程",
+      "message": "您的訊息",
+      "submit": "發送詢問",
+      "submitting": "發送中..."
+    },
+    "success": {
+      "title": "感謝您！",
+      "message": "我們已收到您的詢問。我們的團隊將在24小時內與您聯繫。"
+    },
+    "messengers": {
+      "whatsapp": "WhatsApp",
+      "line": "LINE",
+      "wechat": "微信",
+      "telegram": "Telegram",
+      "email": "電子郵件"
+    }
+  },
+  "reviews": {
+    "title": "患者評價",
+    "subtitle": "來自患者的真實體驗",
+    "writeReview": "撰寫評價",
+    "verified": "已驗證患者",
+    "helpful": "有幫助",
+    "report": "檢舉",
+    "sortBy": "排序方式",
+    "filters": {
+      "rating": "評分",
+      "procedure": "療程",
+      "date": "日期"
+    }
+  },
+  "blog": {
+    "title": "醫療旅遊指南",
+    "subtitle": "專家見解與實用資訊",
+    "categories": {
+      "guides": "指南",
+      "tips": "小技巧",
+      "stories": "患者故事",
+      "news": "新聞"
+    },
+    "readTime": "{minutes} 分鐘閱讀",
+    "publishedOn": "發布於 {date}",
+    "relatedPosts": "相關文章"
+  },
+  "pricing": {
+    "title": "透明定價",
+    "subtitle": "比較費用，最高節省70%",
+    "comparisonTitle": "韓國 vs. 其他國家",
+    "priceRange": "{min} - {max}",
+    "startingFrom": "起價",
+    "includesLabel": "包含項目",
+    "disclaimer": "價格為估計值，可能因個人情況而異"
+  },
+  "footer": {
+    "about": {
+      "title": "關於 GetCareKorea",
+      "description": "自2024年起，連接國際患者與韓國頂級醫療機構及專業醫療口譯員。"
+    },
+    "quickLinks": {
+      "title": "快速連結",
+      "hospitals": "尋找醫院",
+      "interpreters": "尋找口譯員",
+      "procedures": "瀏覽療程",
+      "blog": "閱讀部落格"
+    },
+    "support": {
+      "title": "支援",
+      "faq": "常見問題",
+      "contact": "聯絡我們",
+      "privacy": "隱私政策",
+      "terms": "服務條款"
+    },
+    "contact": {
+      "title": "聯絡我們",
+      "email": "support@getcarekorea.com",
+      "phone": "+82-2-XXX-XXXX",
+      "address": "韓國首爾"
+    },
+    "newsletter": {
+      "title": "保持更新",
+      "description": "訂閱以獲取最新更新和獨家優惠",
+      "placeholder": "輸入您的電子郵件",
+      "subscribe": "訂閱"
+    },
+    "copyright": "© {year} GetCareKorea. 版權所有。"
+  },
+  "errors": {
+    "notFound": {
+      "title": "找不到頁面",
+      "description": "您正在尋找的頁面不存在或已被移動。",
+      "backHome": "返回首頁"
+    },
+    "serverError": {
+      "title": "出了點問題",
+      "description": "我們正在經歷技術問題。請稍後再試。",
+      "retry": "重試"
+    },
+    "unauthorized": {
+      "title": "拒絕訪問",
+      "description": "您沒有權限訪問此頁面。",
+      "signIn": "登入"
+    }
+  },
+  "meta": {
+    "homeTitle": "GetCareKorea - 韓國頂級醫療旅遊",
+    "homeDescription": "連接您與韓國頂級醫院及認證醫療口譯員。以實惠的價格體驗世界級醫療服務。",
+    "hospitalsTitle": "韓國頂級醫院 - GetCareKorea",
+    "hospitalsDescription": "瀏覽韓國JCI認證醫院和診所。比較價格、閱讀評論、預約您的醫療之旅。",
+    "interpretersTitle": "韓國醫療口譯員 - GetCareKorea",
+    "interpretersDescription": "找到會說您語言的認證醫療口譯員。為您在韓國的醫療之旅提供專業支援。"
+  }
+}
