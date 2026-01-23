@@ -49,6 +49,7 @@ interface Language {
 
 interface Interpreter {
   id: string;
+  slug?: string;
   name: string;
   photo_url: string;
   languages: Language[];
@@ -59,11 +60,14 @@ interface Interpreter {
   avg_rating: number;
   review_count: number;
   total_bookings: number;
+  total_posts?: number;
   is_verified: boolean;
   is_available: boolean;
+  is_featured?: boolean;
   video_url: string | null;
   experience_years: number;
   location: string;
+  target_locales?: string[];
 }
 
 interface InterpretersPageClientProps {
@@ -647,7 +651,7 @@ function InterpreterCard3D({
               className="h-12 w-full gap-2 rounded-xl bg-gradient-to-r from-primary to-violet-600 text-base font-semibold shadow-lg hover:shadow-xl"
               asChild
             >
-              <Link href={`/${locale}/interpreters/${interpreter.id}`}>
+              <Link href={`/${locale}/interpreters/${interpreter.slug || interpreter.id}`}>
                 View Profile
                 <ChevronRight className="h-5 w-5" />
               </Link>
@@ -814,7 +818,7 @@ function InterpreterListCard({
                     className="gap-2 rounded-xl bg-gradient-to-r from-primary to-violet-600 px-8 shadow-lg"
                     asChild
                   >
-                    <Link href={`/${locale}/interpreters/${interpreter.id}`}>
+                    <Link href={`/${locale}/interpreters/${interpreter.slug || interpreter.id}`}>
                       View Profile
                       <ChevronRight className="h-5 w-5" />
                     </Link>

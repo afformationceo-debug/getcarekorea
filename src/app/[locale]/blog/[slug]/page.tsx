@@ -495,14 +495,22 @@ export default function BlogDetailPage() {
                   <div className="flex flex-col sm:flex-row gap-6">
                     {/* Author Photo */}
                     <div className="flex-shrink-0">
-                      {post.authorPersona?.photo_url ? (
-                        <Image
-                          src={post.authorPersona.photo_url}
-                          alt={getLocalizedAuthorName(post.authorPersona, locale)}
-                          width={120}
-                          height={120}
-                          className="rounded-xl object-cover"
-                        />
+                      {post.authorPersona ? (
+                        <Link href={`/${locale}/interpreters/${post.authorPersona.slug}`}>
+                          {post.authorPersona.photo_url ? (
+                            <Image
+                              src={post.authorPersona.photo_url}
+                              alt={getLocalizedAuthorName(post.authorPersona, locale)}
+                              width={120}
+                              height={120}
+                              className="rounded-xl object-cover hover:opacity-90 transition-opacity"
+                            />
+                          ) : (
+                            <div className="h-[120px] w-[120px] rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center hover:opacity-90 transition-opacity">
+                              <User className="h-12 w-12 text-white" />
+                            </div>
+                          )}
+                        </Link>
                       ) : (
                         <div className="h-[120px] w-[120px] rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                           <User className="h-12 w-12 text-white" />
@@ -515,9 +523,12 @@ export default function BlogDetailPage() {
                       {post.authorPersona ? (
                         <>
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="text-lg font-bold">
+                            <Link
+                              href={`/${locale}/interpreters/${post.authorPersona.slug}`}
+                              className="text-lg font-bold hover:text-violet-600 transition-colors"
+                            >
                               {getLocalizedAuthorName(post.authorPersona, locale)}
-                            </h3>
+                            </Link>
                             {post.authorPersona.is_verified && (
                               <Badge className="bg-blue-500 text-white text-xs">Verified</Badge>
                             )}
@@ -543,7 +554,7 @@ export default function BlogDetailPage() {
                           </p>
 
                           {/* Languages & Certifications */}
-                          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-4">
                             <div className="flex items-center gap-1">
                               <MessageCircle className="h-3 w-3" />
                               <span>
@@ -557,6 +568,26 @@ export default function BlogDetailPage() {
                               </div>
                             )}
                           </div>
+
+                          {/* View Profile Button */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            asChild
+                          >
+                            <Link href={`/${locale}/interpreters/${post.authorPersona.slug}`}>
+                              <User className="h-4 w-4" />
+                              {locale === 'ko' ? '프로필 보기' :
+                               locale === 'ja' ? 'プロフィールを見る' :
+                               locale === 'zh-TW' || locale === 'zh-CN' ? '查看個人資料' :
+                               locale === 'th' ? 'ดูโปรไฟล์' :
+                               locale === 'ru' ? 'Посмотреть профиль' :
+                               locale === 'mn' ? 'Профайл харах' :
+                               'View Profile'}
+                              <ChevronRight className="h-4 w-4" />
+                            </Link>
+                          </Button>
                         </>
                       ) : post.generatedAuthor ? (
                         <>

@@ -1,11 +1,13 @@
 /**
  * Interpreter Detail API
  *
- * GET /api/interpreters/[id] - Get interpreter by ID with profile and reviews
+ * GET /api/interpreters/[id] - Get interpreter by ID or slug from author_personas
+ *
+ * Author Personas = Interpreters (unified entity)
  */
 
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -14,75 +16,224 @@ import {
   secureLog,
 } from '@/lib/api/error-handler';
 
+export const runtime = 'nodejs';
+export const revalidate = 60;
+
 type Params = { params: Promise<{ id: string }> };
+
+// Map locale to name field suffix
+const localeFieldMap: Record<string, string> = {
+  en: 'en',
+  ko: 'ko',
+  'zh-TW': 'zh_tw',
+  'zh-CN': 'zh_cn',
+  ja: 'ja',
+  th: 'th',
+  mn: 'mn',
+  ru: 'ru',
+};
+
+// Format specialty slug to display name
+function formatSpecialty(slug: string | null): string {
+  if (!slug) return '';
+  const names: Record<string, string> = {
+    'plastic-surgery': 'Plastic Surgery',
+    'dermatology': 'Dermatology',
+    'dental': 'Dental',
+    'health-checkup': 'Health Checkup',
+    'fertility': 'Fertility',
+    'hair-transplant': 'Hair Transplant',
+    'ophthalmology': 'Ophthalmology',
+    'orthopedics': 'Orthopedics',
+    'general-medical': 'General Medical',
+  };
+  return names[slug] || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+// Parse languages from JSONB format
+function parseLanguages(languagesData: unknown): { code: string; name: string; level: string }[] {
+  if (!languagesData) return [];
+
+  try {
+    const languages = Array.isArray(languagesData)
+      ? languagesData
+      : JSON.parse(String(languagesData));
+
+    return languages.map((lang: { code?: string; proficiency?: string }) => {
+      const code = lang.code || 'en';
+      return {
+        code,
+        name: getLanguageName(code),
+        level: lang.proficiency || 'fluent',
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+// Get language display name from code
+function getLanguageName(code: string): string {
+  const names: Record<string, string> = {
+    en: 'English',
+    ko: 'Korean',
+    'zh': 'Chinese',
+    'zh-TW': 'Chinese (Traditional)',
+    'zh-CN': 'Chinese (Simplified)',
+    ja: 'Japanese',
+    th: 'Thai',
+    mn: 'Mongolian',
+    ru: 'Russian',
+    vi: 'Vietnamese',
+    ar: 'Arabic',
+  };
+  return names[code] || code.toUpperCase();
+}
+
+// Generate default photo URL based on name
+function getDefaultPhoto(name: string): string {
+  const seed = encodeURIComponent(name);
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+}
+
+// Transform author_persona to interpreter format
+function transformToInterpreter(persona: Record<string, unknown>, locale: string) {
+  const suffix = localeFieldMap[locale] || 'en';
+
+  // Get localized name
+  const nameKey = `name_${suffix}`;
+  const name = (persona[nameKey] as string) || (persona.name_en as string);
+
+  // Get localized bio
+  const bioShortKey = `bio_short_${suffix}`;
+  const bioFullKey = `bio_full_${suffix}`;
+  const bioShort = (persona[bioShortKey] as string) || (persona.bio_short_en as string) || '';
+  const bioFull = (persona[bioFullKey] as string) || (persona.bio_full_en as string) || '';
+
+  // Parse languages from JSONB
+  const languages = parseLanguages(persona.languages);
+
+  // Build specialties array
+  const specialties = [
+    formatSpecialty(persona.primary_specialty as string),
+    ...((persona.secondary_specialties as string[]) || []).map(formatSpecialty),
+  ].filter(Boolean);
+
+  // Get messenger CTA text
+  const messengerCtaText = persona.messenger_cta_text as Record<string, string> | null;
+  const ctaText = messengerCtaText?.[locale] || messengerCtaText?.en || 'Contact Us';
+
+  return {
+    id: persona.id as string,
+    slug: persona.slug as string,
+    name,
+    name_en: persona.name_en as string,
+    name_local: name,
+    photo_url: (persona.photo_url as string) || getDefaultPhoto(name),
+    languages,
+    specialties,
+    bio: bioShort || bioFull,
+    bio_full: bioFull,
+    hourly_rate: (persona.hourly_rate as number) || 50,
+    daily_rate: (persona.daily_rate as number) || 350,
+    avg_rating: parseFloat(String(persona.avg_rating || 4.8)),
+    review_count: (persona.review_count as number) || 0,
+    total_bookings: (persona.total_bookings as number) || 0,
+    total_posts: (persona.total_posts as number) || 0,
+    is_verified: (persona.is_verified as boolean) || false,
+    is_available: (persona.is_available as boolean) ?? true,
+    is_featured: (persona.is_featured as boolean) || false,
+    video_url: persona.video_url as string | null,
+    experience_years: (persona.years_of_experience as number) || 5,
+    location: (persona.location as string) || 'Seoul, Gangnam',
+    certifications: (persona.certifications as string[]) || [],
+    preferred_messenger: persona.preferred_messenger as string | null,
+    messenger_cta: ctaText,
+    target_locales: (persona.target_locales as string[]) || ['en'],
+    writing_tone: persona.writing_tone as string,
+    writing_perspective: persona.writing_perspective as string,
+    created_at: persona.created_at as string,
+    updated_at: persona.updated_at as string,
+  };
+}
 
 export async function GET(request: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
-    const supabase = await createClient();
+    const supabase = await createAdminClient();
     const { searchParams } = new URL(request.url);
 
     const locale = searchParams.get('locale') || 'en';
     const includeReviews = searchParams.get('includeReviews') === 'true';
+    const includePosts = searchParams.get('includePosts') === 'true';
 
     const startTime = Date.now();
 
-    // Get interpreter with profile
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: interpreterData, error } = await (supabase.from('interpreters') as any)
-      .select(`
-        *,
-        profiles!interpreters_profile_id_fkey (
-          full_name,
-          avatar_url,
-          email
-        )
-      `)
-      .eq('id', id)
-      .single();
+    // Try to find by ID first, then by slug
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
-    interface InterpreterWithProfile {
-      id: string;
-      bio_en: string | null;
-      photo_url: string | null;
-      profiles?: { full_name: string; avatar_url: string | null; email: string };
-      [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query = supabase.from('author_personas').select('*') as any;
+
+    if (isUUID) {
+      query = query.eq('id', id);
+    } else {
+      query = query.eq('slug', id);
     }
 
-    const interpreter = interpreterData as InterpreterWithProfile | null;
+    const { data: personaData, error } = await query.single();
 
-    if (error || !interpreter) {
+    if (error || !personaData) {
       throw new APIError(ErrorCode.NOT_FOUND, 'Interpreter not found', { id }, locale);
     }
 
-    // Build response
-    const bioKey = `bio_${locale.replace('-', '_').toLowerCase()}`;
-    const response: Record<string, unknown> = {
-      ...interpreter,
-      bio: (interpreter[bioKey] as string) || interpreter.bio_en,
-      full_name: interpreter.profiles?.full_name,
-      avatar_url: interpreter.photo_url || interpreter.profiles?.avatar_url,
-    };
+    // Transform to interpreter format
+    const interpreter = transformToInterpreter(personaData as Record<string, unknown>, locale);
 
-    // Fetch reviews if requested
-    if (includeReviews) {
+    // Build response
+    const response: Record<string, unknown> = { ...interpreter };
+
+    // Fetch blog posts written by this author if requested
+    if (includePosts) {
+      const suffix = localeFieldMap[locale] || 'en';
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: reviews, count } = await (supabase.from('reviews') as any)
-        .select('*, profiles!reviews_profile_id_fkey(full_name, avatar_url)', { count: 'exact' })
-        .eq('interpreter_id', id)
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false })
+      const { data: posts } = await (supabase
+        .from('blog_posts')
+        .select(`
+          id, slug, category, featured_image, published_at, view_count,
+          title_${suffix}, excerpt_${suffix}, title_en, excerpt_en
+        `) as any)
+        .eq('author_persona_id', (personaData as Record<string, unknown>).id)
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
         .limit(10);
 
-      response.reviews = reviews || [];
-      response.reviewCount = count || 0;
+      response.posts = (posts || []).map((post: Record<string, unknown>) => ({
+        id: post.id,
+        slug: post.slug,
+        category: post.category,
+        featured_image: post.featured_image,
+        published_at: post.published_at,
+        view_count: post.view_count,
+        title: post[`title_${suffix}`] || post.title_en,
+        excerpt: post[`excerpt_${suffix}`] || post.excerpt_en,
+      }));
+    }
+
+    // Fetch reviews if requested (from reviews table if exists)
+    if (includeReviews) {
+      // Note: Reviews are linked to old interpreters table
+      // In future, could link reviews to author_personas
+      response.reviews = [];
+      response.reviewCount = 0;
     }
 
     const responseTime = Date.now() - startTime;
     secureLog('info', 'Interpreter detail fetched', {
       id,
+      slug: interpreter.slug,
       responseTimeMs: responseTime,
-      includeReviews,
+      includePosts,
     });
 
     return createSuccessResponse(response);

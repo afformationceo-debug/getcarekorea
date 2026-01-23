@@ -1,196 +1,177 @@
 import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { InterpretersPageClient } from './InterpretersPageClient';
+import { createAdminClient } from '@/lib/supabase/server';
 import type { Locale } from '@/lib/i18n/config';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
 }
 
+// Map locale to name field suffix
+const localeFieldMap: Record<string, string> = {
+  en: 'en',
+  ko: 'ko',
+  'zh-TW': 'zh_tw',
+  'zh-CN': 'zh_cn',
+  ja: 'ja',
+  th: 'th',
+  mn: 'mn',
+  ru: 'ru',
+};
+
+// Format specialty slug to display name
+function formatSpecialty(slug: string | null): string {
+  if (!slug) return '';
+  const names: Record<string, string> = {
+    'plastic-surgery': 'Plastic Surgery',
+    'dermatology': 'Dermatology',
+    'dental': 'Dental',
+    'health-checkup': 'Health Checkup',
+    'fertility': 'Fertility',
+    'hair-transplant': 'Hair Transplant',
+    'ophthalmology': 'Ophthalmology',
+    'orthopedics': 'Orthopedics',
+    'general-medical': 'General Medical',
+  };
+  return names[slug] || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+// Parse languages from JSONB format
+function parseLanguages(languagesData: unknown): { code: string; name: string; level: string }[] {
+  if (!languagesData) return [];
+
+  try {
+    const languages = Array.isArray(languagesData)
+      ? languagesData
+      : JSON.parse(String(languagesData));
+
+    return languages.map((lang: { code?: string; proficiency?: string }) => {
+      const code = lang.code || 'en';
+      return {
+        code,
+        name: getLanguageName(code),
+        level: lang.proficiency || 'fluent',
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+// Get language display name from code
+function getLanguageName(code: string): string {
+  const names: Record<string, string> = {
+    en: 'English',
+    ko: 'Korean',
+    'zh': 'Chinese',
+    'zh-TW': 'Chinese (Traditional)',
+    'zh-CN': 'Chinese (Simplified)',
+    ja: 'Japanese',
+    th: 'Thai',
+    mn: 'Mongolian',
+    ru: 'Russian',
+    vi: 'Vietnamese',
+    ar: 'Arabic',
+  };
+  return names[code] || code.toUpperCase();
+}
+
+// Generate default photo URL based on name
+function getDefaultPhoto(name: string): string {
+  const seed = encodeURIComponent(name);
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+}
+
+// Transform author_persona to interpreter format for frontend
+function transformToInterpreter(persona: Record<string, unknown>, locale: string) {
+  const suffix = localeFieldMap[locale] || 'en';
+
+  // Get localized name
+  const nameKey = `name_${suffix}`;
+  const name = (persona[nameKey] as string) || (persona.name_en as string);
+
+  // Get localized bio
+  const bioShortKey = `bio_short_${suffix}`;
+  const bioFullKey = `bio_full_${suffix}`;
+  const bioShort = (persona[bioShortKey] as string) || (persona.bio_short_en as string) || '';
+  const bioFull = (persona[bioFullKey] as string) || (persona.bio_full_en as string) || '';
+
+  // Parse languages from JSONB
+  const languages = parseLanguages(persona.languages);
+
+  // Build specialties array
+  const specialties = [
+    formatSpecialty(persona.primary_specialty as string),
+    ...((persona.secondary_specialties as string[]) || []).map(formatSpecialty),
+  ].filter(Boolean);
+
+  return {
+    id: persona.id as string,
+    slug: persona.slug as string,
+    name,
+    photo_url: (persona.photo_url as string) || getDefaultPhoto(name),
+    languages,
+    specialties,
+    bio: bioShort || bioFull,
+    hourly_rate: (persona.hourly_rate as number) || 50,
+    daily_rate: (persona.daily_rate as number) || 350,
+    avg_rating: parseFloat(String(persona.avg_rating || 4.8)),
+    review_count: (persona.review_count as number) || 0,
+    total_bookings: (persona.total_bookings as number) || 0,
+    total_posts: (persona.total_posts as number) || 0,
+    is_verified: (persona.is_verified as boolean) || false,
+    is_available: (persona.is_available as boolean) ?? true,
+    is_featured: (persona.is_featured as boolean) || false,
+    video_url: persona.video_url as string | null,
+    experience_years: (persona.years_of_experience as number) || 5,
+    location: (persona.location as string) || 'Seoul, Gangnam',
+    target_locales: (persona.target_locales as string[]) || ['en'],
+  };
+}
+
+async function fetchInterpreters(locale: string) {
+  try {
+    const supabase = await createAdminClient();
+
+    const { data, error } = await supabase
+      .from('author_personas')
+      .select('*')
+      .eq('is_active', true)
+      .order('is_featured', { ascending: false })
+      .order('display_order', { ascending: true, nullsFirst: false })
+      .order('avg_rating', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching interpreters:', error);
+      return [];
+    }
+
+    // Transform and filter by locale
+    const interpreters = (data || [])
+      .map((persona) => transformToInterpreter(persona, locale))
+      .filter((interpreter) => {
+        // Show interpreters that serve this locale or English (global)
+        if (locale === 'en') return true;
+        return (
+          interpreter.target_locales.includes(locale) ||
+          interpreter.target_locales.includes('en')
+        );
+      });
+
+    return interpreters;
+  } catch (error) {
+    console.error('Error in fetchInterpreters:', error);
+    return [];
+  }
+}
+
 export default async function InterpretersPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  // Mock data - in production, fetch from Supabase
-  const interpreters = [
-    {
-      id: '1',
-      name: 'Sarah Kim',
-      photo_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
-      languages: [
-        { code: 'en', name: 'English', level: 'native' },
-        { code: 'ko', name: 'Korean', level: 'native' },
-        { code: 'zh', name: 'Chinese', level: 'fluent' },
-      ],
-      specialties: ['Plastic Surgery', 'Dermatology'],
-      bio: 'Experienced medical interpreter with 8+ years of experience in Korean healthcare. Specializing in plastic surgery and dermatology translations. I ensure clear communication between patients and doctors for the best medical outcomes.',
-      hourly_rate: 50,
-      daily_rate: 350,
-      avg_rating: 4.9,
-      review_count: 156,
-      total_bookings: 423,
-      is_verified: true,
-      is_available: true,
-      video_url: 'https://youtube.com/example',
-      experience_years: 8,
-      location: 'Seoul, Gangnam',
-    },
-    {
-      id: '2',
-      name: 'Yuki Tanaka',
-      photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
-      languages: [
-        { code: 'ja', name: 'Japanese', level: 'native' },
-        { code: 'ko', name: 'Korean', level: 'fluent' },
-        { code: 'en', name: 'English', level: 'fluent' },
-      ],
-      specialties: ['Health Checkup', 'General Medical'],
-      bio: 'Bilingual Japanese-Korean interpreter with medical background. Certified in healthcare interpretation with focus on preventive medicine. Helping Japanese patients navigate Korean medical system since 2018.',
-      hourly_rate: 60,
-      daily_rate: 400,
-      avg_rating: 4.8,
-      review_count: 89,
-      total_bookings: 201,
-      is_verified: true,
-      is_available: true,
-      video_url: null,
-      experience_years: 6,
-      location: 'Seoul, Myeongdong',
-    },
-    {
-      id: '3',
-      name: 'Ploy Suwannapong',
-      photo_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop',
-      languages: [
-        { code: 'th', name: 'Thai', level: 'native' },
-        { code: 'ko', name: 'Korean', level: 'fluent' },
-        { code: 'en', name: 'English', level: 'fluent' },
-      ],
-      specialties: ['Plastic Surgery', 'Dental'],
-      bio: 'Thai-Korean medical interpreter with 5 years of experience. Passionate about helping Thai patients navigate their medical journey in Korea. Expert in dental and plastic surgery terminology.',
-      hourly_rate: 45,
-      daily_rate: 300,
-      avg_rating: 4.7,
-      review_count: 67,
-      total_bookings: 145,
-      is_verified: true,
-      is_available: false,
-      video_url: 'https://youtube.com/example',
-      experience_years: 5,
-      location: 'Seoul, Gangnam',
-    },
-    {
-      id: '4',
-      name: 'Alex Wang',
-      photo_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop',
-      languages: [
-        { code: 'zh', name: 'Chinese', level: 'native' },
-        { code: 'ko', name: 'Korean', level: 'native' },
-        { code: 'en', name: 'English', level: 'fluent' },
-      ],
-      specialties: ['Fertility', 'Gynecology', 'Health Checkup'],
-      bio: 'Specialized in fertility and gynecology medical interpretation. Native Chinese speaker with Korean dual citizenship. Helping Chinese couples achieve their dreams of parenthood in Korea.',
-      hourly_rate: 70,
-      daily_rate: 450,
-      avg_rating: 4.9,
-      review_count: 112,
-      total_bookings: 287,
-      is_verified: true,
-      is_available: true,
-      video_url: 'https://youtube.com/example',
-      experience_years: 10,
-      location: 'Seoul, Jamsil',
-    },
-    {
-      id: '5',
-      name: 'Maria Ivanova',
-      photo_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop',
-      languages: [
-        { code: 'ru', name: 'Russian', level: 'native' },
-        { code: 'ko', name: 'Korean', level: 'fluent' },
-        { code: 'en', name: 'English', level: 'fluent' },
-      ],
-      specialties: ['Plastic Surgery', 'Hair Transplant'],
-      bio: 'Russian medical interpreter specializing in cosmetic procedures. Former nurse with deep understanding of medical terminology. Ensuring Russian-speaking patients feel comfortable and informed throughout their treatment.',
-      hourly_rate: 55,
-      daily_rate: 380,
-      avg_rating: 4.8,
-      review_count: 78,
-      total_bookings: 165,
-      is_verified: true,
-      is_available: true,
-      video_url: null,
-      experience_years: 7,
-      location: 'Seoul, Sinsa',
-    },
-    {
-      id: '6',
-      name: 'Nguyen Minh',
-      photo_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
-      languages: [
-        { code: 'vi', name: 'Vietnamese', level: 'native' },
-        { code: 'ko', name: 'Korean', level: 'fluent' },
-        { code: 'en', name: 'English', level: 'conversational' },
-      ],
-      specialties: ['Dental', 'Ophthalmology'],
-      bio: 'Vietnamese-Korean interpreter focused on dental and eye care treatments. Graduate of Seoul National University with healthcare management degree. Dedicated to providing seamless communication for Vietnamese patients.',
-      hourly_rate: 40,
-      daily_rate: 280,
-      avg_rating: 4.6,
-      review_count: 45,
-      total_bookings: 98,
-      is_verified: true,
-      is_available: true,
-      video_url: 'https://youtube.com/example',
-      experience_years: 4,
-      location: 'Seoul, Hongdae',
-    },
-    {
-      id: '7',
-      name: 'Bataa Boldbaatar',
-      photo_url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop',
-      languages: [
-        { code: 'mn', name: 'Mongolian', level: 'native' },
-        { code: 'ko', name: 'Korean', level: 'fluent' },
-        { code: 'en', name: 'English', level: 'conversational' },
-      ],
-      specialties: ['Health Checkup', 'Orthopedics'],
-      bio: 'Mongolian medical interpreter with extensive experience in health checkups and orthopedic procedures. Living in Korea for 12 years with deep cultural understanding of both countries.',
-      hourly_rate: 45,
-      daily_rate: 320,
-      avg_rating: 4.7,
-      review_count: 34,
-      total_bookings: 76,
-      is_verified: true,
-      is_available: false,
-      video_url: null,
-      experience_years: 6,
-      location: 'Seoul, Itaewon',
-    },
-    {
-      id: '8',
-      name: 'Jennifer Chen',
-      photo_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop',
-      languages: [
-        { code: 'zh-tw', name: 'Chinese (Traditional)', level: 'native' },
-        { code: 'ko', name: 'Korean', level: 'fluent' },
-        { code: 'en', name: 'English', level: 'native' },
-        { code: 'ja', name: 'Japanese', level: 'conversational' },
-      ],
-      specialties: ['Plastic Surgery', 'Dermatology', 'Anti-aging'],
-      bio: 'Taiwanese-American interpreter specializing in aesthetic medicine. MBA from Yonsei University. Fluent in 4 languages with expertise in luxury medical tourism services.',
-      hourly_rate: 80,
-      daily_rate: 500,
-      avg_rating: 5.0,
-      review_count: 203,
-      total_bookings: 512,
-      is_verified: true,
-      is_available: true,
-      video_url: 'https://youtube.com/example',
-      experience_years: 12,
-      location: 'Seoul, Cheongdam',
-    },
-  ];
+  // Fetch real data from author_personas table
+  const interpreters = await fetchInterpreters(locale);
 
   return (
     <Suspense fallback={<InterpretersPageSkeleton />}>
