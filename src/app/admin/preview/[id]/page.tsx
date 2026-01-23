@@ -50,13 +50,10 @@ export default function PreviewPage() {
   useEffect(() => {
     async function fetchDraft() {
       try {
-        // Try blog_posts first, then content_drafts
-        let response = await fetch(`/api/blog/${id}`);
+        // Use admin API to get post by ID (works with any status)
+        const response = await fetch(`/api/admin/posts/${id}`);
         if (!response.ok) {
-          response = await fetch(`/api/content/drafts/${id}`);
-        }
-        if (!response.ok) {
-          throw new Error('Draft not found');
+          throw new Error('Post not found');
         }
         const data = await response.json();
 
