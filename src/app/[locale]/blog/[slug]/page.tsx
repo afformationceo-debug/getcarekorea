@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLocale } from 'next-intl';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -25,6 +25,11 @@ import {
   Tag,
   Loader2,
   AlertCircle,
+  X,
+  Phone,
+  CheckCircle,
+  Award,
+  Globe,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -97,6 +102,44 @@ interface BlogPost {
 }
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200';
+
+// Default author info when no authorPersona is available
+const DEFAULT_AUTHOR = {
+  name_en: 'GetCareKorea Medical Team',
+  name_ko: 'GetCareKorea 의료팀',
+  name_ja: 'GetCareKorea医療チーム',
+  name_zh: 'GetCareKorea医疗团队',
+  name_th: 'ทีมแพทย์ GetCareKorea',
+  name_ru: 'Медицинская команда GetCareKorea',
+  name_mn: 'GetCareKorea эмнэлгийн баг',
+  bio_en: 'Our expert team consists of certified medical tourism coordinators with years of experience helping international patients receive world-class healthcare in Korea. We specialize in connecting you with top-rated hospitals and clinics for procedures including plastic surgery, dermatology, dental care, and comprehensive health checkups.',
+  bio_ko: '저희 전문 팀은 수년간 국제 환자들이 한국에서 세계적 수준의 의료 서비스를 받을 수 있도록 도와온 공인 의료 관광 코디네이터로 구성되어 있습니다.',
+  specialties: ['Plastic Surgery', 'Dermatology', 'Dental Care', 'Health Checkups'],
+  languages: ['Korean', 'English', 'Japanese', 'Chinese', 'Thai', 'Russian'],
+  experience: 10,
+  certifications: ['MTQUA Certified', 'Korean Medical Tourism Coordinator'],
+};
+
+// Get default author name by locale
+function getDefaultAuthorName(locale: string): string {
+  const nameMap: Record<string, string> = {
+    'ko': DEFAULT_AUTHOR.name_ko,
+    'en': DEFAULT_AUTHOR.name_en,
+    'ja': DEFAULT_AUTHOR.name_ja,
+    'zh-TW': DEFAULT_AUTHOR.name_zh,
+    'zh-CN': DEFAULT_AUTHOR.name_zh,
+    'th': DEFAULT_AUTHOR.name_th,
+    'ru': DEFAULT_AUTHOR.name_ru,
+    'mn': DEFAULT_AUTHOR.name_mn,
+  };
+  return nameMap[locale] || DEFAULT_AUTHOR.name_en;
+}
+
+// Get default author bio by locale
+function getDefaultAuthorBio(locale: string): string {
+  if (locale === 'ko') return DEFAULT_AUTHOR.bio_ko;
+  return DEFAULT_AUTHOR.bio_en;
+}
 
 // Messenger configuration by locale
 const MESSENGER_CONFIG: Record<string, { messenger: string; icon: string; link: string; label: string }> = {
@@ -254,8 +297,153 @@ export default function BlogDetailPage() {
     );
   }
 
+  // Floating CTA state
+  const [showFloatingCTA, setShowFloatingCTA] = useState(false);
+  const [isFloatingExpanded, setIsFloatingExpanded] = useState(false);
+
+  // Show floating CTA after scrolling
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setShowFloatingCTA(scrollY > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Get messenger config for floating CTA
+  const floatingMessengerCTA = getMessengerCTA(locale, post?.authorPersona);
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Floating CTA Button */}
+      <AnimatePresence>
+        {showFloatingCTA && post && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            className="fixed bottom-6 right-6 z-50"
+          >
+            {isFloatingExpanded ? (
+              <motion.div
+                initial={{ opacity: 0, width: 56, height: 56 }}
+                animate={{ opacity: 1, width: 'auto', height: 'auto' }}
+                className={`rounded-2xl shadow-2xl p-4 max-w-[320px] ${
+                  floatingMessengerCTA.messenger === 'whatsapp' ? 'bg-gradient-to-br from-green-500 to-green-600' :
+                  floatingMessengerCTA.messenger === 'line' ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
+                  floatingMessengerCTA.messenger === 'kakao' ? 'bg-gradient-to-br from-yellow-400 to-amber-500' :
+                  'bg-gradient-to-br from-violet-500 to-purple-600'
+                }`}
+              >
+                <button
+                  onClick={() => setIsFloatingExpanded(false)}
+                  className="absolute top-2 right-2 p-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                >
+                  <X className="h-4 w-4 text-white" />
+                </button>
+
+                <div className="pr-6">
+                  <h4 className={`font-bold mb-1 ${floatingMessengerCTA.messenger === 'kakao' ? 'text-black' : 'text-white'}`}>
+                    {locale === 'ko' ? '무료 상담 받기' :
+                     locale === 'ja' ? '無料相談を受ける' :
+                     locale === 'zh-TW' || locale === 'zh-CN' ? '免費諮詢' :
+                     locale === 'th' ? 'รับคำปรึกษาฟรี' :
+                     locale === 'ru' ? 'Бесплатная консультация' :
+                     locale === 'mn' ? 'Үнэгүй зөвлөгөө' :
+                     'Get Free Consultation'}
+                  </h4>
+                  <p className={`text-sm mb-3 ${floatingMessengerCTA.messenger === 'kakao' ? 'text-black/70' : 'text-white/80'}`}>
+                    {locale === 'ko' ? '전문가가 1:1로 상담해드립니다' :
+                     locale === 'ja' ? '専門家が1対1でご相談します' :
+                     locale === 'zh-TW' || locale === 'zh-CN' ? '專家一對一諮詢' :
+                     locale === 'th' ? 'ผู้เชี่ยวชาญให้คำปรึกษา' :
+                     locale === 'ru' ? 'Индивидуальная консультация' :
+                     locale === 'mn' ? 'Мэргэжилтэн зөвлөгөө өгнө' :
+                     'Expert 1-on-1 consultation'}
+                  </p>
+
+                  <div className="flex flex-col gap-2">
+                    <a
+                      href={floatingMessengerCTA.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        floatingMessengerCTA.messenger === 'kakao'
+                          ? 'bg-black text-yellow-400 hover:bg-black/80'
+                          : 'bg-white text-gray-900 hover:bg-white/90'
+                      }`}
+                    >
+                      {floatingMessengerCTA.messenger === 'whatsapp' && (
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                      )}
+                      {floatingMessengerCTA.messenger === 'line' && (
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+                        </svg>
+                      )}
+                      {floatingMessengerCTA.messenger === 'kakao' && (
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 01-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"/>
+                        </svg>
+                      )}
+                      {floatingMessengerCTA.label}
+                    </a>
+
+                    <a
+                      href={`/${locale}/contact`}
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        floatingMessengerCTA.messenger === 'kakao'
+                          ? 'bg-black/20 text-black hover:bg-black/30'
+                          : 'bg-white/20 text-white hover:bg-white/30'
+                      }`}
+                    >
+                      <Phone className="h-4 w-4" />
+                      {locale === 'ko' ? '문의하기' :
+                       locale === 'ja' ? 'お問い合わせ' :
+                       locale === 'zh-TW' || locale === 'zh-CN' ? '聯繫我們' :
+                       locale === 'th' ? 'ติดต่อเรา' :
+                       locale === 'ru' ? 'Связаться' :
+                       locale === 'mn' ? 'Холбогдох' :
+                       'Contact Us'}
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsFloatingExpanded(true)}
+                className={`relative flex items-center justify-center w-14 h-14 rounded-full shadow-2xl ${
+                  floatingMessengerCTA.messenger === 'whatsapp' ? 'bg-gradient-to-br from-green-500 to-green-600' :
+                  floatingMessengerCTA.messenger === 'line' ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
+                  floatingMessengerCTA.messenger === 'kakao' ? 'bg-gradient-to-br from-yellow-400 to-amber-500' :
+                  'bg-gradient-to-br from-violet-500 to-purple-600'
+                }`}
+              >
+                {/* Pulse animation */}
+                <span className={`absolute inset-0 rounded-full animate-ping opacity-30 ${
+                  floatingMessengerCTA.messenger === 'whatsapp' || floatingMessengerCTA.messenger === 'line' ? 'bg-green-400' :
+                  floatingMessengerCTA.messenger === 'kakao' ? 'bg-yellow-400' :
+                  'bg-violet-400'
+                }`} />
+
+                <MessageCircle className={`h-6 w-6 ${floatingMessengerCTA.messenger === 'kakao' ? 'text-black' : 'text-white'}`} />
+
+                {/* Notification badge */}
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  1
+                </span>
+              </motion.button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Hero Image */}
       <div className="relative h-[400px] lg:h-[500px]">
         <Image
@@ -477,154 +665,236 @@ export default function BlogDetailPage() {
             </motion.div>
           )}
 
-          {/* About the Author Section */}
-          {(post.authorPersona || post.generatedAuthor) && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-12"
-            >
-              <Card className="overflow-hidden border-0 shadow-xl">
-                <CardContent className="p-8">
-                  <h2 className="mb-6 text-xl font-bold flex items-center gap-2">
-                    <User className="h-5 w-5 text-violet-500" />
-                    About the Author
-                  </h2>
+          {/* About the Author Section - Always Visible */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-12"
+          >
+            <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-card via-card to-violet-50/20 dark:to-violet-950/20">
+              <CardContent className="p-8">
+                <h2 className="mb-6 text-xl font-bold flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-violet-100 dark:bg-violet-900/30">
+                    <User className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                  </div>
+                  {locale === 'ko' ? '저자 소개' :
+                   locale === 'ja' ? '著者について' :
+                   locale === 'zh-TW' || locale === 'zh-CN' ? '關於作者' :
+                   locale === 'th' ? 'เกี่ยวกับผู้เขียน' :
+                   locale === 'ru' ? 'Об авторе' :
+                   locale === 'mn' ? 'Зохиогчийн тухай' :
+                   'About the Author'}
+                </h2>
 
-                  <div className="flex flex-col sm:flex-row gap-6">
-                    {/* Author Photo */}
-                    <div className="flex-shrink-0">
-                      {post.authorPersona ? (
-                        <Link href={`/${locale}/interpreters/${post.authorPersona.slug}`}>
-                          {post.authorPersona.photo_url ? (
-                            <Image
-                              src={post.authorPersona.photo_url}
-                              alt={getLocalizedAuthorName(post.authorPersona, locale)}
-                              width={120}
-                              height={120}
-                              className="rounded-xl object-cover hover:opacity-90 transition-opacity"
-                            />
-                          ) : (
-                            <div className="h-[120px] w-[120px] rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center hover:opacity-90 transition-opacity">
-                              <User className="h-12 w-12 text-white" />
+                <div className="flex flex-col sm:flex-row gap-6">
+                  {/* Author Photo */}
+                  <div className="flex-shrink-0">
+                    {post.authorPersona ? (
+                      <Link href={`/${locale}/interpreters/${post.authorPersona.slug}`}>
+                        {post.authorPersona.photo_url ? (
+                          <Image
+                            src={post.authorPersona.photo_url}
+                            alt={getLocalizedAuthorName(post.authorPersona, locale)}
+                            width={120}
+                            height={120}
+                            className="rounded-xl object-cover hover:opacity-90 transition-opacity ring-4 ring-violet-100 dark:ring-violet-900/50"
+                          />
+                        ) : (
+                          <div className="h-[120px] w-[120px] rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center hover:opacity-90 transition-opacity ring-4 ring-violet-200 dark:ring-violet-800">
+                            <User className="h-12 w-12 text-white" />
+                          </div>
+                        )}
+                      </Link>
+                    ) : (
+                      <div className="h-[120px] w-[120px] rounded-xl bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 flex items-center justify-center ring-4 ring-violet-200 dark:ring-violet-800">
+                        <div className="text-center">
+                          <Sparkles className="h-10 w-10 text-white mx-auto mb-1" />
+                          <span className="text-[10px] text-white/80 font-medium">EXPERT TEAM</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Author Info */}
+                  <div className="flex-1">
+                    {post.authorPersona ? (
+                      <>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Link
+                            href={`/${locale}/interpreters/${post.authorPersona.slug}`}
+                            className="text-lg font-bold hover:text-violet-600 transition-colors"
+                          >
+                            {getLocalizedAuthorName(post.authorPersona, locale)}
+                          </Link>
+                          {post.authorPersona.is_verified && (
+                            <Badge className="bg-blue-500 text-white text-xs gap-1">
+                              <CheckCircle className="h-3 w-3" />
+                              Verified
+                            </Badge>
+                          )}
+                        </div>
+
+                        <p className="text-sm text-violet-600 dark:text-violet-400 mb-3 flex items-center gap-2">
+                          <Award className="h-4 w-4" />
+                          Medical Tourism Interpreter | {post.authorPersona.years_of_experience} Years Experience
+                        </p>
+
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          <Badge variant="secondary" className="bg-violet-100 dark:bg-violet-900/50">
+                            {formatSpecialty(post.authorPersona.primary_specialty)}
+                          </Badge>
+                          {post.authorPersona.secondary_specialties?.slice(0, 2).map((spec) => (
+                            <Badge key={spec} variant="outline">
+                              {formatSpecialty(spec)}
+                            </Badge>
+                          ))}
+                        </div>
+
+                        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                          {post.authorPersona.bio_short_en || post.authorPersona.bio_full_en?.substring(0, 200) + '...'}
+                        </p>
+
+                        {/* Languages & Certifications */}
+                        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-4">
+                          <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-full">
+                            <Globe className="h-3.5 w-3.5 text-violet-500" />
+                            <span>
+                              {post.authorPersona.languages?.map(l => l.code.toUpperCase()).join(', ') || 'KO, EN'}
+                            </span>
+                          </div>
+                          {post.authorPersona.certifications?.length > 0 && (
+                            <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-full">
+                              <Award className="h-3.5 w-3.5 text-amber-500" />
+                              <span>{post.authorPersona.certifications[0]}</span>
                             </div>
                           )}
-                        </Link>
-                      ) : (
-                        <div className="h-[120px] w-[120px] rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                          <User className="h-12 w-12 text-white" />
                         </div>
-                      )}
-                    </div>
 
-                    {/* Author Info */}
-                    <div className="flex-1">
-                      {post.authorPersona ? (
-                        <>
-                          <div className="flex items-center gap-2 mb-2">
-                            <Link
-                              href={`/${locale}/interpreters/${post.authorPersona.slug}`}
-                              className="text-lg font-bold hover:text-violet-600 transition-colors"
-                            >
-                              {getLocalizedAuthorName(post.authorPersona, locale)}
-                            </Link>
-                            {post.authorPersona.is_verified && (
-                              <Badge className="bg-blue-500 text-white text-xs">Verified</Badge>
-                            )}
-                          </div>
-
-                          <p className="text-sm text-violet-600 dark:text-violet-400 mb-3">
-                            Medical Tourism Interpreter | {post.authorPersona.years_of_experience} Years Experience
-                          </p>
-
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            <Badge variant="secondary">
-                              {formatSpecialty(post.authorPersona.primary_specialty)}
-                            </Badge>
-                            {post.authorPersona.secondary_specialties?.slice(0, 2).map((spec) => (
-                              <Badge key={spec} variant="outline">
-                                {formatSpecialty(spec)}
-                              </Badge>
-                            ))}
-                          </div>
-
-                          <p className="text-sm text-muted-foreground mb-4">
-                            {post.authorPersona.bio_short_en || post.authorPersona.bio_full_en?.substring(0, 200) + '...'}
-                          </p>
-
-                          {/* Languages & Certifications */}
-                          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-4">
-                            <div className="flex items-center gap-1">
-                              <MessageCircle className="h-3 w-3" />
-                              <span>
-                                {post.authorPersona.languages?.map(l => l.code.toUpperCase()).join(', ') || 'KO, EN'}
-                              </span>
-                            </div>
-                            {post.authorPersona.certifications?.length > 0 && (
-                              <div className="flex items-center gap-1">
-                                <Sparkles className="h-3 w-3" />
-                                <span>{post.authorPersona.certifications[0]}</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* View Profile Button */}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2"
-                            asChild
-                          >
-                            <Link href={`/${locale}/interpreters/${post.authorPersona.slug}`}>
-                              <User className="h-4 w-4" />
-                              {locale === 'ko' ? '프로필 보기' :
-                               locale === 'ja' ? 'プロフィールを見る' :
-                               locale === 'zh-TW' || locale === 'zh-CN' ? '查看個人資料' :
-                               locale === 'th' ? 'ดูโปรไฟล์' :
-                               locale === 'ru' ? 'Посмотреть профиль' :
-                               locale === 'mn' ? 'Профайл харах' :
-                               'View Profile'}
-                              <ChevronRight className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                        </>
-                      ) : post.generatedAuthor ? (
-                        <>
-                          <h3 className="text-lg font-bold mb-2">
+                        {/* View Profile Button */}
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="gap-2 bg-violet-600 hover:bg-violet-700"
+                          asChild
+                        >
+                          <Link href={`/${locale}/interpreters/${post.authorPersona.slug}`}>
+                            <User className="h-4 w-4" />
+                            {locale === 'ko' ? '프로필 보기' :
+                             locale === 'ja' ? 'プロフィールを見る' :
+                             locale === 'zh-TW' || locale === 'zh-CN' ? '查看個人資料' :
+                             locale === 'th' ? 'ดูโปรไฟล์' :
+                             locale === 'ru' ? 'Посмотреть профиль' :
+                             locale === 'mn' ? 'Профайл харах' :
+                             'View Profile'}
+                            <ChevronRight className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      </>
+                    ) : post.generatedAuthor ? (
+                      <>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="text-lg font-bold">
                             {post.generatedAuthor.name_en}
                           </h3>
+                          <Badge className="bg-violet-500 text-white text-xs gap-1">
+                            <Sparkles className="h-3 w-3" />
+                            Expert
+                          </Badge>
+                        </div>
 
-                          <p className="text-sm text-violet-600 dark:text-violet-400 mb-3">
-                            Medical Tourism Interpreter | {post.generatedAuthor.years_of_experience} Years Experience
-                          </p>
+                        <p className="text-sm text-violet-600 dark:text-violet-400 mb-3 flex items-center gap-2">
+                          <Award className="h-4 w-4" />
+                          Medical Tourism Interpreter | {post.generatedAuthor.years_of_experience} Years Experience
+                        </p>
 
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {post.generatedAuthor.specialties?.slice(0, 3).map((spec) => (
-                              <Badge key={spec} variant="secondary">
-                                {spec}
-                              </Badge>
-                            ))}
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {post.generatedAuthor.specialties?.slice(0, 3).map((spec) => (
+                            <Badge key={spec} variant="secondary" className="bg-violet-100 dark:bg-violet-900/50">
+                              {spec}
+                            </Badge>
+                          ))}
+                        </div>
+
+                        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                          {post.generatedAuthor.bio_en?.substring(0, 200)}...
+                        </p>
+
+                        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-full">
+                            <Globe className="h-3.5 w-3.5 text-violet-500" />
+                            <span>{post.generatedAuthor.languages?.join(', ') || 'Korean, English'}</span>
                           </div>
+                        </div>
+                      </>
+                    ) : (
+                      /* Default Author - GetCareKorea Team */
+                      <>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="text-lg font-bold">
+                            {getDefaultAuthorName(locale)}
+                          </h3>
+                          <Badge className="bg-gradient-to-r from-violet-500 to-purple-500 text-white text-xs gap-1">
+                            <CheckCircle className="h-3 w-3" />
+                            {locale === 'ko' ? '공식' : 'Official'}
+                          </Badge>
+                        </div>
 
-                          <p className="text-sm text-muted-foreground mb-4">
-                            {post.generatedAuthor.bio_en?.substring(0, 200)}...
-                          </p>
+                        <p className="text-sm text-violet-600 dark:text-violet-400 mb-3 flex items-center gap-2">
+                          <Award className="h-4 w-4" />
+                          {locale === 'ko' ? `의료 관광 전문 팀 | ${DEFAULT_AUTHOR.experience}년 이상 경력` :
+                           `Medical Tourism Experts | ${DEFAULT_AUTHOR.experience}+ Years Experience`}
+                        </p>
 
-                          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <MessageCircle className="h-3 w-3" />
-                              <span>{post.generatedAuthor.languages?.join(', ') || 'Korean, English'}</span>
-                            </div>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {DEFAULT_AUTHOR.specialties.slice(0, 4).map((spec) => (
+                            <Badge key={spec} variant="secondary" className="bg-violet-100 dark:bg-violet-900/50">
+                              {spec}
+                            </Badge>
+                          ))}
+                        </div>
+
+                        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                          {getDefaultAuthorBio(locale)}
+                        </p>
+
+                        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-4">
+                          <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-full">
+                            <Globe className="h-3.5 w-3.5 text-violet-500" />
+                            <span>{DEFAULT_AUTHOR.languages.slice(0, 4).join(', ')}</span>
                           </div>
-                        </>
-                      ) : null}
-                    </div>
+                          <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-full">
+                            <Award className="h-3.5 w-3.5 text-amber-500" />
+                            <span>{DEFAULT_AUTHOR.certifications[0]}</span>
+                          </div>
+                        </div>
+
+                        {/* Contact Team Button */}
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+                          asChild
+                        >
+                          <Link href={`/${locale}/contact`}>
+                            <MessageCircle className="h-4 w-4" />
+                            {locale === 'ko' ? '팀에 문의하기' :
+                             locale === 'ja' ? 'チームに連絡' :
+                             locale === 'zh-TW' || locale === 'zh-CN' ? '聯繫團隊' :
+                             locale === 'th' ? 'ติดต่อทีม' :
+                             locale === 'ru' ? 'Связаться с командой' :
+                             locale === 'mn' ? 'Багтай холбогдох' :
+                             'Contact Our Team'}
+                            <ChevronRight className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      </>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Locale-Specific CTA */}
           <motion.div

@@ -23,6 +23,7 @@ type Params = { params: Promise<{ slug: string }> };
 // Map locale to database field suffix
 const localeFieldMap: Record<string, string> = {
   en: 'en',
+  ko: 'ko',
   'zh-TW': 'zh_tw',
   'zh-CN': 'zh_cn',
   ja: 'ja',
