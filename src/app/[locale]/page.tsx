@@ -1,15 +1,39 @@
 import { setRequestLocale } from 'next-intl/server';
+import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
+
+// Critical above-the-fold components - load immediately
 import { HeroSection } from '@/components/landing/HeroSection';
 import { TrustBanner } from '@/components/landing/TrustBanner';
-import { CategoriesSection } from '@/components/landing/CategoriesSection';
-import { WhyPlatformSection } from '@/components/landing/WhyPlatformSection';
-import { FreeInterpreterBanner } from '@/components/landing/FreeInterpreterBanner';
-import { PriceComparisonSection } from '@/components/landing/PriceComparisonSection';
-import { FeaturedHospitalsSection } from '@/components/landing/FeaturedHospitalsSection';
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
-import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
-import { LocalInfoSection } from '@/components/landing/LocalInfoSection';
-import { CTASection } from '@/components/landing/CTASection';
+
+// Below-the-fold components - lazy load for faster initial page load
+const CategoriesSection = dynamic(() => import('@/components/landing/CategoriesSection').then(mod => ({ default: mod.CategoriesSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100" />,
+});
+const WhyPlatformSection = dynamic(() => import('@/components/landing/WhyPlatformSection').then(mod => ({ default: mod.WhyPlatformSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-50" />,
+});
+const FreeInterpreterBanner = dynamic(() => import('@/components/landing/FreeInterpreterBanner').then(mod => ({ default: mod.FreeInterpreterBanner })), {
+  loading: () => <div className="h-48 animate-pulse bg-violet-50" />,
+});
+const PriceComparisonSection = dynamic(() => import('@/components/landing/PriceComparisonSection').then(mod => ({ default: mod.PriceComparisonSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100" />,
+});
+const FeaturedHospitalsSection = dynamic(() => import('@/components/landing/FeaturedHospitalsSection').then(mod => ({ default: mod.FeaturedHospitalsSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-50" />,
+});
+const HowItWorksSection = dynamic(() => import('@/components/landing/HowItWorksSection').then(mod => ({ default: mod.HowItWorksSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100" />,
+});
+const TestimonialsSection = dynamic(() => import('@/components/landing/TestimonialsSection').then(mod => ({ default: mod.TestimonialsSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-50" />,
+});
+const LocalInfoSection = dynamic(() => import('@/components/landing/LocalInfoSection').then(mod => ({ default: mod.LocalInfoSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-gray-100" />,
+});
+const CTASection = dynamic(() => import('@/components/landing/CTASection').then(mod => ({ default: mod.CTASection })), {
+  loading: () => <div className="h-64 animate-pulse bg-violet-100" />,
+});
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -21,38 +45,48 @@ export default async function HomePage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col overflow-x-hidden">
-      {/* Hero with AI Chat */}
+      {/* Hero with AI Chat - Critical, loads first */}
       <HeroSection />
 
-      {/* Trust Indicators */}
+      {/* Trust Indicators - Critical, loads first */}
       <TrustBanner />
 
-      {/* Medical Categories */}
-      <CategoriesSection />
+      {/* Below-the-fold content - Lazy loaded */}
+      <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
+        <CategoriesSection />
+      </Suspense>
 
-      {/* Why Book Through Platform */}
-      <WhyPlatformSection />
+      <Suspense fallback={<div className="h-96 animate-pulse bg-gray-50" />}>
+        <WhyPlatformSection />
+      </Suspense>
 
-      {/* Free Interpreter Event */}
-      <FreeInterpreterBanner />
+      <Suspense fallback={<div className="h-48 animate-pulse bg-violet-50" />}>
+        <FreeInterpreterBanner />
+      </Suspense>
 
-      {/* Price Comparison */}
-      <PriceComparisonSection />
+      <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
+        <PriceComparisonSection />
+      </Suspense>
 
-      {/* Featured Hospitals */}
-      <FeaturedHospitalsSection />
+      <Suspense fallback={<div className="h-96 animate-pulse bg-gray-50" />}>
+        <FeaturedHospitalsSection />
+      </Suspense>
 
-      {/* How It Works */}
-      <HowItWorksSection />
+      <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
+        <HowItWorksSection />
+      </Suspense>
 
-      {/* Testimonials */}
-      <TestimonialsSection />
+      <Suspense fallback={<div className="h-96 animate-pulse bg-gray-50" />}>
+        <TestimonialsSection />
+      </Suspense>
 
-      {/* Local Info (Restaurants, Accommodation, Pickup) */}
-      <LocalInfoSection />
+      <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
+        <LocalInfoSection />
+      </Suspense>
 
-      {/* Final CTA */}
-      <CTASection />
+      <Suspense fallback={<div className="h-64 animate-pulse bg-violet-100" />}>
+        <CTASection />
+      </Suspense>
     </div>
   );
 }

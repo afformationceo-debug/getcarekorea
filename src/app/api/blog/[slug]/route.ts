@@ -15,6 +15,9 @@ import {
 } from '@/lib/api/error-handler';
 import type { BlogPost } from '@/types/database';
 
+// Cache blog posts for 60 seconds
+export const revalidate = 60;
+
 type Params = { params: Promise<{ slug: string }> };
 
 // Map locale to database field suffix

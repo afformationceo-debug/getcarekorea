@@ -15,6 +15,10 @@ import {
 } from '@/lib/api/error-handler';
 import type { BlogPost } from '@/types/database';
 
+// Enable edge runtime for faster cold starts
+export const runtime = 'nodejs';
+export const revalidate = 60; // Cache for 60 seconds
+
 // Map locale to database field suffix
 const localeFieldMap: Record<string, string> = {
   en: 'en',
@@ -62,10 +66,22 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'published_at';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
-    // Build query
+    // Build query - select only required fields for list view (faster)
+    const selectFields = [
+      'id', 'slug', 'category', 'tags', 'author_id', 'featured_image',
+      'published_at', 'view_count', 'status',
+      'title_en', 'excerpt_en',
+      'title_zh_tw', 'excerpt_zh_tw',
+      'title_zh_cn', 'excerpt_zh_cn',
+      'title_ja', 'excerpt_ja',
+      'title_th', 'excerpt_th',
+      'title_mn', 'excerpt_mn',
+      'title_ru', 'excerpt_ru',
+    ].join(',');
+
     let query = supabase
       .from('blog_posts')
-      .select('*', { count: 'exact' })
+      .select(selectFields, { count: 'exact' })
       .eq('status', 'published')
       .not('published_at', 'is', null);
 
@@ -107,13 +123,8 @@ export async function GET(request: NextRequest) {
       throw new APIError(ErrorCode.DATABASE_ERROR, undefined, undefined, locale);
     }
 
-    // Transform data with locale-specific fields (excluding content for list view)
-    const posts = (data || []).map(post => {
-      const transformed = transformBlogPost(post, locale);
-      // Remove content for list view to reduce payload
-      const { content_en, content_zh_tw, content_zh_cn, content_ja, content_th, content_mn, content_ru, content, ...rest } = transformed;
-      return rest;
-    });
+    // Transform data with locale-specific fields
+    const posts = (data || []).map(post => transformBlogPost(post, locale));
 
     return createSuccessResponse(posts, {
       page,
