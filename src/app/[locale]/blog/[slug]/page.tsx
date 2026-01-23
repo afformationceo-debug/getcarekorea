@@ -30,6 +30,10 @@ import {
   CheckCircle,
   Award,
   Globe,
+  Bot,
+  Zap,
+  FileText,
+  ListChecks,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -583,6 +587,203 @@ export default function BlogDetailPage() {
                       onClick={() => navigator.clipboard.writeText(window.location.href)}
                     >
                       <Link2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* AI Summary Section - AEO Style */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-8"
+          >
+            <Card className="overflow-hidden border-2 border-violet-200 dark:border-violet-800 shadow-xl bg-gradient-to-br from-violet-50 via-white to-purple-50 dark:from-violet-950/50 dark:via-background dark:to-purple-950/50">
+              <CardContent className="p-6 lg:p-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg">
+                    <Bot className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg flex items-center gap-2">
+                      {locale === 'ko' ? 'AI 요약' :
+                       locale === 'ja' ? 'AI要約' :
+                       locale === 'zh-TW' || locale === 'zh-CN' ? 'AI摘要' :
+                       locale === 'th' ? 'สรุป AI' :
+                       locale === 'ru' ? 'AI Резюме' :
+                       locale === 'mn' ? 'AI Хураангуй' :
+                       'AI Summary'}
+                      <Badge className="bg-gradient-to-r from-violet-500 to-purple-500 text-white text-[10px] px-2 py-0.5">
+                        <Zap className="h-3 w-3 mr-1" />
+                        {locale === 'ko' ? '자동 생성' : 'Auto-generated'}
+                      </Badge>
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {locale === 'ko' ? '이 글의 핵심 내용을 빠르게 파악하세요' :
+                       locale === 'ja' ? 'この記事の要点を素早く把握' :
+                       'Quick overview of this article\'s key points'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Key Takeaways */}
+                  <div className="p-4 rounded-xl bg-white/60 dark:bg-white/5 border border-violet-100 dark:border-violet-800">
+                    <h4 className="font-semibold text-sm mb-3 flex items-center gap-2 text-violet-700 dark:text-violet-300">
+                      <ListChecks className="h-4 w-4" />
+                      {locale === 'ko' ? '핵심 포인트' :
+                       locale === 'ja' ? 'キーポイント' :
+                       'Key Takeaways'}
+                    </h4>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      {post.excerpt ? (
+                        <>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>{post.excerpt.split('.')[0]}.</span>
+                          </li>
+                          {post.category && (
+                            <li className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                              <span>
+                                {locale === 'ko' ? `카테고리: ${formatCategoryName(post.category)} - 한국 의료 관광 전문 정보` :
+                                 `Category: ${formatCategoryName(post.category)} - Expert medical tourism information in Korea`}
+                              </span>
+                            </li>
+                          )}
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>
+                              {locale === 'ko' ? '전문 의료 코디네이터가 검토한 신뢰할 수 있는 정보' :
+                               'Trusted information reviewed by professional medical coordinators'}
+                            </span>
+                          </li>
+                        </>
+                      ) : (
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span>
+                            {locale === 'ko' ? '한국 의료 관광에 대한 전문적인 가이드' :
+                             'Professional guide to medical tourism in Korea'}
+                          </span>
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 rounded-lg bg-white/60 dark:bg-white/5 border border-violet-100 dark:border-violet-800 text-center">
+                      <Clock className="h-4 w-4 mx-auto mb-1 text-violet-500" />
+                      <p className="text-xs text-muted-foreground">
+                        {locale === 'ko' ? '읽기 시간' : 'Read time'}
+                      </p>
+                      <p className="font-semibold text-sm">{getReadTime(post.content)}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-white/60 dark:bg-white/5 border border-violet-100 dark:border-violet-800 text-center">
+                      <Eye className="h-4 w-4 mx-auto mb-1 text-violet-500" />
+                      <p className="text-xs text-muted-foreground">
+                        {locale === 'ko' ? '조회수' : 'Views'}
+                      </p>
+                      <p className="font-semibold text-sm">{post.view_count.toLocaleString()}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-white/60 dark:bg-white/5 border border-violet-100 dark:border-violet-800 text-center">
+                      <FileText className="h-4 w-4 mx-auto mb-1 text-violet-500" />
+                      <p className="text-xs text-muted-foreground">
+                        {locale === 'ko' ? '카테고리' : 'Category'}
+                      </p>
+                      <p className="font-semibold text-sm truncate">{formatCategoryName(post.category || 'General')}</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Author Profile Section (Top) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className="mb-8"
+          >
+            <Card className="overflow-hidden border border-border/50 shadow-lg">
+              <CardContent className="p-5 lg:p-6">
+                <div className="flex items-center gap-4">
+                  {/* Author Avatar */}
+                  {post.authorPersona ? (
+                    <Link href={`/${locale}/interpreters/${post.authorPersona.slug}`} className="flex-shrink-0">
+                      {post.authorPersona.photo_url ? (
+                        <Image
+                          src={post.authorPersona.photo_url}
+                          alt={getLocalizedAuthorName(post.authorPersona, locale)}
+                          width={64}
+                          height={64}
+                          className="rounded-full object-cover ring-2 ring-violet-200 dark:ring-violet-800 hover:ring-violet-400 transition-all"
+                        />
+                      ) : (
+                        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center ring-2 ring-violet-200 dark:ring-violet-800">
+                          <User className="h-7 w-7 text-white" />
+                        </div>
+                      )}
+                    </Link>
+                  ) : (
+                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 flex items-center justify-center ring-2 ring-violet-200 dark:ring-violet-800 flex-shrink-0">
+                      <Sparkles className="h-7 w-7 text-white" />
+                    </div>
+                  )}
+
+                  {/* Author Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {post.authorPersona ? (
+                        <Link
+                          href={`/${locale}/interpreters/${post.authorPersona.slug}`}
+                          className="font-bold hover:text-violet-600 transition-colors"
+                        >
+                          {getLocalizedAuthorName(post.authorPersona, locale)}
+                        </Link>
+                      ) : (
+                        <span className="font-bold">{getDefaultAuthorName(locale)}</span>
+                      )}
+                      <Badge className="bg-gradient-to-r from-violet-500 to-purple-500 text-white text-[10px]">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        {locale === 'ko' ? '인증됨' : 'Verified'}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {post.authorPersona ? (
+                        <>Medical Tourism Expert | {post.authorPersona.years_of_experience} Years</>
+                      ) : (
+                        <>{locale === 'ko' ? '의료 관광 전문 팀' : 'Medical Tourism Expert Team'}</>
+                      )}
+                    </p>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {formatDate(post.published_at)}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Globe className="h-3 w-3" />
+                        {post.authorPersona?.languages?.slice(0, 3).map(l => l.code.toUpperCase()).join(', ') || 'KO, EN, JA'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* CTA Button */}
+                  <div className="hidden sm:block flex-shrink-0">
+                    <Button
+                      size="sm"
+                      className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+                      asChild
+                    >
+                      <a href={floatingMessengerCTA.link} target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="h-4 w-4 mr-1" />
+                        {locale === 'ko' ? '상담하기' : 'Consult'}
+                      </a>
                     </Button>
                   </div>
                 </div>
