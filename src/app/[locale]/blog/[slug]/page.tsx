@@ -856,7 +856,7 @@ export default function BlogDetailPage() {
             <Card className="overflow-hidden border-0 shadow-xl">
               <CardContent className="p-8 lg:p-12">
                 <div
-                  className="prose prose-lg max-w-none dark:prose-invert"
+                  className="blog-content"
                   dangerouslySetInnerHTML={{
                     __html: (() => {
                       if (!post.content) return '<p>No content available.</p>';
