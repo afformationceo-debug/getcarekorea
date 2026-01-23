@@ -87,6 +87,14 @@ BEGIN
     ) THEN
         ALTER TABLE author_personas ADD COLUMN display_order INTEGER DEFAULT 0;
     END IF;
+
+    -- Messenger ID (phone number for WhatsApp, ID for LINE/WeChat)
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'author_personas' AND column_name = 'messenger_id'
+    ) THEN
+        ALTER TABLE author_personas ADD COLUMN messenger_id TEXT;
+    END IF;
 END $$;
 
 -- ============================================

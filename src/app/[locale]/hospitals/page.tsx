@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { HospitalsPageClient } from './HospitalsPageClient';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -12,8 +13,65 @@ export default async function HospitalsPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  // Mock data - in production, fetch from Supabase
-  const hospitals = [
+  const supabase = await createAdminClient();
+  const localeSuffix = locale.replace('-', '_').toLowerCase();
+
+  // Fetch hospitals from DB
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: hospitalsData } = await (supabase.from('hospitals') as any)
+    .select('*')
+    .eq('status', 'published')
+    .order('is_featured', { ascending: false })
+    .order('avg_rating', { ascending: false });
+
+  const hospitals = (hospitalsData || []).map((h: Record<string, unknown>) => ({
+    id: h.id as string,
+    slug: h.slug as string,
+    name: (h[`name_${localeSuffix}`] || h.name_en || h.name_ko) as string,
+    description: (h[`description_${localeSuffix}`] || h.description_en || h.description_ko) as string,
+    image: (h.cover_image_url || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=600&fit=crop') as string,
+    city: (h.city || 'Seoul') as string,
+    specialties: (h.specialties || []) as string[],
+    languages: (h.languages || ['EN']) as string[],
+    rating: (h.avg_rating || 4.5) as number,
+    reviews: (h.review_count || 0) as number,
+    certifications: (h.certifications || []) as string[],
+    badges: [
+      ...(h.is_featured ? ['Featured'] : []),
+      ...((h.avg_rating as number) >= 4.8 ? ['Top Rated'] : []),
+    ],
+    priceRange: '$1,000 - $10,000',
+    hasCCTV: (h.has_cctv || false) as boolean,
+    hasFemaleDoctor: (h.has_female_doctor || false) as boolean,
+  }));
+
+  // If no data in DB, use fallback data
+  const finalHospitals = hospitals.length > 0 ? hospitals : getFallbackHospitals();
+
+  return (
+    <Suspense fallback={<HospitalsPageSkeleton />}>
+      <HospitalsPageClient hospitals={finalHospitals} locale={locale as Locale} />
+    </Suspense>
+  );
+}
+
+function HospitalsPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-muted/30">
+      <div className="container py-12">
+        <div className="mb-8 h-10 w-64 animate-pulse rounded-lg bg-muted" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-96 animate-pulse rounded-2xl bg-muted" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function getFallbackHospitals() {
+  return [
     {
       id: '1',
       slug: 'grand-plastic-surgery',
@@ -117,25 +175,4 @@ export default async function HospitalsPage({ params }: PageProps) {
       hasFemaleDoctor: true,
     },
   ];
-
-  return (
-    <Suspense fallback={<HospitalsPageSkeleton />}>
-      <HospitalsPageClient hospitals={hospitals} locale={locale as Locale} />
-    </Suspense>
-  );
-}
-
-function HospitalsPageSkeleton() {
-  return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="container py-12">
-        <div className="mb-8 h-10 w-64 animate-pulse rounded-lg bg-muted" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-96 animate-pulse rounded-2xl bg-muted" />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
 }

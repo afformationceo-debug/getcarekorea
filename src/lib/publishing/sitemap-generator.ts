@@ -305,3 +305,43 @@ export async function pingSearchEngines(sitemapUrl: string): Promise<{
 
   return results;
 }
+
+// =====================================================
+// SIMPLIFIED EXPORTS FOR CRON
+// =====================================================
+
+/**
+ * 사이트맵 생성 (Cron Job용 간소화 버전)
+ */
+export async function generateSitemap(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any
+): Promise<{ urlCount: number; xml: string }> {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://getcarekorea.com';
+
+  const result = await generateFullSitemap(supabase, baseUrl);
+
+  return {
+    urlCount: result.urlCount,
+    xml: result.xml,
+  };
+}
+
+/**
+ * Google Search Console에 사이트맵 제출
+ */
+export async function submitSitemapToGoogle(): Promise<{ success: boolean }> {
+  const siteUrl = process.env.GSC_SITE_URL;
+  const sitemapUrl = `${siteUrl}/sitemap.xml`;
+
+  if (!siteUrl) {
+    throw new Error('GSC_SITE_URL not configured');
+  }
+
+  // Google ping endpoint 사용
+  const pingResult = await pingSearchEngines(sitemapUrl);
+
+  return {
+    success: pingResult.google,
+  };
+}

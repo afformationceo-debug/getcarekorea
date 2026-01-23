@@ -15,6 +15,7 @@ import {
   secureLog,
   validateRequired,
 } from '@/lib/api/error-handler';
+import { assignAuthorForKeyword } from '@/lib/content/author-assignment';
 
 export async function GET(request: NextRequest) {
   try {
@@ -140,17 +141,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Auto-assign author based on locale and category
+    const keywordLocale = body.locale || 'en';
+    const keywordCategory = body.category || 'general';
+    const authorAssignment = await assignAuthorForKeyword(keywordLocale, keywordCategory);
+
     // Create keyword - use adminSupabase
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: keyword, error: insertError } = await (adminSupabase.from('content_keywords') as any)
       .insert({
         keyword: body.keyword,
-        category: body.category || 'general',
-        locale: body.locale || 'en',
+        category: keywordCategory,
+        locale: keywordLocale,
         search_volume: body.search_volume || null,
         competition: body.competition || null,
         priority: body.priority || 1,
         status: 'pending',
+        author_persona_id: body.author_persona_id || authorAssignment.authorPersonaId,
       })
       .select()
       .single();
@@ -164,6 +171,7 @@ export async function POST(request: NextRequest) {
       keywordId: keyword.id,
       keyword: keyword.keyword,
       createdBy: user.id,
+      assignedAuthor: authorAssignment.authorName,
     });
 
     return createSuccessResponse({

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import './globals.css';
 
 const geistSans = Geist({
@@ -61,6 +62,9 @@ export const metadata: Metadata = {
   },
 };
 
+// Google Analytics Measurement ID (GA4)
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -69,6 +73,8 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {/* Google Analytics 4 */}
+        {GA_MEASUREMENT_ID && <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />}
         {children}
       </body>
     </html>

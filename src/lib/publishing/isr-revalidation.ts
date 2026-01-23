@@ -231,3 +231,28 @@ export async function revalidateBlogTags(secret: string): Promise<BatchRevalidat
 
   return result;
 }
+
+// =====================================================
+// SIMPLE TRIGGER FUNCTION FOR CRON
+// =====================================================
+
+/**
+ * ISR 재검증 트리거 (Cron Job용 간소화 버전)
+ */
+export async function triggerISRRevalidation(
+  paths: string[]
+): Promise<{ success: boolean; revalidated: number }> {
+  const secret = process.env.REVALIDATION_SECRET || '';
+
+  if (!secret) {
+    console.warn('REVALIDATION_SECRET not configured');
+    return { success: false, revalidated: 0 };
+  }
+
+  const result = await revalidatePaths(paths, secret);
+
+  return {
+    success: result.failed === 0,
+    revalidated: result.successful,
+  };
+}
