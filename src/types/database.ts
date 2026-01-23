@@ -498,6 +498,7 @@ export interface Database {
           category: string | null;
           tags: string[];
           author_id: string | null;
+          author_persona_id: string | null;
           status: ContentStatus;
           published_at: string | null;
           generation_metadata: Json;
@@ -547,6 +548,7 @@ export interface Database {
           category?: string | null;
           tags?: string[];
           author_id?: string | null;
+          author_persona_id?: string | null;
           status?: ContentStatus;
           published_at?: string | null;
           generation_metadata?: Json;

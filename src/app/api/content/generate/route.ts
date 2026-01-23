@@ -12,9 +12,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { generateSingleLanguageContent } from '@/lib/content/single-content-generator';
+import { generateImages, injectImagesIntoHTML } from '@/lib/content/image-helper';
+import type { ImageMetadata } from '@/lib/content/image-helper';
 import type { Locale } from '@/lib/content/multi-language-generator';
 
-export const maxDuration = 60; // 1 minute (down from 5 minutes)
+export const maxDuration = 300; // 5 minutes (increased for image generation)
 
 // =====================================================
 // POST HANDLER
@@ -108,11 +110,82 @@ export async function POST(request: NextRequest) {
       additionalInstructions,
     });
 
-    // 4. Save to database if requested
+    // 4. Generate images with DALL-E 3 (if enabled and images metadata exists)
+    let finalContent = generatedContent.content;
+    let generatedImageResults: any[] = [];
+    let totalImageCost = 0;
+
+    if (includeImages && generatedContent.images && generatedContent.images.length > 0) {
+      console.log(`   🎨 Generating ${generatedContent.images.length} images with DALL-E 3...`);
+
+      try {
+        const imageMetadata: ImageMetadata[] = generatedContent.images.map(img => ({
+          position: img.position,
+          placeholder: img.placeholder,
+          prompt: img.prompt,
+          alt: img.alt,
+          caption: img.caption,
+          contextBefore: img.contextBefore,
+          contextAfter: img.contextAfter,
+        }));
+
+        const imageResult = await generateImages({
+          images: imageMetadata,
+          keyword,
+          locale,
+          size: '1024x1024',
+          quality: 'hd',
+          style: 'natural',
+        });
+
+        generatedImageResults = imageResult.images;
+        totalImageCost = imageResult.total_cost;
+
+        // Inject generated images into HTML content
+        if (imageResult.images.length > 0) {
+          finalContent = injectImagesIntoHTML(generatedContent.content, imageResult.images);
+          console.log(`   ✅ ${imageResult.images.length} images generated and injected`);
+        }
+
+        if (imageResult.errors.length > 0) {
+          console.warn(`   ⚠️  ${imageResult.errors.length} images failed to generate`);
+        }
+      } catch (imageError: any) {
+        console.error(`   ❌ Image generation failed:`, imageError.message);
+        // Continue without images - don't fail the entire request
+      }
+    }
+
+    // 5. Save to database if requested
     let savedDraft = null;
+    const totalCost = generatedContent.estimatedCost + totalImageCost;
 
     if (autoSave) {
       console.log(`   💾 Saving to database...`);
+
+      // Use admin client to bypass RLS
+      const adminClient = await createAdminClient();
+
+      // Find matching author persona for this locale
+      let authorPersonaId: string | null = null;
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: personas } = await (adminClient.from('author_personas') as any)
+          .select('id, slug, target_locales, primary_specialty')
+          .eq('is_active', true)
+          .contains('target_locales', [locale]);
+
+        if (personas && personas.length > 0) {
+          // Try to find one with matching specialty
+          const matchingSpecialty = personas.find(
+            (p: { primary_specialty: string }) => p.primary_specialty === category
+          );
+          authorPersonaId = matchingSpecialty?.id || personas[0].id;
+          console.log(`   ✅ Matched author persona: ${matchingSpecialty?.slug || personas[0].slug}`);
+        }
+      } catch (personaError: unknown) {
+        console.warn(`   ⚠️  Could not find author persona:`, personaError instanceof Error ? personaError.message : 'Unknown error');
+      }
 
       // Generate slug from keyword
       const slug = `${keyword.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')}-${Date.now()}`;
@@ -124,12 +197,13 @@ export async function POST(request: NextRequest) {
       const localeField = (base: string) => `${base}_${normalizedLocale}`;
 
       // Prepare blog_posts insert with locale-specific fields
-      const blogPostData: any = {
+      // Use finalContent which has images injected
+      const blogPostData: Record<string, unknown> = {
         slug,
-        // Set locale-specific fields
+        // Set locale-specific fields (use finalContent with injected images)
         [localeField('title')]: generatedContent.title,
         [localeField('excerpt')]: generatedContent.excerpt,
-        [localeField('content')]: generatedContent.content,
+        [localeField('content')]: finalContent,
         [localeField('meta_title')]: generatedContent.metaTitle,
         [localeField('meta_description')]: generatedContent.metaDescription,
 
@@ -139,14 +213,15 @@ export async function POST(request: NextRequest) {
         // Common fields
         category,
         tags: generatedContent.tags,
-        author_id: null, // Author info stored in generation_metadata instead
+        author_id: null, // Legacy field - use author_persona_id instead
+        author_persona_id: authorPersonaId, // Link to author_personas table
         status: 'draft',
 
         // Metadata (stored as JSONB)
         generation_metadata: {
           keyword,
           locale,
-          estimatedCost: generatedContent.estimatedCost,
+          estimatedCost: totalCost,
           generationTimestamp: generatedContent.generationTimestamp,
           includeRAG,
           includeImages,
@@ -155,14 +230,13 @@ export async function POST(request: NextRequest) {
           faqSchema: generatedContent.faqSchema,
           howToSchema: generatedContent.howToSchema,
           images: generatedContent.images,
+          generatedImages: generatedImageResults,
+          imageCost: totalImageCost,
           internalLinks: generatedContent.internalLinks || [],
         },
       };
-
-      // Use admin client to bypass RLS for blog_posts insert
-      const adminClient = await createAdminClient();
-      const { data: draft, error: saveError } = await adminClient
-        .from('blog_posts')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: draft, error: saveError } = await (adminClient.from('blog_posts') as any)
         .insert(blogPostData)
         .select()
         .single();
@@ -192,8 +266,8 @@ export async function POST(request: NextRequest) {
       console.log(`   ✅ Saved to database: ${draft.id}`);
 
       // Update keyword status and link to blog post (use admin client for RLS bypass)
-      const { error: keywordUpdateError } = await adminClient
-        .from('content_keywords')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: keywordUpdateError } = await (adminClient.from('content_keywords') as any)
         .update({
           blog_post_id: draft.id,
           status: 'generated',
@@ -209,12 +283,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 5. Return success response
+    // 6. Return success response
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
 
     console.log(`\n✅ Content generation complete!`);
     console.log(`   Total time: ${totalTime}s`);
-    console.log(`   Cost: $${generatedContent.estimatedCost.toFixed(4)}`);
+    console.log(`   Content cost: $${generatedContent.estimatedCost.toFixed(4)}`);
+    console.log(`   Image cost: $${totalImageCost.toFixed(4)}`);
+    console.log(`   Total cost: $${totalCost.toFixed(4)}`);
+    console.log(`   Images generated: ${generatedImageResults.length}`);
     console.log(`   Saved: ${autoSave && savedDraft ? 'Yes' : 'No'}`);
 
     return NextResponse.json(
@@ -227,7 +304,7 @@ export async function POST(request: NextRequest) {
           category,
           title: generatedContent.title,
           excerpt: generatedContent.excerpt,
-          content: generatedContent.content,
+          content: finalContent,
           contentFormat: 'html',
           metaTitle: generatedContent.metaTitle,
           metaDescription: generatedContent.metaDescription,
@@ -236,11 +313,15 @@ export async function POST(request: NextRequest) {
           faqSchema: generatedContent.faqSchema,
           howToSchema: generatedContent.howToSchema,
           images: generatedContent.images,
+          generatedImages: generatedImageResults,
           internalLinks: generatedContent.internalLinks,
         },
         saved: autoSave && !!savedDraft,
         meta: {
-          estimatedCost: generatedContent.estimatedCost,
+          estimatedCost: totalCost,
+          contentCost: generatedContent.estimatedCost,
+          imageCost: totalImageCost,
+          imagesGenerated: generatedImageResults.length,
           generationTime: `${totalTime}s`,
           generatedAt: generatedContent.generationTimestamp,
           savedToDraft: autoSave && !!savedDraft,

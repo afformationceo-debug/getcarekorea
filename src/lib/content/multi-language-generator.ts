@@ -86,7 +86,7 @@ export interface MultiLanguageContent {
   sourceContent: GeneratedContent;
   translations: Map<Locale, GeneratedContent>;
   hreflangTags: Array<{
-    locale: Locale;
+    locale: Locale | 'x-default';
     url: string;
   }>;
   generationTimestamp: string;
@@ -442,13 +442,5 @@ export function getLocaleFlag(locale: Locale): string {
 
 // =====================================================
 // EXPORTS
-// =====================================================
-
-export {
-  generateMultiLanguageContent as default,
-  generateMultiLanguageContent,
-  generateHreflangTags,
-  formatHreflangTags,
-  getLocaleDisplayName,
-  getLocaleFlag,
-};
+// Default export
+export default generateMultiLanguageContent;

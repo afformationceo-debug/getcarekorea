@@ -9,15 +9,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+type Params = { params: Promise<{ id: string }> };
+
 // =====================================================
 // GET HANDLER
 // =====================================================
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: Params
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Check authentication
@@ -29,8 +32,6 @@ export async function GET(
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const { id } = params;
 
     // Fetch draft
     const { data: draft, error } = await supabase
@@ -50,13 +51,13 @@ export async function GET(
       success: true,
       draft,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to fetch draft:', error);
 
     return NextResponse.json(
       {
         error: 'Failed to fetch draft',
-        message: error.message,
+        message: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
@@ -69,9 +70,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: Params
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Check authentication
@@ -84,12 +86,11 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
     const updates = await request.json();
 
     // Update draft
-    const { data: draft, error } = await supabase
-      .from('content_drafts')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: draft, error } = await (supabase.from('content_drafts') as any)
       .update({
         ...updates,
         updated_at: new Date().toISOString(),
@@ -106,13 +107,13 @@ export async function PUT(
       success: true,
       draft,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to update draft:', error);
 
     return NextResponse.json(
       {
         error: 'Failed to update draft',
-        message: error.message,
+        message: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
@@ -125,9 +126,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: Params
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Check authentication
@@ -139,8 +141,6 @@ export async function DELETE(
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const { id } = params;
 
     // Delete draft
     const { error } = await supabase
@@ -156,13 +156,13 @@ export async function DELETE(
       success: true,
       deleted: id,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to delete draft:', error);
 
     return NextResponse.json(
       {
         error: 'Failed to delete draft',
-        message: error.message,
+        message: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

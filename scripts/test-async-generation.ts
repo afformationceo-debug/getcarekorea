@@ -32,6 +32,8 @@ async function testAsyncGeneration() {
     .eq('status', 'pending')
     .limit(1);
 
+  let keywordsList = keywords;
+
   if (fetchError || !keywords || keywords.length === 0) {
     console.log('No pending keywords. Creating test keyword...');
 
@@ -49,15 +51,15 @@ async function testAsyncGeneration() {
       .select()
       .single();
 
-    if (insertError) {
+    if (insertError || !newKeyword) {
       console.error('Error creating keyword:', insertError);
       return;
     }
 
-    keywords.push(newKeyword);
+    keywordsList = [newKeyword];
   }
 
-  const keyword = keywords[0];
+  const keyword = keywordsList![0];
   console.log(`   Found: "${keyword.keyword}" (${keyword.locale})\n`);
 
   // 2. Simulate API flow - update status to generating

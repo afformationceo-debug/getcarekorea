@@ -61,18 +61,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch content draft
-    const { data: draft, error: fetchError } = await supabase
-      .from('content_drafts')
+    // Try fetching from blog_posts first, then fallback to content_drafts
+    let draft: any = null;
+    let tableName = 'blog_posts';
+
+    // First try blog_posts table
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: blogPost, error: blogError } = await (supabase.from('blog_posts') as any)
       .select('*')
       .eq('id', contentDraftId)
       .single();
 
-    if (fetchError || !draft) {
-      return NextResponse.json(
-        { error: 'Content draft not found' },
-        { status: 404 }
-      );
+    if (blogPost && !blogError) {
+      // Map blog_posts fields to expected format
+      const metadata = (blogPost.generation_metadata || {}) as Record<string, any>;
+      draft = {
+        id: blogPost.id,
+        keyword_text: metadata.keyword || '',
+        locale: metadata.locale || 'en',
+        category: blogPost.category || 'general',
+        title: blogPost.title_en || blogPost[`title_${(metadata.locale || 'en').replace('-', '_')}`],
+        excerpt: blogPost.excerpt_en || blogPost[`excerpt_${(metadata.locale || 'en').replace('-', '_')}`],
+        content: blogPost.content_en || blogPost[`content_${(metadata.locale || 'en').replace('-', '_')}`],
+        meta_title: blogPost.meta_title_en || '',
+        meta_description: blogPost.meta_description_en || '',
+      };
+      tableName = 'blog_posts';
+    } else {
+      // Fallback to content_drafts table
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: contentDraft, error: fetchError } = await (supabase.from('content_drafts') as any)
+        .select('*')
+        .eq('id', contentDraftId)
+        .single();
+
+      if (fetchError || !contentDraft) {
+        return NextResponse.json(
+          { error: 'Content draft not found' },
+          { status: 404 }
+        );
+      }
+      draft = contentDraft;
+      tableName = 'content_drafts';
     }
 
     // 1. Store feedback in Upstash Vector for RAG
@@ -145,21 +175,49 @@ export async function POST(request: NextRequest) {
 
       regeneratedContent = JSON.parse(jsonStr);
 
-      // Update draft with regenerated content
-      const { error: updateError } = await supabase
-        .from('content_drafts')
-        .update({
-          title: regeneratedContent.title,
-          excerpt: regeneratedContent.excerpt,
-          content: regeneratedContent.content,
-          meta_title: regeneratedContent.metaTitle,
-          meta_description: regeneratedContent.metaDescription,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', contentDraftId);
+      // Update draft with regenerated content based on table type
+      if (tableName === 'blog_posts') {
+        const metadata = (draft as any).generation_metadata as Record<string, any> || {};
+        const localeKey = (metadata.locale || 'en').replace('-', '_');
 
-      if (updateError) {
-        throw updateError;
+        const updateData: Record<string, unknown> = {
+          [`title_${localeKey}`]: regeneratedContent.title,
+          [`excerpt_${localeKey}`]: regeneratedContent.excerpt,
+          [`content_${localeKey}`]: regeneratedContent.content,
+          [`meta_title_${localeKey}`]: regeneratedContent.metaTitle,
+          [`meta_description_${localeKey}`]: regeneratedContent.metaDescription,
+          updated_at: new Date().toISOString(),
+        };
+
+        // Also update title_en if it's the primary locale
+        if (localeKey === 'en') {
+          updateData.title_en = regeneratedContent.title;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: updateError } = await (supabase.from('blog_posts') as any)
+          .update(updateData)
+          .eq('id', contentDraftId);
+
+        if (updateError) {
+          throw updateError;
+        }
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: updateError } = await (supabase.from('content_drafts') as any)
+          .update({
+            title: regeneratedContent.title,
+            excerpt: regeneratedContent.excerpt,
+            content: regeneratedContent.content,
+            meta_title: regeneratedContent.metaTitle,
+            meta_description: regeneratedContent.metaDescription,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', contentDraftId);
+
+        if (updateError) {
+          throw updateError;
+        }
       }
 
       console.log(`✅ Content regenerated and updated`);

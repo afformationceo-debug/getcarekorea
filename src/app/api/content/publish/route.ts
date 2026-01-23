@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
 
 
     // Fetch content draft
-    const { data: draft, error: fetchError } = await supabase
-      .from('content_drafts')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: draft, error: fetchError } = await (supabase.from('content_drafts') as any)
       .select('*')
       .eq('id', contentDraftId)
       .single();
@@ -56,11 +56,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate slug from title
-    const slug = generateSlug(draft.title, draft.locale);
+    const slug = generateSlug(draft.title as string, draft.locale as string);
 
     // Insert or update in blog_posts table
-    const { data: blogPost, error: publishError } = await supabase
-      .from('blog_posts')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: blogPost, error: publishError } = await (supabase.from('blog_posts') as any)
       .upsert(
         {
           slug,
@@ -95,8 +95,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Update draft status
-    await supabase
-      .from('content_drafts')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from('content_drafts') as any)
       .update({
         status: 'published',
         published_at: new Date().toISOString(),

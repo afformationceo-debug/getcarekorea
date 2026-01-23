@@ -887,15 +887,4 @@ Return ONLY the JSON object with translated content. No code blocks.`;
   }
 }
 
-// =====================================================
-// EXPORTS
-// =====================================================
-
-export {
-  type GenerationResult,
-  type GenerationMetadata,
-  type ContentGenerationOptions,
-  type QualityScore,
-  type FAQItem,
-  type HowToStep,
-};
+// Default export - functions are exported inline

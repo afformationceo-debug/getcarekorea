@@ -1,28 +1,75 @@
+'use client';
+
 /**
  * Content Preview Page
  *
  * Preview content as it would appear on the actual blog
  */
 
-import { notFound } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 
-export default async function PreviewPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = await createClient();
+interface Draft {
+  id: string;
+  locale: string;
+  status: string;
+  category: string;
+  created_at: string;
+  author_name?: string;
+  title: string;
+  excerpt?: string;
+  content: string;
+  author_bio?: string;
+  faq_schema?: Array<{ question: string; answer: string }>;
+  tags?: string[];
+}
 
-  // Fetch content draft
-  const { data: draft, error } = await supabase
-    .from('content_drafts')
-    .select('*')
-    .eq('id', params.id)
-    .single();
+export default function PreviewPage() {
+  const params = useParams();
+  const id = params.id as string;
+
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchDraft() {
+      try {
+        const response = await fetch(`/api/content/drafts/${id}`);
+        if (!response.ok) {
+          throw new Error('Draft not found');
+        }
+        const data = await response.json();
+        setDraft(data.data || data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load draft');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (id) {
+      fetchDraft();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-violet-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   if (error || !draft) {
-    notFound();
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Preview Not Found</h1>
+          <p className="text-gray-600">{error || 'The content preview could not be loaded.'}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -131,105 +178,6 @@ export default async function PreviewPage({
         )}
       </article>
 
-      <style jsx global>{`
-        /* Prose styles for HTML content */
-        .prose {
-          color: #374151;
-        }
-
-        .prose h2 {
-          font-size: 1.875rem;
-          font-weight: 700;
-          margin-top: 2.5rem;
-          margin-bottom: 1rem;
-        }
-
-        .prose h3 {
-          font-size: 1.5rem;
-          font-weight: 600;
-          margin-top: 2rem;
-          margin-bottom: 0.75rem;
-        }
-
-        .prose p {
-          margin-bottom: 1.25rem;
-          line-height: 1.75;
-        }
-
-        .prose ul, .prose ol {
-          margin: 1.5rem 0;
-          padding-left: 2rem;
-        }
-
-        .prose li {
-          margin-bottom: 0.5rem;
-        }
-
-        .prose table {
-          width: 100%;
-          margin: 2rem 0;
-          border-collapse: collapse;
-        }
-
-        .prose th {
-          background: #f3f4f6;
-          padding: 0.75rem;
-          text-align: left;
-          font-weight: 600;
-          border: 1px solid #e5e7eb;
-        }
-
-        .prose td {
-          padding: 0.75rem;
-          border: 1px solid #e5e7eb;
-        }
-
-        .prose img {
-          margin: 2rem 0;
-          border-radius: 0.5rem;
-          max-width: 100%;
-          height: auto;
-        }
-
-        .prose .quick-answer {
-          background: #eff6ff;
-          border-left: 4px solid #2563eb;
-          padding: 1.5rem;
-          margin: 2rem 0;
-          border-radius: 0.5rem;
-        }
-
-        .prose .expert-tip {
-          background: #fef3c7;
-          border-left: 4px solid #f59e0b;
-          padding: 1.5rem;
-          margin: 2rem 0;
-          border-radius: 0.5rem;
-        }
-
-        .prose .faq-section {
-          margin: 3rem 0;
-        }
-
-        .prose .faq-item {
-          margin: 1.5rem 0;
-          padding: 1.5rem;
-          background: #f9fafb;
-          border-radius: 0.5rem;
-        }
-
-        .prose .faq-question {
-          font-weight: 600;
-          margin-bottom: 0.75rem;
-        }
-
-        .prose .author-bio {
-          background: #f3f4f6;
-          padding: 2rem;
-          border-radius: 0.5rem;
-          margin: 3rem 0;
-        }
-      `}</style>
     </div>
   );
 }

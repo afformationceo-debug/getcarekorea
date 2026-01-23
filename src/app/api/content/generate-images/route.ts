@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
     console.log(`   Quality: ${quality}`);
 
     // Fetch content draft
-    const { data: contentDraft, error: fetchError } = await supabase
-      .from('content_drafts')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: contentDraft, error: fetchError } = await (supabase.from('content_drafts') as any)
       .select('id, content, images')
       .eq('id', contentDraftId)
       .single();
@@ -112,13 +112,13 @@ export async function POST(request: NextRequest) {
 
     // Inject images into HTML content
     const updatedContent = injectImagesIntoHTML(
-      contentDraft.content,
+      contentDraft.content as string,
       result.images
     );
 
     // Update content draft with generated images
-    const { error: updateError } = await supabase
-      .from('content_drafts')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updateError } = await (supabase.from('content_drafts') as any)
       .update({
         content: updatedContent,
         images: result.images.map((img) => ({
@@ -200,8 +200,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch content draft with images
-    const { data: contentDraft, error } = await supabase
-      .from('content_drafts')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: contentDraft, error } = await (supabase.from('content_drafts') as any)
       .select('id, title, locale, images, created_at, updated_at')
       .eq('id', contentDraftId)
       .single();
@@ -213,7 +213,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const images = contentDraft.images || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const images = (contentDraft.images as any[]) || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const hasGeneratedImages = images.some((img: any) => img.url);
 
     return NextResponse.json({
@@ -223,16 +225,17 @@ export async function GET(request: NextRequest) {
       locale: contentDraft.locale,
       images: images,
       totalImages: images.length,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       generatedImages: images.filter((img: any) => img.url).length,
       hasGeneratedImages,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to fetch images:', error);
 
     return NextResponse.json(
       {
         error: 'Failed to fetch images',
-        message: error.message,
+        message: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

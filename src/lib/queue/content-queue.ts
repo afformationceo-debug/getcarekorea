@@ -151,7 +151,7 @@ export async function dequeueJob(workerId: string): Promise<ContentJob | null> {
       continue;
     }
 
-    const jobId = jobIds[0];
+    const jobId = jobIds[0] as string;
 
     // Try to acquire lock
     const lockAcquired = await acquireLock(jobId, workerId);
@@ -497,17 +497,4 @@ async function processJob(job: ContentJob): Promise<any> {
   return { success: true };
 }
 
-// =====================================================
-// EXPORTS
-// =====================================================
-
-export {
-  enqueueJob,
-  dequeueJob,
-  completeJob,
-  failJob,
-  getJobStatus,
-  getQueueStats,
-  cancelJob,
-  startWorker,
-};
+// Default export - functions are exported inline

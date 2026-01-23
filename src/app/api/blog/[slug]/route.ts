@@ -101,8 +101,25 @@ export async function GET(request: NextRequest, { params }: Params) {
       }));
     }
 
-    // Fetch author info if available
-    if (post.author_id) {
+    // Fetch author info if available (prefer author_persona over legacy author_id)
+    if (post.author_persona_id) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: authorPersona } = await (supabase.from('author_personas') as any)
+        .select('*')
+        .eq('id', post.author_persona_id)
+        .single();
+
+      if (authorPersona) {
+        response.authorPersona = authorPersona;
+        // Also set legacy author for backward compatibility
+        response.author = {
+          id: authorPersona.id,
+          full_name: authorPersona.name_en,
+          avatar_url: authorPersona.photo_url,
+        };
+      }
+    } else if (post.author_id) {
+      // Fallback to legacy author_id
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: author } = await (supabase.from('profiles') as any)
         .select('id, full_name, avatar_url')
@@ -110,6 +127,17 @@ export async function GET(request: NextRequest, { params }: Params) {
         .single();
 
       response.author = author;
+    }
+
+    // Also check generation_metadata for author info (for AI-generated content)
+    if (!response.authorPersona && post.generation_metadata) {
+      const metadata = typeof post.generation_metadata === 'string'
+        ? JSON.parse(post.generation_metadata)
+        : post.generation_metadata;
+
+      if (metadata.author) {
+        response.generatedAuthor = metadata.author;
+      }
     }
 
     const responseTime = Date.now() - startTime;

@@ -491,11 +491,5 @@ Now provide the improved version in the same JSON format:`;
 
 // =====================================================
 // EXPORTS
-// =====================================================
-
-export {
-  buildSystemPromptV4 as default,
-  buildSystemPromptV4,
-  buildTranslationPromptV4,
-  buildImprovementPromptV4,
-};
+// Default export
+export default buildSystemPromptV4;

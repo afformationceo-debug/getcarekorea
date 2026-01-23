@@ -306,3 +306,140 @@ export function formatAuthorAttribution(persona: AuthorPersona, locale: string =
     return `Written by: ${localName} (Medical Interpreter, ${persona.years_of_experience} years)`;
   }
 }
+
+// =====================================================
+// DATABASE PERSONA TYPE (from author_personas table)
+// =====================================================
+
+export interface DBAuthorPersona {
+  id: string;
+  slug: string;
+  name_ko: string;
+  name_en: string;
+  name_zh_tw: string | null;
+  name_zh_cn: string | null;
+  name_ja: string | null;
+  name_th: string | null;
+  name_mn: string | null;
+  name_ru: string | null;
+  photo_url: string | null;
+  years_of_experience: number;
+  target_locales: string[];
+  primary_specialty: string;
+  secondary_specialties: string[];
+  languages: Array<{ code: string; proficiency: string }>;
+  certifications: string[];
+  bio_short_ko: string | null;
+  bio_short_en: string | null;
+  bio_short_zh_tw: string | null;
+  bio_short_zh_cn: string | null;
+  bio_short_ja: string | null;
+  bio_short_th: string | null;
+  bio_short_mn: string | null;
+  bio_short_ru: string | null;
+  bio_full_ko: string | null;
+  bio_full_en: string | null;
+  bio_full_zh_tw: string | null;
+  bio_full_zh_cn: string | null;
+  bio_full_ja: string | null;
+  bio_full_th: string | null;
+  bio_full_mn: string | null;
+  bio_full_ru: string | null;
+  writing_tone: string;
+  writing_perspective: string;
+  preferred_messenger: string | null;
+  messenger_cta_text: Record<string, string>;
+  is_active: boolean;
+  is_verified: boolean;
+  total_posts: number;
+  total_views: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Get localized name from DB persona
+ */
+export function getLocalizedName(persona: DBAuthorPersona, locale: string): string {
+  const localeMap: Record<string, keyof DBAuthorPersona> = {
+    'ko': 'name_ko',
+    'en': 'name_en',
+    'zh-TW': 'name_zh_tw',
+    'zh-CN': 'name_zh_cn',
+    'ja': 'name_ja',
+    'th': 'name_th',
+    'mn': 'name_mn',
+    'ru': 'name_ru',
+  };
+
+  const key = localeMap[locale] || 'name_en';
+  return (persona[key] as string | null) || persona.name_en;
+}
+
+/**
+ * Get localized short bio from DB persona
+ */
+export function getLocalizedBioShort(persona: DBAuthorPersona, locale: string): string {
+  const localeMap: Record<string, keyof DBAuthorPersona> = {
+    'ko': 'bio_short_ko',
+    'en': 'bio_short_en',
+    'zh-TW': 'bio_short_zh_tw',
+    'zh-CN': 'bio_short_zh_cn',
+    'ja': 'bio_short_ja',
+    'th': 'bio_short_th',
+    'mn': 'bio_short_mn',
+    'ru': 'bio_short_ru',
+  };
+
+  const key = localeMap[locale] || 'bio_short_en';
+  return (persona[key] as string | null) || persona.bio_short_en || '';
+}
+
+/**
+ * Get localized full bio from DB persona
+ */
+export function getLocalizedBioFull(persona: DBAuthorPersona, locale: string): string {
+  const localeMap: Record<string, keyof DBAuthorPersona> = {
+    'ko': 'bio_full_ko',
+    'en': 'bio_full_en',
+    'zh-TW': 'bio_full_zh_tw',
+    'zh-CN': 'bio_full_zh_cn',
+    'ja': 'bio_full_ja',
+    'th': 'bio_full_th',
+    'mn': 'bio_full_mn',
+    'ru': 'bio_full_ru',
+  };
+
+  const key = localeMap[locale] || 'bio_full_en';
+  return (persona[key] as string | null) || persona.bio_full_en || '';
+}
+
+/**
+ * Get messenger CTA text from DB persona
+ */
+export function getMessengerCTA(persona: DBAuthorPersona, locale: string): string {
+  if (persona.messenger_cta_text && persona.messenger_cta_text[locale]) {
+    return persona.messenger_cta_text[locale];
+  }
+  // Fallback to English or default
+  return persona.messenger_cta_text?.['en'] || 'Contact Us';
+}
+
+/**
+ * Format specialty for display
+ */
+export function formatSpecialty(specialty: string): string {
+  const specialtyMap: Record<string, string> = {
+    'plastic-surgery': 'Plastic Surgery',
+    'dermatology': 'Dermatology',
+    'dental': 'Dental Care',
+    'health-checkup': 'Health Checkup',
+    'ophthalmology': 'Ophthalmology',
+    'orthopedics': 'Orthopedics',
+    'fertility': 'Fertility Treatment',
+    'hair-transplant': 'Hair Transplant',
+    'general': 'General Medical',
+  };
+
+  return specialtyMap[specialty] || specialty.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}

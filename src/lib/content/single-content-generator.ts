@@ -8,7 +8,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import { buildSystemPromptV4 } from './prompts/system-prompt-v4';
+import { buildSystemPromptV5Fast, LOCALE_CONFIGS } from './prompts/system-prompt-v5-fast';
 import { getAuthorForKeyword } from './persona';
 import { buildEnhancedRAGContext, formatRAGContextForPrompt, type RAGContext } from './rag-helper';
 import type { AuthorPersona } from './persona';
@@ -70,8 +70,14 @@ export interface ContentGenerationOptions {
 // INITIALIZATION
 // =====================================================
 
+// Validate API key at module load time for better error messages
+const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+if (!anthropicApiKey && typeof window === 'undefined') {
+  console.warn('⚠️ ANTHROPIC_API_KEY is not set. Content generation will fail.');
+}
+
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
+  apiKey: anthropicApiKey || 'missing-key',
 });
 
 // =====================================================
@@ -133,15 +139,19 @@ export async function generateSingleLanguageContent(
       estimatedCost += 0.0001;
     }
 
-    // 3. Build system prompt
+    // 3. Build system prompt (v5 with locale-specific features)
     let instructions = additionalInstructions || '';
 
     if (includeImages) {
-      instructions += `\n\nInclude ${imageCount} contextual images throughout the content.`;
+      instructions += `\n\nInclude ${imageCount} PHOTOREALISTIC images throughout the content. No illustrations or infographics.`;
     }
 
-    const systemPrompt = buildSystemPromptV4({
+    // Get locale config for messenger and CTA
+    const localeConfig = LOCALE_CONFIGS[locale] || LOCALE_CONFIGS['en'];
+
+    const systemPrompt = buildSystemPromptV5Fast({
       author,
+      locale,
       ragContext: ragPrompt,
       additionalInstructions: instructions,
     });
@@ -173,7 +183,7 @@ Return your response as pure JSON starting with { and ending with }`;
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 16000,
+      max_tokens: 8000, // Reduced from 16000 - actual output is ~4000 tokens
       temperature: 0.7,
       system: systemPrompt,
       messages: [

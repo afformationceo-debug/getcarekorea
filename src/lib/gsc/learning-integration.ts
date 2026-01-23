@@ -324,13 +324,4 @@ function analyzeHighPerformerContent(content: string, title: string): {
   };
 }
 
-// =====================================================
-// EXPORTS
-// =====================================================
-
-export {
-  calculatePerformanceScore,
-  analyzeHighPerformerContent,
-  isHighPerformer,
-  classifyPerformanceTier,
-};
+// Default export - functions are exported inline

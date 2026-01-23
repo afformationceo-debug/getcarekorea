@@ -459,18 +459,4 @@ export function validateLocalizedHTML(
   };
 }
 
-// =====================================================
-// EXPORTS
-// =====================================================
-
-export {
-  formatCurrency,
-  formatCurrencyRange,
-  formatDate,
-  getPreferredUnits,
-  getLocalizedKeywords,
-  getExampleNames,
-  getGreeting,
-  formatTimeRange,
-  validateLocalizedHTML,
-};
+// All exports are done inline with 'export function'

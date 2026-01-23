@@ -28,6 +28,13 @@ import {
   Sparkles,
   ArrowLeft,
   Key,
+  MessageSquare,
+  Upload,
+  Link as LinkIcon,
+  Loader2,
+  Monitor,
+  Smartphone,
+  Tablet,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -156,7 +163,14 @@ export default function ContentPage() {
   const [previewPost, setPreviewPost] = useState<BlogPost | null>(null);
   const [editPost, setEditPost] = useState<BlogPost | null>(null);
   const [deletePost, setDeletePost] = useState<BlogPost | null>(null);
+  const [feedbackPost, setFeedbackPost] = useState<BlogPost | null>(null);
   const [previewLocale, setPreviewLocale] = useState('en');
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+
+  // Feedback state
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [publishLoading, setPublishLoading] = useState<string | null>(null);
 
   // Action states
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -317,11 +331,99 @@ export default function ContentPage() {
   };
 
   const getKeywordInfo = (post: BlogPost): { keyword: string; locale: string } | null => {
-    const metadata = post.generation_metadata as { keyword?: string; sourceLocale?: string } | null;
+    const metadata = post.generation_metadata as { keyword?: string; sourceLocale?: string; locale?: string } | null;
     if (metadata?.keyword) {
-      return { keyword: metadata.keyword, locale: metadata.sourceLocale || 'en' };
+      return { keyword: metadata.keyword, locale: metadata.locale || metadata.sourceLocale || 'en' };
     }
     return null;
+  };
+
+  // Get published URL
+  const getPublishedUrl = (post: BlogPost): string | null => {
+    if (post.status === 'published' && post.slug) {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://getcarekorea.com';
+      return `${baseUrl}/${currentLocale}/blog/${post.slug}`;
+    }
+    return null;
+  };
+
+  // Handle feedback submission with regeneration
+  const handleFeedbackSubmit = async (regenerate: boolean) => {
+    if (!feedbackPost) return;
+
+    if (regenerate && !feedbackText.trim()) {
+      alert('피드백 내용을 입력해주세요.');
+      return;
+    }
+
+    setFeedbackLoading(true);
+    try {
+      if (regenerate) {
+        // Submit feedback and regenerate content
+        const response = await fetch('/api/content/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contentDraftId: feedbackPost.id,
+            feedbackText: feedbackText,
+            feedbackType: 'edit',
+            regenerate: true,
+          }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert('피드백이 반영되어 콘텐츠가 재생성되었습니다.');
+          setFeedbackPost(null);
+          setFeedbackText('');
+          fetchPosts();
+        } else {
+          alert('피드백 반영 실패: ' + (data.error || data.message));
+        }
+      } else {
+        // Direct publish without feedback
+        await handlePublish(feedbackPost.id);
+        setFeedbackPost(null);
+        setFeedbackText('');
+      }
+    } catch (error) {
+      console.error('Feedback error:', error);
+      alert('피드백 처리 중 오류가 발생했습니다.');
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
+
+  // Handle direct publish - Updates blog_posts table directly
+  const handlePublish = async (postId: string) => {
+    setPublishLoading(postId);
+    try {
+      // Update blog_posts status to 'published' using the existing content API
+      const response = await fetch('/api/content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: postId,
+          status: 'published',
+          published_at: new Date().toISOString(),
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        const post = posts.find(p => p.id === postId);
+        const publishedUrl = post ? `${window.location.origin}/${currentLocale}/blog/${post.slug}` : '';
+        alert(`발행 완료!${publishedUrl ? `\n링크: ${publishedUrl}` : ''}`);
+        fetchPosts();
+      } else {
+        alert('발행 실패: ' + (data.error?.message || data.error || '알 수 없는 오류'));
+      }
+    } catch (error) {
+      console.error('Publish error:', error);
+      alert('발행 중 오류가 발생했습니다.');
+    } finally {
+      setPublishLoading(null);
+    }
   };
 
   // Format date
@@ -496,9 +598,10 @@ export default function ContentPage() {
                   <TableHead>Keyword</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Languages</TableHead>
-                  <TableHead>Quality</TableHead>
-                  <TableHead className="text-right">Views</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Published URL</TableHead>
+                  <TableHead className="text-center">Preview</TableHead>
+                  <TableHead className="text-center">Feedback</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -573,36 +676,61 @@ export default function ContentPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {getQualityScore(post) > 0 ? (
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-16 overflow-hidden rounded-full bg-gray-200">
-                              <div
-                                className={`h-full ${
-                                  getQualityScore(post) >= 90
-                                    ? 'bg-green-500'
-                                    : getQualityScore(post) >= 80
-                                    ? 'bg-yellow-500'
-                                    : 'bg-red-500'
-                                }`}
-                                style={{ width: `${getQualityScore(post)}%` }}
-                              />
-                            </div>
-                            <span className="text-sm">{getQualityScore(post)}%</span>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">N/A</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {post.view_count.toLocaleString()}
-                      </TableCell>
-                      <TableCell>
                         <div className="flex items-center gap-2">
                           {statusIcons[post.status]}
                           <Badge variant={statusBadges[post.status]}>
                             {post.status}
                           </Badge>
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {getPublishedUrl(post) ? (
+                          <div className="flex items-center gap-1">
+                            <a
+                              href={getPublishedUrl(post)!}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-violet-600 hover:text-violet-800 text-sm truncate max-w-[150px] flex items-center gap-1"
+                            >
+                              <LinkIcon className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{post.slug}</span>
+                            </a>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setPreviewPost(post);
+                            setPreviewLocale(getAvailableLocales(post)[0] || 'en');
+                          }}
+                          className="gap-1"
+                        >
+                          <Eye className="h-3 w-3" />
+                          미리보기
+                        </Button>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {post.status !== 'published' ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setFeedbackPost(post);
+                              setPreviewLocale(getAvailableLocales(post)[0] || 'en');
+                            }}
+                            className="gap-1"
+                          >
+                            <MessageSquare className="h-3 w-3" />
+                            피드백
+                          </Button>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">발행됨</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -819,6 +947,37 @@ export default function ContentPage() {
                         </SelectContent>
                       </Select>
                     </div>
+                    {/* Responsive View Toggle */}
+                    <Separator orientation="vertical" className="h-6" />
+                    <div className="flex items-center gap-1 bg-muted rounded-md p-1">
+                      <Button
+                        variant={previewMode === 'desktop' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={() => setPreviewMode('desktop')}
+                        title="Desktop view"
+                      >
+                        <Monitor className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={previewMode === 'tablet' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={() => setPreviewMode('tablet')}
+                        title="Tablet view"
+                      >
+                        <Tablet className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={previewMode === 'mobile' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={() => setPreviewMode('mobile')}
+                        title="Mobile view"
+                      >
+                        <Smartphone className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={statusBadges[previewPost.status]} className="mr-2">
@@ -869,7 +1028,18 @@ export default function ContentPage() {
               </div>
 
               {/* Blog Preview Content - Mimics actual blog page */}
-              <div className="min-h-screen bg-background">
+              <div
+                className={`min-h-screen bg-background mx-auto transition-all duration-300 ${
+                  previewMode === 'mobile'
+                    ? 'max-w-[375px] border-x shadow-lg'
+                    : previewMode === 'tablet'
+                    ? 'max-w-[768px] border-x shadow-lg'
+                    : 'max-w-full'
+                }`}
+                style={{
+                  minHeight: previewMode !== 'desktop' ? 'calc(100vh - 56px)' : undefined,
+                }}
+              >
                 {/* Hero Image */}
                 <div className="relative h-[400px] lg:h-[500px]">
                   <Image
@@ -1195,6 +1365,118 @@ export default function ContentPage() {
                   )}
                   Delete
                 </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Feedback Modal */}
+      <Dialog open={!!feedbackPost} onOpenChange={() => { setFeedbackPost(null); setFeedbackText(''); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-violet-600" />
+              콘텐츠 피드백
+            </DialogTitle>
+            <DialogDescription>
+              콘텐츠를 검토하고 피드백을 제공하거나 바로 발행할 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+
+          {feedbackPost && (
+            <div className="space-y-4">
+              {/* Content Preview Summary */}
+              <div className="p-4 bg-muted rounded-lg space-y-2">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-lg">{getPostTitle(feedbackPost)}</p>
+                    <p className="text-sm text-muted-foreground">/{feedbackPost.slug}</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setPreviewPost(feedbackPost);
+                      setFeedbackPost(null);
+                    }}
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    전체 미리보기
+                  </Button>
+                </div>
+                {getPostExcerpt(feedbackPost, previewLocale) && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {getPostExcerpt(feedbackPost, previewLocale)}
+                  </p>
+                )}
+                {getKeywordInfo(feedbackPost) && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Key className="h-3 w-3 text-violet-500" />
+                    <span className="text-sm text-violet-700">
+                      키워드: {getKeywordInfo(feedbackPost)?.keyword}
+                    </span>
+                    <Badge variant="outline" className="text-xs">
+                      {getKeywordInfo(feedbackPost)?.locale.toUpperCase()}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+
+              {/* Feedback Input */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  피드백 내용 (선택사항)
+                </label>
+                <Textarea
+                  placeholder="개선이 필요한 부분이나 수정 요청 사항을 작성해주세요...&#10;&#10;예시:&#10;- 도입부를 더 간결하게 수정해주세요&#10;- 가격 정보를 업데이트해주세요&#10;- 전문 용어 설명을 추가해주세요"
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  rows={5}
+                  className="resize-none"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  피드백은 AI 학습에 활용되어 향후 콘텐츠 품질 개선에 반영됩니다.
+                </p>
+              </div>
+
+              <Separator />
+
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => { setFeedbackPost(null); setFeedbackText(''); }}
+                  disabled={feedbackLoading}
+                >
+                  취소
+                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleFeedbackSubmit(true)}
+                    disabled={feedbackLoading || !feedbackText.trim()}
+                    className="gap-2"
+                  >
+                    {feedbackLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4" />
+                    )}
+                    피드백 반영 후 재생성
+                  </Button>
+                  <Button
+                    onClick={() => handleFeedbackSubmit(false)}
+                    disabled={feedbackLoading || publishLoading === feedbackPost.id}
+                    className="gap-2 bg-green-600 hover:bg-green-700"
+                  >
+                    {publishLoading === feedbackPost.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    바로 발행
+                  </Button>
+                </div>
               </DialogFooter>
             </div>
           )}

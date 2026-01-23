@@ -365,15 +365,4 @@ Return JSON only. No code blocks.
   };
 }
 
-// =====================================================
-// EXPORTS
-// =====================================================
-
-export {
-  generateLocalePrompt,
-  generateCategoryPrompt,
-  LOCALE_PROMPT_CONFIGS,
-  CATEGORY_PROMPT_CONFIGS,
-  CONTENT_SYSTEM_PROMPT_V3,
-  PROMPT_VERSION,
-};
+// Default export - functions are exported inline

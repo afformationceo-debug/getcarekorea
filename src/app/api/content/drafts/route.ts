@@ -34,10 +34,18 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const search = searchParams.get('search');
     const hreflangGroup = searchParams.get('hreflangGroup');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const sortBy = searchParams.get('sortBy') || 'created_at';
-    const sortOrder = searchParams.get('sortOrder') || 'desc';
+    // Validate and sanitize pagination params
+    const pageParam = parseInt(searchParams.get('page') || '1', 10);
+    const limitParam = parseInt(searchParams.get('limit') || '20', 10);
+    const page = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+    const limit = isNaN(limitParam) ? 20 : Math.min(Math.max(1, limitParam), 100); // Max 100
+
+    // Validate sort parameters (whitelist allowed columns)
+    const allowedSortColumns = ['created_at', 'updated_at', 'title', 'keyword_text', 'status'];
+    const sortBy = allowedSortColumns.includes(searchParams.get('sortBy') || '')
+      ? searchParams.get('sortBy')!
+      : 'created_at';
+    const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc';
 
     const offset = (page - 1) * limit;
 
@@ -64,9 +72,17 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      query = query.or(
-        `keyword_text.ilike.%${search}%,title.ilike.%${search}%`
-      );
+      // Sanitize search input - remove special characters that could affect query
+      const sanitizedSearch = search
+        .replace(/[%_\\'"]/g, '') // Remove SQL wildcards and quotes
+        .substring(0, 100)         // Limit length
+        .trim();
+
+      if (sanitizedSearch) {
+        query = query.or(
+          `keyword_text.ilike.%${sanitizedSearch}%,title.ilike.%${sanitizedSearch}%`
+        );
+      }
     }
 
     // Apply sorting

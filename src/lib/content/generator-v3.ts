@@ -387,11 +387,4 @@ export async function runContentPipelineV3(
   };
 }
 
-// =====================================================
-// EXPORTS
-// =====================================================
-
-export {
-  type FAQItem,
-  type HowToStep,
-};
+// Default export - functions are exported inline
