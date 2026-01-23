@@ -212,6 +212,10 @@ export default function BlogDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Floating CTA state - must be declared before any conditional returns
+  const [showFloatingCTA, setShowFloatingCTA] = useState(false);
+  const [isFloatingExpanded, setIsFloatingExpanded] = useState(false);
+
   useEffect(() => {
     async function fetchPost() {
       setLoading(true);
@@ -237,6 +241,20 @@ export default function BlogDetailPage() {
       fetchPost();
     }
   }, [slug, locale]);
+
+  // Show floating CTA after scrolling - must be declared before any conditional returns
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setShowFloatingCTA(scrollY > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Get messenger config for floating CTA
+  const floatingMessengerCTA = getMessengerCTA(locale, post?.authorPersona);
 
   // Format date
   const formatDate = (dateString: string | null): string => {
@@ -296,24 +314,6 @@ export default function BlogDetailPage() {
       </div>
     );
   }
-
-  // Floating CTA state
-  const [showFloatingCTA, setShowFloatingCTA] = useState(false);
-  const [isFloatingExpanded, setIsFloatingExpanded] = useState(false);
-
-  // Show floating CTA after scrolling
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setShowFloatingCTA(scrollY > 400);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Get messenger config for floating CTA
-  const floatingMessengerCTA = getMessengerCTA(locale, post?.authorPersona);
 
   return (
     <div className="min-h-screen bg-background">
