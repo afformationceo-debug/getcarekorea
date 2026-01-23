@@ -524,9 +524,121 @@ function PreviewContent({ draft, isMobile }: { draft: Draft; isMobile: boolean }
           border-radius: 0.5rem;
           overflow: hidden;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+          width: 100%;
         }
         .preview-content th {
           background: #F3F4F6;
+          padding: 0.75rem 1rem;
+          text-align: left;
+          font-weight: 600;
+        }
+        .preview-content td {
+          padding: 0.75rem 1rem;
+          border-top: 1px solid #E5E7EB;
+        }
+        .preview-content .comparison-table {
+          margin: 1.5rem 0;
+        }
+
+        /* TL;DR Summary Box */
+        .preview-content .tldr-box {
+          background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+          border-left: 4px solid #6366F1;
+          border-radius: 0.75rem;
+          padding: ${isMobile ? '1rem' : '1.5rem'};
+          margin: 1.5rem 0;
+        }
+        .preview-content .tldr-box h3 {
+          color: #4338CA;
+          font-size: ${isMobile ? '1rem' : '1.125rem'};
+          font-weight: 700;
+          margin-bottom: 0.75rem;
+        }
+        .preview-content .tldr-box ul {
+          margin: 0;
+          padding-left: 1.25rem;
+        }
+        .preview-content .tldr-box li {
+          margin-bottom: 0.5rem;
+          color: #374151;
+        }
+
+        /* Highlight Box (Expert Tips) */
+        .preview-content .highlight-box {
+          background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+          border-left: 4px solid #F59E0B;
+          border-radius: 0.75rem;
+          padding: ${isMobile ? '1rem' : '1.25rem'};
+          margin: 1.5rem 0;
+          color: #92400E;
+        }
+
+        /* Warning Box */
+        .preview-content .warning-box {
+          background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+          border-left: 4px solid #EF4444;
+          border-radius: 0.75rem;
+          padding: ${isMobile ? '1rem' : '1.25rem'};
+          margin: 1.5rem 0;
+          color: #991B1B;
+        }
+
+        /* FAQ Section */
+        .preview-content .faq-section {
+          margin-top: 2rem;
+        }
+        .preview-content .faq-item {
+          background: #F9FAFB;
+          border-radius: 0.75rem;
+          padding: ${isMobile ? '1rem' : '1.25rem'};
+          margin-bottom: 1rem;
+          border: 1px solid #E5E7EB;
+        }
+        .preview-content .faq-item h3 {
+          color: #1F2937;
+          font-size: ${isMobile ? '0.95rem' : '1rem'};
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+        }
+        .preview-content .faq-item p {
+          color: #4B5563;
+          margin: 0;
+        }
+
+        /* Strong text emphasis */
+        .preview-content strong {
+          color: #1F2937;
+          font-weight: 600;
+        }
+
+        /* Lists styling */
+        .preview-content ul, .preview-content ol {
+          margin: 1rem 0;
+          padding-left: 1.5rem;
+        }
+        .preview-content li {
+          margin-bottom: 0.5rem;
+          line-height: 1.6;
+        }
+
+        /* H2 Section Headers */
+        .preview-content h2 {
+          margin-top: 2rem;
+          margin-bottom: 1rem;
+          padding-bottom: 0.5rem;
+          border-bottom: 2px solid #E5E7EB;
+          color: #111827;
+        }
+
+        /* Blockquote for expert quotes */
+        .preview-content blockquote {
+          border-left: 4px solid #7C3AED;
+          background: #F5F3FF;
+          padding: 1rem 1.5rem;
+          margin: 1.5rem 0;
+          border-radius: 0 0.75rem 0.75rem 0;
+          font-style: italic;
+          color: #5B21B6;
         }
       `}</style>
 

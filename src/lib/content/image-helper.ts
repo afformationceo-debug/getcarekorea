@@ -368,10 +368,10 @@ export async function generateImages(
 }
 
 /**
- * Enhance DALL-E prompt for PHOTOREALISTIC medical images
+ * Enhance DALL-E prompt for REAL STOCK PHOTO quality
  *
- * Creates prompts that generate realistic, professional photographs
- * NOT illustrations, cartoons, or stylized graphics
+ * Creates prompts that generate images indistinguishable from professional
+ * Getty/Shutterstock medical photography. NO AI-looking artifacts.
  */
 function enhanceImagePrompt(
   basePrompt: string,
@@ -381,42 +381,54 @@ function enhanceImagePrompt(
     style: 'vivid' | 'natural';
   }
 ): string {
-  // CRITICAL: Force photorealistic style - no illustrations or graphics
-  const photoRealisticPrefix = `Photorealistic photograph, shot with Canon EOS R5 camera, 85mm lens, f/2.8 aperture. `;
+  // CRITICAL: Stock photo technical specifications
+  const stockPhotoSpecs = `Professional stock photography, shot on Sony A7R IV full-frame mirrorless camera with Zeiss 35mm f/1.4 lens. `;
 
-  // Clean the base prompt - remove any illustration/graphic keywords
+  // Clean the base prompt - aggressively remove AI/illustration triggers
   let cleaned = basePrompt
-    .replace(/\b(illustration|infographic|diagram|cartoon|graphic|vector|icon|clipart|drawing|sketch|animated|3d render|render)\b/gi, '')
-    .replace(/\b(medical illustration|educational diagram)\b/gi, 'medical photo')
+    .replace(/\b(illustration|infographic|diagram|cartoon|graphic|vector|icon|clipart|drawing|sketch|animated|3d render|render|CGI|digital art|concept art|artistic|stylized)\b/gi, '')
+    .replace(/\b(medical illustration|educational diagram|split composition|morphing)\b/gi, 'medical documentation photo')
+    .replace(/\b(vibrant|vivid|saturated|HDR|hyper|ultra)\b/gi, 'natural')
     .trim();
 
-  // Build enhanced prompt
-  let enhanced = photoRealisticPrefix + cleaned;
+  // Build enhanced prompt with stock photo realism
+  let enhanced = stockPhotoSpecs + cleaned;
 
-  // Add photorealistic quality markers
-  enhanced += `. STYLE: Professional documentary photography, NOT an illustration. `;
-  enhanced += `Real humans with natural skin texture, real medical equipment, actual hospital/clinic environment. `;
-  enhanced += `Natural lighting from windows, soft shadows, shallow depth of field. `;
+  // CRITICAL: Anti-AI artifact instructions
+  enhanced += `. TECHNICAL: ISO 400, 1/125s shutter speed, natural color temperature 5500K. `;
+  enhanced += `Shot in RAW, processed in Lightroom with minimal editing. `;
+  enhanced += `REAL photography characteristics: slight lens distortion at edges, natural bokeh, film-like grain texture. `;
 
-  // Medical content specific enhancements for realism
-  if (/surgery|medical|hospital|clinic|doctor|patient|consultation/i.test(basePrompt)) {
-    enhanced += `Modern Korean medical facility aesthetic - clean white walls, natural wood accents, contemporary design. `;
-    enhanced += `Real medical professionals in white coats, actual patients (diverse ethnicities representing international medical tourists). `;
-    enhanced += `Medical equipment should look authentic and modern, not generic stock photo style. `;
+  // Human realism (most important for medical content)
+  enhanced += `HUMANS: Real people with natural imperfections - visible pores, varied skin tones, asymmetrical features. `;
+  enhanced += `Natural body language, candid expressions, not posed like stock photo clichés. `;
+  enhanced += `Clothing with natural wrinkles and folds. Real hair with flyaways. `;
+
+  // Medical facility realism
+  if (/surgery|medical|hospital|clinic|doctor|patient|consultation|recovery/i.test(basePrompt)) {
+    enhanced += `MEDICAL SETTING: Actual working Korean hospital/clinic environment. `;
+    enhanced += `Real medical equipment with manufacturer branding visible but not prominent. `;
+    enhanced += `Authentic details: papers on desks, real computer screens, medical charts. `;
+    enhanced += `Staff in proper Korean medical uniforms (white coats, scrubs). `;
+    enhanced += `Patients in hospital gowns or casual clothes, not perfect model appearances. `;
   }
 
-  // Location context - Korean aesthetic
-  if (/korea|seoul|korean/i.test(context.keyword.toLowerCase()) ||
-      /korea|seoul|korean/i.test(basePrompt.toLowerCase())) {
-    enhanced += `Location: Premium medical district in Gangnam, Seoul, South Korea. Korean signage visible but subtle. `;
-  } else {
-    enhanced += `Location: Modern medical facility in Seoul, South Korea. `;
-  }
+  // Korean location authenticity
+  enhanced += `LOCATION: Premium Gangnam medical district, Seoul, South Korea. `;
+  enhanced += `Subtle Korean design elements: minimalist interiors, warm wood tones, plants, natural light. `;
+  enhanced += `Korean text on signs/documents visible but not focal point. `;
 
-  // Final quality markers for photorealism
-  enhanced += `QUALITY: 8K resolution, magazine quality, National Geographic style photography. `;
-  enhanced += `NO: illustrations, graphics, text overlays, watermarks, artificial lighting, stock photo clichés. `;
-  enhanced += `YES: authentic moments, natural expressions, professional but warm atmosphere, documentary feel.`;
+  // Lighting (critical for realism)
+  enhanced += `LIGHTING: Large window natural daylight as key light, soft fill from white walls. `;
+  enhanced += `Avoid: harsh shadows, artificial blue tint, overexposed highlights. `;
+  enhanced += `Golden hour warmth for recovery/comfort scenes. Clinical bright for consultation scenes. `;
+
+  // ABSOLUTE PROHIBITIONS
+  enhanced += `ABSOLUTELY NO: AI artifacts, plastic skin texture, uncanny valley faces, `;
+  enhanced += `perfect symmetry, floating objects, warped hands, extra fingers, `;
+  enhanced += `text/watermarks, illustration style, 3D render look, oversaturated colors, `;
+  enhanced += `generic stock photo poses, sterile/empty environments. `;
+  enhanced += `This must be indistinguishable from a real Getty Images medical photography portfolio.`;
 
   return enhanced;
 }

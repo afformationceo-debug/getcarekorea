@@ -8,7 +8,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import { buildSystemPromptV5Fast, LOCALE_CONFIGS } from './prompts/system-prompt-v5-fast';
+import { buildSystemPromptV6, LOCALE_CONFIGS } from './prompts/system-prompt-v6';
 import { getAuthorForKeyword } from './persona';
 import { buildEnhancedRAGContext, formatRAGContextForPrompt, type RAGContext } from './rag-helper';
 import type { AuthorPersona } from './persona';
@@ -149,7 +149,7 @@ export async function generateSingleLanguageContent(
     // Get locale config for messenger and CTA
     const localeConfig = LOCALE_CONFIGS[locale] || LOCALE_CONFIGS['en'];
 
-    const systemPrompt = buildSystemPromptV5Fast({
+    const systemPrompt = buildSystemPromptV6({
       author,
       locale,
       ragContext: ragPrompt,
@@ -159,31 +159,52 @@ export async function generateSingleLanguageContent(
     // 4. Generate content with Claude
     console.log(`   🤖 Generating content with Claude...`);
 
-    const userPrompt = `Write a comprehensive blog post about: ${keyword}
+    const userPrompt = `Write a premium quality blog post about: "${keyword}"
 
-Target audience: ${locale} speakers interested in Korean medical tourism
-Category: ${category}
-Style: Professional yet friendly, from ${author.years_of_experience} years experience perspective
+## CONTENT REQUIREMENTS
 
-Focus on:
-- Accurate medical information
-- Clear pricing ranges in USD
-- Patient journey and recovery timeline
-- Cultural sensitivity for ${locale} audience
-- SEO optimization for "${keyword}"
+**Target:** ${locale} speakers considering medical tourism to Korea
+**Category:** ${category}
+**Tone:** Expert friend sharing insider knowledge (${author.years_of_experience} years experience)
 
-CRITICAL OUTPUT REQUIREMENTS:
-1. Return ONLY valid JSON (no additional text, explanations, or markdown)
-2. The "content" field must contain HTML (not Markdown)
-3. Include all required fields as specified in the system prompt
-4. Follow the exact JSON structure from OUTPUT FORMAT section
-5. Do NOT wrap the JSON in markdown code blocks
+## MUST INCLUDE (SEO/AEO Optimization):
 
-Return your response as pure JSON starting with { and ending with }`;
+1. **TL;DR Summary Box** at top with:
+   - Exact cost range in USD
+   - Recommended stay duration
+   - Best candidate profile
+   - Key advantage
+
+2. **Featured Snippet Answer** - Direct answer in first 40-60 words
+
+3. **Rich Formatting:**
+   - <strong> tags on key terms
+   - Highlight boxes for expert tips
+   - Warning boxes for important cautions
+   - Comparison table (Korea vs US/Europe)
+
+4. **FAQ Section** - 5-7 questions targeting "People Also Ask"
+   - Each answer: direct answer first, then explanation
+
+5. **Step-by-Step Guide** - Clear patient journey
+
+6. **Images** - ${imageCount} STOCK PHOTO quality images
+   - Camera specs in prompts (Sony A7R IV, 35mm f/1.4)
+   - "NO AI artifacts, NO illustration" in every prompt
+   - Natural lighting, documentary style
+
+## CRITICAL OUTPUT FORMAT:
+- Return ONLY valid JSON (no markdown, no explanation)
+- "content" field = complete HTML with rich formatting
+- Start with { and end with }
+- Follow exact JSON structure from system prompt
+
+Write content that would rank #1 on Google and get featured in snippets.`;
+
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 8000, // Reduced from 16000 - actual output is ~4000 tokens
+      max_tokens: 12000, // Increased for richer content with formatting
       temperature: 0.7,
       system: systemPrompt,
       messages: [
