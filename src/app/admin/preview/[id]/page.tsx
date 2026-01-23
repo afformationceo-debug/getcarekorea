@@ -11,6 +11,15 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Monitor, Smartphone, X, RotateCcw } from 'lucide-react';
 
+interface AuthorInfo {
+  name: string;
+  name_local?: string;
+  photo_url?: string;
+  bio?: string;
+  specialties?: string[];
+  years_of_experience?: number;
+}
+
 interface Draft {
   id: string;
   locale: string;
@@ -18,6 +27,7 @@ interface Draft {
   category: string;
   created_at: string;
   author_name?: string;
+  author?: AuthorInfo;
   title: string;
   excerpt?: string;
   content: string;
@@ -59,22 +69,76 @@ export default function PreviewPage() {
           const locale = metadata.locale || 'en';
           const localeKey = locale.replace('-', '_');
 
+          // Extract author info from various sources
+          let authorInfo: AuthorInfo | undefined;
+
+          // Priority: 1. author_persona (DB), 2. generation_metadata.author, 3. authorPersona (API response)
+          if (post.author_persona) {
+            authorInfo = {
+              name: post.author_persona.name_en,
+              name_local: post.author_persona[`name_${localeKey}`] || post.author_persona.name_en,
+              photo_url: post.author_persona.photo_url,
+              bio: post.author_persona[`bio_${localeKey}`] || post.author_persona.bio_en,
+              specialties: post.author_persona.specialties,
+              years_of_experience: post.author_persona.years_of_experience,
+            };
+          } else if (metadata.author) {
+            authorInfo = {
+              name: metadata.author.name_en || metadata.author.name,
+              name_local: metadata.author.name_local || metadata.author.name_en,
+              photo_url: metadata.author.photo_url,
+              bio: metadata.author.bio,
+              specialties: metadata.author.specialties,
+              years_of_experience: metadata.author.years_of_experience,
+            };
+          } else if (data.authorPersona) {
+            authorInfo = {
+              name: data.authorPersona.name_en,
+              name_local: data.authorPersona[`name_${localeKey}`] || data.authorPersona.name_en,
+              photo_url: data.authorPersona.photo_url,
+              bio: data.authorPersona[`bio_${localeKey}`] || data.authorPersona.bio_en,
+              specialties: data.authorPersona.specialties,
+              years_of_experience: data.authorPersona.years_of_experience,
+            };
+          } else if (data.generatedAuthor) {
+            authorInfo = {
+              name: data.generatedAuthor.name_en || data.generatedAuthor.name,
+              name_local: data.generatedAuthor.name_local,
+              bio: data.generatedAuthor.bio,
+              specialties: data.generatedAuthor.specialties,
+              years_of_experience: data.generatedAuthor.years_of_experience,
+            };
+          }
+
           setDraft({
             id: post.id,
             locale: locale,
             status: post.status || 'draft',
             category: post.category || 'general',
             created_at: post.created_at,
-            author_name: metadata.author?.name_en || post.author_persona?.name_en,
+            author_name: authorInfo?.name_local || authorInfo?.name,
+            author: authorInfo,
             title: post[`title_${localeKey}`] || post.title_en || post.title,
             excerpt: post[`excerpt_${localeKey}`] || post.excerpt_en || post.excerpt,
             content: post[`content_${localeKey}`] || post.content_en || post.content,
-            author_bio: metadata.author?.bio || post.author_persona?.bio_en,
+            author_bio: authorInfo?.bio || metadata.author?.bio || post.author_persona?.bio_en,
             faq_schema: metadata.faqSchema,
             tags: post.tags,
           });
         } else {
-          setDraft(post);
+          // content_drafts format - also extract author if available
+          const authorData = post.author || post.author_persona;
+          setDraft({
+            ...post,
+            author: authorData ? {
+              name: authorData.name_en || authorData.name,
+              name_local: authorData.name_local,
+              photo_url: authorData.photo_url,
+              bio: authorData.bio || authorData.bio_en,
+              specialties: authorData.specialties,
+              years_of_experience: authorData.years_of_experience,
+            } : undefined,
+          });
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load draft');
@@ -235,6 +299,51 @@ export default function PreviewPage() {
 function PreviewContent({ draft, isMobile }: { draft: Draft; isMobile: boolean }) {
   return (
     <article className={`${isMobile ? 'px-4 py-6' : 'px-8 lg:px-16 py-12'}`}>
+      {/* Author Header Card */}
+      {draft.author && (
+        <div className={`mb-6 p-4 bg-gray-50 rounded-xl ${isMobile ? '' : 'flex items-center gap-4'}`}>
+          {/* Author Photo */}
+          <div className={`flex-shrink-0 ${isMobile ? 'flex items-center gap-3 mb-3' : ''}`}>
+            {draft.author.photo_url ? (
+              <img
+                src={draft.author.photo_url}
+                alt={draft.author.name}
+                className={`rounded-full object-cover ${isMobile ? 'w-12 h-12' : 'w-16 h-16'}`}
+              />
+            ) : (
+              <div className={`rounded-full bg-violet-500 flex items-center justify-center text-white font-semibold ${isMobile ? 'w-12 h-12 text-lg' : 'w-16 h-16 text-xl'}`}>
+                {(draft.author.name_local || draft.author.name || '?').charAt(0).toUpperCase()}
+              </div>
+            )}
+            {isMobile && (
+              <div>
+                <p className="font-semibold text-gray-900">{draft.author.name_local || draft.author.name}</p>
+                {draft.author.specialties && draft.author.specialties.length > 0 && (
+                  <p className="text-xs text-gray-500">{draft.author.specialties.slice(0, 2).join(' • ')}</p>
+                )}
+              </div>
+            )}
+          </div>
+          {/* Author Info */}
+          {!isMobile && (
+            <div className="flex-1">
+              <p className="font-semibold text-gray-900 text-lg">{draft.author.name_local || draft.author.name}</p>
+              <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                {draft.author.years_of_experience && (
+                  <span>{draft.author.years_of_experience}년 경력</span>
+                )}
+                {draft.author.specialties && draft.author.specialties.length > 0 && (
+                  <>
+                    <span>•</span>
+                    <span>{draft.author.specialties.slice(0, 3).join(', ')}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Meta Info */}
       <div className={`mb-4 flex flex-wrap items-center gap-2 text-gray-500 ${isMobile ? 'text-xs' : 'text-sm'}`}>
         <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded text-xs font-medium">
@@ -248,7 +357,7 @@ function PreviewContent({ draft, isMobile }: { draft: Draft; isMobile: boolean }
             day: 'numeric',
           })}
         </span>
-        {draft.author_name && (
+        {!draft.author && draft.author_name && (
           <>
             <span>•</span>
             <span>{draft.author_name}</span>
@@ -268,9 +377,9 @@ function PreviewContent({ draft, isMobile }: { draft: Draft; isMobile: boolean }
         </p>
       )}
 
-      {/* Content (HTML) */}
+      {/* Content (HTML) with CTA Button Styles */}
       <div
-        className={`prose max-w-none ${isMobile ? 'prose-sm' : 'prose-lg'}`}
+        className={`prose max-w-none ${isMobile ? 'prose-sm' : 'prose-lg'} preview-content`}
         dangerouslySetInnerHTML={{ __html: draft.content }}
         style={{
           '--tw-prose-body': '#374151',
@@ -279,13 +388,210 @@ function PreviewContent({ draft, isMobile }: { draft: Draft; isMobile: boolean }
         } as React.CSSProperties}
       />
 
-      {/* Author Bio */}
-      {draft.author_bio && (
-        <div className={`mt-10 pt-8 border-t ${isMobile ? 'text-sm' : ''}`}>
-          <h3 className={`font-semibold mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
+      {/* CTA Button Styles */}
+      <style jsx global>{`
+        /* CTA Button Base Styles */
+        .preview-content a[href*="/contact"],
+        .preview-content a[href*="messenger="] {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          padding: ${isMobile ? '0.75rem 1.5rem' : '1rem 2rem'};
+          font-size: ${isMobile ? '0.95rem' : '1.1rem'};
+          font-weight: 600;
+          border-radius: 0.75rem;
+          text-decoration: none !important;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+          margin: 1.5rem 0;
+          width: ${isMobile ? '100%' : 'auto'};
+          min-width: ${isMobile ? 'auto' : '280px'};
+        }
+
+        /* KakaoTalk - Yellow */
+        .preview-content a[href*="messenger=kakao"] {
+          background: linear-gradient(135deg, #FEE500 0%, #F5D800 100%);
+          color: #3C1E1E !important;
+        }
+        .preview-content a[href*="messenger=kakao"]:hover {
+          background: linear-gradient(135deg, #F5D800 0%, #E6C800 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(254, 229, 0, 0.4);
+        }
+        .preview-content a[href*="messenger=kakao"]::before {
+          content: "💬";
+          font-size: 1.2em;
+        }
+
+        /* WhatsApp - Green */
+        .preview-content a[href*="messenger=whatsapp"] {
+          background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+          color: white !important;
+        }
+        .preview-content a[href*="messenger=whatsapp"]:hover {
+          background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+        .preview-content a[href*="messenger=whatsapp"]::before {
+          content: "📱";
+          font-size: 1.2em;
+        }
+
+        /* LINE - Green */
+        .preview-content a[href*="messenger=line"] {
+          background: linear-gradient(135deg, #00B900 0%, #00A000 100%);
+          color: white !important;
+        }
+        .preview-content a[href*="messenger=line"]:hover {
+          background: linear-gradient(135deg, #00A000 0%, #008F00 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0, 185, 0, 0.4);
+        }
+        .preview-content a[href*="messenger=line"]::before {
+          content: "💚";
+          font-size: 1.2em;
+        }
+
+        /* WeChat - Green */
+        .preview-content a[href*="messenger=wechat"] {
+          background: linear-gradient(135deg, #07C160 0%, #06AD56 100%);
+          color: white !important;
+        }
+        .preview-content a[href*="messenger=wechat"]:hover {
+          background: linear-gradient(135deg, #06AD56 0%, #059A4A 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(7, 193, 96, 0.4);
+        }
+        .preview-content a[href*="messenger=wechat"]::before {
+          content: "💬";
+          font-size: 1.2em;
+        }
+
+        /* Zalo - Blue */
+        .preview-content a[href*="messenger=zalo"] {
+          background: linear-gradient(135deg, #0068FF 0%, #0054D1 100%);
+          color: white !important;
+        }
+        .preview-content a[href*="messenger=zalo"]:hover {
+          background: linear-gradient(135deg, #0054D1 0%, #0042A8 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0, 104, 255, 0.4);
+        }
+        .preview-content a[href*="messenger=zalo"]::before {
+          content: "📲";
+          font-size: 1.2em;
+        }
+
+        /* Email - Purple */
+        .preview-content a[href*="messenger=email"] {
+          background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+          color: white !important;
+        }
+        .preview-content a[href*="messenger=email"]:hover {
+          background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+        .preview-content a[href*="messenger=email"]::before {
+          content: "✉️";
+          font-size: 1.2em;
+        }
+
+        /* Default CTA - Violet */
+        .preview-content a[href*="/contact"]:not([href*="messenger="]) {
+          background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+          color: white !important;
+        }
+        .preview-content a[href*="/contact"]:not([href*="messenger="]):hover {
+          background: linear-gradient(135deg, #6D28D9 0%, #5B21B6 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+        }
+        .preview-content a[href*="/contact"]:not([href*="messenger="])::before {
+          content: "📞";
+          font-size: 1.2em;
+        }
+
+        /* Image styles */
+        .preview-content img {
+          border-radius: 0.75rem;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table styles */
+        .preview-content table {
+          border-collapse: separate;
+          border-spacing: 0;
+          border-radius: 0.5rem;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .preview-content th {
+          background: #F3F4F6;
+        }
+      `}</style>
+
+      {/* Author Bio Card */}
+      {(draft.author || draft.author_bio) && (
+        <div className={`mt-10 pt-8 border-t ${isMobile ? '' : ''}`}>
+          <h3 className={`font-semibold mb-4 ${isMobile ? 'text-base' : 'text-lg'}`}>
             About the Author
           </h3>
-          <p className="text-gray-600">{draft.author_bio}</p>
+          <div className={`bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-5 ${isMobile ? '' : 'flex gap-5'}`}>
+            {/* Author Photo */}
+            {draft.author && (
+              <div className={`flex-shrink-0 ${isMobile ? 'flex items-center gap-4 mb-4' : ''}`}>
+                {draft.author.photo_url ? (
+                  <img
+                    src={draft.author.photo_url}
+                    alt={draft.author.name}
+                    className={`rounded-full object-cover border-4 border-white shadow-md ${isMobile ? 'w-16 h-16' : 'w-20 h-20'}`}
+                  />
+                ) : (
+                  <div className={`rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold border-4 border-white shadow-md ${isMobile ? 'w-16 h-16 text-xl' : 'w-20 h-20 text-2xl'}`}>
+                    {(draft.author.name_local || draft.author.name || '?').charAt(0).toUpperCase()}
+                  </div>
+                )}
+                {isMobile && (
+                  <div>
+                    <p className="font-bold text-gray-900">{draft.author.name_local || draft.author.name}</p>
+                    {draft.author.years_of_experience && (
+                      <p className="text-sm text-violet-600 font-medium">{draft.author.years_of_experience}년 경력 의료 통역사</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Author Details */}
+            <div className="flex-1">
+              {!isMobile && draft.author && (
+                <div className="mb-3">
+                  <p className="font-bold text-gray-900 text-lg">{draft.author.name_local || draft.author.name}</p>
+                  {draft.author.years_of_experience && (
+                    <p className="text-sm text-violet-600 font-medium">{draft.author.years_of_experience}년 경력 의료 통역사</p>
+                  )}
+                </div>
+              )}
+              {/* Specialties */}
+              {draft.author?.specialties && draft.author.specialties.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {draft.author.specialties.map((specialty, idx) => (
+                    <span key={idx} className="bg-white text-violet-700 text-xs px-2 py-1 rounded-full border border-violet-200">
+                      {specialty}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* Bio */}
+              {(draft.author?.bio || draft.author_bio) && (
+                <p className={`text-gray-600 leading-relaxed ${isMobile ? 'text-sm' : ''}`}>
+                  {draft.author?.bio || draft.author_bio}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
