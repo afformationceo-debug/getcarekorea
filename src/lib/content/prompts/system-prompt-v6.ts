@@ -157,6 +157,18 @@ export function buildSystemPromptV6(options: {
   "contentFormat": "html",
   "metaTitle": "Keyword | Benefit | GetCareKorea (60 chars)",
   "metaDescription": "Action-oriented description with cost/timeline. Call to action. (150-155 chars)",
+  "aiSummary": {
+    "keyTakeaways": [
+      "First key point - most important fact with specific number",
+      "Second key point - unique benefit or advantage",
+      "Third key point - practical insight for patients"
+    ],
+    "quickAnswer": "Direct 1-2 sentence answer to the main query (40-60 words)",
+    "targetAudience": "Who this procedure is best for",
+    "estimatedCost": "$X,XXX - $XX,XXX",
+    "recommendedStay": "X-X days",
+    "recoveryTime": "X-X weeks"
+  },
   "author": {
     "name": "${author.name}",
     "name_en": "${author.name_en}",

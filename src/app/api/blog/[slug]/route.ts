@@ -133,13 +133,24 @@ export async function GET(request: NextRequest, { params }: Params) {
       response.author = author;
     }
 
-    // Also check generation_metadata for author info (for AI-generated content)
-    if (!response.authorPersona && post.generation_metadata) {
+    // Extract AI summary and author info from generation_metadata
+    if (post.generation_metadata) {
       const metadata = typeof post.generation_metadata === 'string'
         ? JSON.parse(post.generation_metadata)
         : post.generation_metadata;
 
-      if (metadata.author) {
+      // Include AI summary for AEO display
+      if (metadata.aiSummary) {
+        response.aiSummary = metadata.aiSummary;
+      }
+
+      // Include FAQ schema if available
+      if (metadata.faqSchema) {
+        response.faqSchema = metadata.faqSchema;
+      }
+
+      // Fallback author info for AI-generated content
+      if (!response.authorPersona && metadata.author) {
         response.generatedAuthor = metadata.author;
       }
     }

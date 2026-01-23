@@ -227,6 +227,7 @@ export async function POST(request: NextRequest) {
           includeImages,
           imageCount,
           author: generatedContent.author,
+          aiSummary: generatedContent.aiSummary,
           faqSchema: generatedContent.faqSchema,
           howToSchema: generatedContent.howToSchema,
           images: generatedContent.images,

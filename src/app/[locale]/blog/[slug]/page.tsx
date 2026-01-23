@@ -76,6 +76,15 @@ interface GeneratedAuthor {
   bio_en: string;
 }
 
+interface AISummary {
+  keyTakeaways?: string[];
+  quickAnswer?: string;
+  targetAudience?: string;
+  estimatedCost?: string;
+  recommendedStay?: string;
+  recoveryTime?: string;
+}
+
 interface BlogPost {
   id: string;
   slug: string;
@@ -89,6 +98,8 @@ interface BlogPost {
   tags: string[] | null;
   published_at: string | null;
   view_count: number;
+  aiSummary?: AISummary | null;
+  faqSchema?: Array<{ question: string; answer: string }> | null;
   author?: {
     id: string;
     full_name: string | null;
@@ -630,7 +641,7 @@ export default function BlogDetailPage() {
                 </div>
 
                 <div className="space-y-4">
-                  {/* Key Takeaways */}
+                  {/* Key Takeaways - Use actual AI summary data if available */}
                   <div className="p-4 rounded-xl bg-white/60 dark:bg-white/5 border border-violet-100 dark:border-violet-800">
                     <h4 className="font-semibold text-sm mb-3 flex items-center gap-2 text-violet-700 dark:text-violet-300">
                       <ListChecks className="h-4 w-4" />
@@ -639,7 +650,16 @@ export default function BlogDetailPage() {
                        'Key Takeaways'}
                     </h4>
                     <ul className="space-y-2 text-sm text-muted-foreground">
-                      {post.excerpt ? (
+                      {post.aiSummary?.keyTakeaways && post.aiSummary.keyTakeaways.length > 0 ? (
+                        // Use actual AI-generated key takeaways
+                        post.aiSummary.keyTakeaways.map((takeaway, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>{takeaway}</span>
+                          </li>
+                        ))
+                      ) : post.excerpt ? (
+                        // Fallback: generate from excerpt
                         <>
                           <li className="flex items-start gap-2">
                             <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -674,28 +694,64 @@ export default function BlogDetailPage() {
                     </ul>
                   </div>
 
-                  {/* Quick Stats */}
+                  {/* Quick Stats - Use AI summary data if available */}
                   <div className="grid grid-cols-3 gap-3">
                     <div className="p-3 rounded-lg bg-white/60 dark:bg-white/5 border border-violet-100 dark:border-violet-800 text-center">
-                      <Clock className="h-4 w-4 mx-auto mb-1 text-violet-500" />
-                      <p className="text-xs text-muted-foreground">
-                        {locale === 'ko' ? '읽기 시간' : 'Read time'}
-                      </p>
-                      <p className="font-semibold text-sm">{getReadTime(post.content)}</p>
+                      {post.aiSummary?.estimatedCost ? (
+                        <>
+                          <Zap className="h-4 w-4 mx-auto mb-1 text-violet-500" />
+                          <p className="text-xs text-muted-foreground">
+                            {locale === 'ko' ? '예상 비용' : 'Est. Cost'}
+                          </p>
+                          <p className="font-semibold text-sm">{post.aiSummary.estimatedCost}</p>
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="h-4 w-4 mx-auto mb-1 text-violet-500" />
+                          <p className="text-xs text-muted-foreground">
+                            {locale === 'ko' ? '읽기 시간' : 'Read time'}
+                          </p>
+                          <p className="font-semibold text-sm">{getReadTime(post.content)}</p>
+                        </>
+                      )}
                     </div>
                     <div className="p-3 rounded-lg bg-white/60 dark:bg-white/5 border border-violet-100 dark:border-violet-800 text-center">
-                      <Eye className="h-4 w-4 mx-auto mb-1 text-violet-500" />
-                      <p className="text-xs text-muted-foreground">
-                        {locale === 'ko' ? '조회수' : 'Views'}
-                      </p>
-                      <p className="font-semibold text-sm">{post.view_count.toLocaleString()}</p>
+                      {post.aiSummary?.recommendedStay ? (
+                        <>
+                          <Calendar className="h-4 w-4 mx-auto mb-1 text-violet-500" />
+                          <p className="text-xs text-muted-foreground">
+                            {locale === 'ko' ? '권장 체류' : 'Stay'}
+                          </p>
+                          <p className="font-semibold text-sm">{post.aiSummary.recommendedStay}</p>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="h-4 w-4 mx-auto mb-1 text-violet-500" />
+                          <p className="text-xs text-muted-foreground">
+                            {locale === 'ko' ? '조회수' : 'Views'}
+                          </p>
+                          <p className="font-semibold text-sm">{post.view_count.toLocaleString()}</p>
+                        </>
+                      )}
                     </div>
                     <div className="p-3 rounded-lg bg-white/60 dark:bg-white/5 border border-violet-100 dark:border-violet-800 text-center">
-                      <FileText className="h-4 w-4 mx-auto mb-1 text-violet-500" />
-                      <p className="text-xs text-muted-foreground">
-                        {locale === 'ko' ? '카테고리' : 'Category'}
-                      </p>
-                      <p className="font-semibold text-sm truncate">{formatCategoryName(post.category || 'General')}</p>
+                      {post.aiSummary?.recoveryTime ? (
+                        <>
+                          <Clock className="h-4 w-4 mx-auto mb-1 text-violet-500" />
+                          <p className="text-xs text-muted-foreground">
+                            {locale === 'ko' ? '회복 기간' : 'Recovery'}
+                          </p>
+                          <p className="font-semibold text-sm">{post.aiSummary.recoveryTime}</p>
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="h-4 w-4 mx-auto mb-1 text-violet-500" />
+                          <p className="text-xs text-muted-foreground">
+                            {locale === 'ko' ? '카테고리' : 'Category'}
+                          </p>
+                          <p className="font-semibold text-sm truncate">{formatCategoryName(post.category || 'General')}</p>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

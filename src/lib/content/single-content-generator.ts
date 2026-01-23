@@ -18,6 +18,15 @@ import type { Locale } from './multi-language-generator';
 // TYPES
 // =====================================================
 
+export interface AISummary {
+  keyTakeaways: string[];
+  quickAnswer: string;
+  targetAudience?: string;
+  estimatedCost?: string;
+  recommendedStay?: string;
+  recoveryTime?: string;
+}
+
 export interface GeneratedContent {
   locale: Locale;
   keyword: string;
@@ -28,6 +37,7 @@ export interface GeneratedContent {
   contentFormat: 'html';
   metaTitle: string;
   metaDescription: string;
+  aiSummary?: AISummary;        // AI-generated summary for AEO
   author: AuthorPersona;
   tags: string[];
   faqSchema: Array<{
@@ -288,6 +298,7 @@ Write content that would rank #1 on Google and get featured in snippets.`;
       contentFormat: 'html',
       metaTitle: parsedContent.metaTitle || parsedContent.title,
       metaDescription: parsedContent.metaDescription || parsedContent.excerpt,
+      aiSummary: parsedContent.aiSummary || undefined,
       author,
       tags: parsedContent.tags || [],
       faqSchema: parsedContent.faqSchema || [],
