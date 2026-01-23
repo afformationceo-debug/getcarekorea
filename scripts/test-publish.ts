@@ -4,7 +4,8 @@
  * Usage: npx tsx scripts/test-publish.ts
  *
  * Features:
- * - DALL-E 3 image generation
+ * - Flux Pro 1.1 image generation (ultra-realistic)
+ * - Fallback to DALL-E 3 if Replicate not configured
  * - AI Summary for AEO
  * - Rich SEO structure (h2, bullet points, tables, schema)
  * - Author persona matching
@@ -13,6 +14,7 @@
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
+import Replicate from 'replicate';
 
 // Load environment variables
 import * as dotenv from 'dotenv';
@@ -22,6 +24,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const anthropicApiKey = process.env.ANTHROPIC_API_KEY!;
 const openaiApiKey = process.env.OPENAI_API_KEY!;
+const replicateApiToken = process.env.REPLICATE_API_TOKEN;
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error('Missing Supabase credentials');
@@ -33,13 +36,21 @@ if (!anthropicApiKey) {
   process.exit(1);
 }
 
-if (!openaiApiKey) {
-  console.warn('⚠️ Missing OPENAI_API_KEY - images will not be generated');
+// Check image generation capabilities
+// Use Imagen 4 (Google's best) via Replicate
+const useImagen4 = !!replicateApiToken;
+if (useImagen4) {
+  console.log('✅ Replicate API configured - using Google Imagen 4 (ultra-realistic)');
+} else if (openaiApiKey) {
+  console.log('⚠️ No Replicate API - falling back to DALL-E 3');
+} else {
+  console.warn('⚠️ No image API configured - images will not be generated');
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 const anthropic = new Anthropic({ apiKey: anthropicApiKey });
-const openai = new OpenAI({ apiKey: openaiApiKey || 'missing-key' });
+const openai = openaiApiKey ? new OpenAI({ apiKey: openaiApiKey }) : null;
+const replicate = replicateApiToken ? new Replicate({ auth: replicateApiToken }) : null;
 
 // =====================================================
 // IMAGE GENERATION
@@ -60,92 +71,110 @@ interface GeneratedImage {
   prompt: string;
 }
 
+/**
+ * Generate images using Google Imagen 4 (preferred) or DALL-E 3 (fallback)
+ *
+ * Imagen 4 advantages:
+ * - Google's latest and best image model
+ * - Exceptional photorealism
+ * - Natural human features
+ * - Better text rendering
+ */
 async function generateImages(images: ImageMetadata[], keyword: string): Promise<GeneratedImage[]> {
-  if (!openaiApiKey) {
+  if (useImagen4 && replicate) {
+    return generateImagesWithImagen4(images, keyword);
+  } else if (openai) {
+    return generateImagesWithDallE(images, keyword);
+  } else {
     console.log('   ⚠️ Skipping image generation (no API key)');
     return [];
   }
+}
 
+/**
+ * Google Imagen 4 - Google's best image generation model
+ */
+async function generateImagesWithImagen4(images: ImageMetadata[], keyword: string): Promise<GeneratedImage[]> {
   const generated: GeneratedImage[] = [];
+
+  console.log(`\n🎨 Using Google Imagen 4 (ultra-realistic mode)`);
+
+  for (const img of images) {
+    console.log(`   📸 Generating: ${img.placeholder}...`);
+
+    try {
+      // Imagen 4 optimized prompt
+      const imagenPrompt = `Professional documentary photography: ${img.prompt}
+
+Modern Korean medical clinic in Gangnam, Seoul.
+Natural window lighting, clean minimalist interior.
+Real people with natural expressions, candid moment.
+Photojournalistic style, authentic atmosphere.
+Sharp focus, natural depth of field.`;
+
+      const output = await replicate!.run('google/imagen-4', {
+        input: {
+          prompt: imagenPrompt,
+          aspect_ratio: '16:9',
+          output_format: 'jpg',
+          safety_filter_level: 'block_medium_and_above',
+        },
+      });
+
+      // Imagen 4 returns an array of URLs
+      const imageUrl = Array.isArray(output) ? output[0] : (typeof output === 'string' ? output : String(output));
+
+      if (imageUrl && imageUrl.startsWith('http')) {
+        generated.push({
+          placeholder: img.placeholder,
+          url: imageUrl,
+          alt: `${keyword} - ${img.alt}, Seoul, South Korea`,
+          prompt: img.prompt,
+        });
+        console.log(`   ✅ ${img.placeholder}: Generated (Imagen 4)`);
+      } else {
+        throw new Error('Invalid URL returned');
+      }
+    } catch (error: any) {
+      console.error(`   ❌ ${img.placeholder}: ${error.message}`);
+    }
+
+    // Longer delay for rate limiting (free tier)
+    await new Promise(resolve => setTimeout(resolve, 3000));
+  }
+
+  return generated;
+}
+
+/**
+ * DALL-E 3 fallback - Still good, but more AI-looking
+ */
+async function generateImagesWithDallE(images: ImageMetadata[], keyword: string): Promise<GeneratedImage[]> {
+  const generated: GeneratedImage[] = [];
+
+  console.log(`\n🎨 Using DALL-E 3 (fallback mode)`);
 
   for (const img of images) {
     console.log(`   🎨 Generating: ${img.placeholder}...`);
 
     try {
-      // Ultra-realistic photo style - like iPhone or DSLR candid shots
-      const enhancedPrompt = `ULTRA REALISTIC PHOTOGRAPH: ${img.prompt}
+      const enhancedPrompt = `Professional documentary photography: ${img.prompt}
 
-CRITICAL - THIS MUST LOOK LIKE A REAL PHONE PHOTO:
-- Shot on iPhone 15 Pro or Samsung Galaxy S24
-- Slightly imperfect framing (not perfectly centered)
-- Natural motion blur on edges
-- Realistic lens flare from windows
-- Visible environmental reflections
+Shot on Canon EOS R5, 35mm lens, f/2.8, natural lighting.
+Modern Korean medical clinic in Gangnam, Seoul.
+Real people with natural expressions and visible skin texture.
+Candid moment, not posed. Photojournalistic style.
 
-SKIN & HUMAN REALISM (MOST IMPORTANT):
-- Visible skin pores and texture
-- Natural skin imperfections (moles, slight blemishes, under-eye shadows)
-- Realistic skin shine and oil
-- Veins slightly visible on hands
-- Natural asymmetric facial features
-- Real wrinkles appropriate to age
-- Hair with individual strands and flyaways
-- Realistic ear and nose cartilage texture
+CRITICAL: Must look like real photography, not AI-generated.
+Natural imperfections, asymmetric features, authentic atmosphere.`;
 
-CLOTHING & FABRIC:
-- Natural fabric wrinkles and folds
-- Visible stitching on clothes
-- Slightly worn look on everyday items
-- Real shadows in fabric creases
-
-ENVIRONMENT DETAILS:
-- Dust particles visible in light beams
-- Fingerprints on glass surfaces
-- Slight scuff marks on floors
-- Real reflections in windows and screens
-- Cables and cords visible (not hidden)
-- Coffee cups, papers, everyday clutter
-
-LIGHTING (CRITICAL):
-- Mixed lighting sources (window + overhead)
-- Realistic color temperature differences
-- Natural shadow gradients
-- Slight overexposure near windows (like real photos)
-- Underexposed corners (vignette)
-
-KOREAN MEDICAL CLINIC SETTING:
-- Modern Gangnam-style clinic interior
-- Real Korean text on signs and documents
-- Actual medical equipment brands visible
-- Staff in proper Korean medical attire
-- International patients with diverse appearances
-
-CAMERA ARTIFACTS TO INCLUDE:
-- Slight chromatic aberration on edges
-- Natural depth of field blur
-- Minor lens distortion
-- Realistic JPEG compression feel
-- Occasional slight blur from hand movement
-
-ABSOLUTELY FORBIDDEN:
-- Perfect, airbrushed skin
-- Symmetrical features
-- Overly saturated colors
-- HDR or hyper-sharp look
-- Stock photo poses
-- Empty, sterile environments
-- Any text or watermarks
-- Cartoon or illustrated elements
-
-The image should be indistinguishable from a real photo taken by a patient or staff member at a Korean clinic.`;
-
-      const response = await openai.images.generate({
+      const response = await openai!.images.generate({
         model: 'dall-e-3',
         prompt: enhancedPrompt,
         n: 1,
-        size: '1792x1024', // Wider aspect ratio like real stock photos
+        size: '1792x1024',
         quality: 'hd',
-        style: 'natural', // Natural for realistic photo look
+        style: 'natural',
       });
 
       if (response.data && response.data[0]?.url) {
@@ -155,13 +184,12 @@ The image should be indistinguishable from a real photo taken by a patient or st
           alt: `${keyword} - ${img.alt}, Seoul, South Korea`,
           prompt: img.prompt,
         });
-        console.log(`   ✅ ${img.placeholder}: Generated`);
+        console.log(`   ✅ ${img.placeholder}: Generated (DALL-E 3)`);
       }
     } catch (error: any) {
       console.error(`   ❌ ${img.placeholder}: ${error.message}`);
     }
 
-    // Small delay between requests to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
@@ -407,7 +435,8 @@ Make readers feel like they found a trustworthy insider who actually cares about
     let generatedImages: GeneratedImage[] = [];
 
     if (content.images && content.images.length > 0) {
-      console.log(`\n🎨 Generating ${content.images.length} images with DALL-E 3...`);
+      const modelName = useImagen4 ? 'Google Imagen 4' : 'DALL-E 3';
+      console.log(`\n🎨 Generating ${content.images.length} images with ${modelName}...`);
       generatedImages = await generateImages(content.images, keyword);
 
       if (generatedImages.length > 0) {
@@ -442,7 +471,7 @@ Make readers feel like they found a trustworthy insider who actually cares about
     // Save to database
     console.log(`\n💾 Saving to database...`);
 
-    const imageCost = generatedImages.length * 0.08; // HD quality
+    const imageCost = generatedImages.length * (useImagen4 ? 0.03 : 0.08); // Imagen 4: ~$0.03, DALL-E HD: $0.08
     const totalCost = 0.015 + imageCost; // Rough estimate
 
     const blogPostData = {

@@ -520,13 +520,25 @@
   background: linear-gradient(135deg, oklch(0.45 0.22 270) 0%, oklch(0.5 0.2 290) 100%);
 }
 
+.dark .blog-content table thead,
+.dark .blog-content .comparison-table thead {
+  background: linear-gradient(135deg, oklch(0.5 0.2 270) 0%, oklch(0.55 0.18 290) 100%);
+}
+
 .blog-content table th,
 .blog-content .comparison-table th {
-  color: white;
-  font-weight: 600;
+  color: white !important;
+  font-weight: 700;
   padding: 1rem 1.25rem;
   text-align: left;
   border: none;
+  text-shadow: 0 1px 2px oklch(0 0 0 / 0.3);
+}
+
+.dark .blog-content table th,
+.dark .blog-content .comparison-table th {
+  color: white !important;
+  text-shadow: 0 1px 3px oklch(0 0 0 / 0.5);
 }
 
 .blog-content table tbody tr,
