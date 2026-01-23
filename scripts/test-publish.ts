@@ -72,21 +72,49 @@ async function generateImages(images: ImageMetadata[], keyword: string): Promise
     console.log(`   🎨 Generating: ${img.placeholder}...`);
 
     try {
-      // Enhance prompt for photorealistic quality
-      const enhancedPrompt = `Professional stock photography, shot on Sony A7R IV with Zeiss 35mm f/1.4 lens. ${img.prompt}.
-        TECHNICAL: ISO 400, natural lighting, 5500K color temperature.
-        REAL photography: natural bokeh, film grain, no AI artifacts.
-        HUMANS: Real people with natural imperfections, candid expressions.
-        MEDICAL: Actual Korean hospital/clinic, Gangnam district Seoul.
-        ABSOLUTELY NO: AI artifacts, plastic skin, uncanny valley, illustration style, 3D render.`;
+      // Modern editorial illustration style - clean, professional, no AI artifacts
+      const enhancedPrompt = `EDITORIAL ILLUSTRATION STYLE: ${img.prompt}
+
+STYLE: Modern minimalist editorial illustration for premium medical publication
+- Clean vector-inspired aesthetic with subtle gradients
+- Soft, muted color palette (dusty blues, warm grays, soft whites, gentle purples)
+- Flat design elements with subtle shadows for depth
+- Professional medical/healthcare visual language
+
+COMPOSITION:
+- Balanced, intentional negative space
+- Clear visual hierarchy
+- Geometric simplicity with organic touches
+- Magazine-quality editorial feel
+
+COLOR PALETTE:
+- Primary: Soft teal (#5B8A9A), Warm white (#F5F0EB)
+- Accent: Gentle coral (#E8A598), Light purple (#B8A9C9)
+- Neutrals: Warm gray tones
+
+ELEMENTS TO INCLUDE:
+- Abstract representations of medical concepts
+- Clean iconographic elements
+- Subtle Korean design influences (minimalist, refined)
+- Professional healthcare environment suggested through simple shapes
+
+ABSOLUTELY AVOID:
+- Photorealistic human faces or bodies
+- Detailed facial features
+- Uncanny valley effects
+- Busy or cluttered compositions
+- Harsh colors or high contrast
+- Generic stock photo aesthetics
+
+This should look like a premium illustration from The New York Times health section or a high-end medical journal.`;
 
       const response = await openai.images.generate({
         model: 'dall-e-3',
         prompt: enhancedPrompt,
         n: 1,
-        size: '1024x1024',
+        size: '1792x1024', // Wider aspect ratio for editorial look
         quality: 'hd',
-        style: 'natural',
+        style: 'vivid', // Vivid for illustration style
       });
 
       if (response.data && response.data[0]?.url) {
@@ -101,6 +129,9 @@ async function generateImages(images: ImageMetadata[], keyword: string): Promise
     } catch (error: any) {
       console.error(`   ❌ ${img.placeholder}: ${error.message}`);
     }
+
+    // Small delay between requests to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
   return generated;
@@ -217,12 +248,13 @@ First 40-60 words must directly answer the query with specific numbers.
 ### 5. FAQ Section (5-7 questions)
 Each FAQ answer: direct answer first, then explanation.
 
-### 6. Images (3 REQUIRED)
-Include 3 images with STOCK PHOTO quality prompts:
-- Camera specs (Sony A7R IV, 35mm f/1.4)
-- Natural lighting description
-- "NO AI artifacts, NO illustration" in every prompt
-- Real Korean medical setting context
+### 6. Images (5 REQUIRED)
+Include 5 images with EDITORIAL ILLUSTRATION style prompts:
+- Modern minimalist illustration (NOT photorealistic)
+- Abstract medical concepts, clean iconographic elements
+- Soft muted colors (dusty blues, warm grays, gentle purples)
+- Premium magazine editorial aesthetic
+- NO human faces or bodies - use abstract representations
 
 ### 7. Content Length: 1500-2500 words
 
@@ -243,7 +275,7 @@ The article MUST cover:
 6. Recovery timeline with specific days/weeks
 7. How to choose the right clinic (expert tips)
 8. 5-7 FAQs targeting "People Also Ask"
-9. 3 photorealistic image placeholders
+9. 5 photorealistic image placeholders (spread throughout the article)
 
 Make it rank #1 on Google with featured snippet potential.`;
 
