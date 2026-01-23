@@ -54,12 +54,36 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
     }
 
-    // Return post with author_persona
+    // Extract author from generation_metadata if no author_persona
+    let generatedAuthor = null;
+    if (!authorPersona && post.generation_metadata) {
+      const metadata = typeof post.generation_metadata === 'string'
+        ? JSON.parse(post.generation_metadata)
+        : post.generation_metadata;
+
+      if (metadata.author) {
+        generatedAuthor = {
+          name: metadata.author.name,
+          name_en: metadata.author.name_en,
+          name_local: metadata.author.name_local,
+          photo_url: metadata.author.photo_url,
+          bio: metadata.author.bio,
+          bio_en: metadata.author.bio_en,
+          bio_local: metadata.author.bio_local,
+          specialties: metadata.author.specialties,
+          years_of_experience: metadata.author.years_of_experience,
+          languages: metadata.author.languages,
+          certifications: metadata.author.certifications,
+        };
+      }
+    }
+
+    // Return post with author data
     return NextResponse.json({
       success: true,
       post: {
         ...post,
-        author_persona: authorPersona,
+        author_persona: authorPersona || generatedAuthor,
       },
     });
   } catch (error: unknown) {
