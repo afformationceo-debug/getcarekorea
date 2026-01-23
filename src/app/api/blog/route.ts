@@ -22,6 +22,7 @@ export const revalidate = 60; // Cache for 60 seconds
 // Map locale to database field suffix
 const localeFieldMap: Record<string, string> = {
   en: 'en',
+  ko: 'ko',
   'zh-TW': 'zh_tw',
   'zh-CN': 'zh_cn',
   ja: 'ja',
@@ -42,6 +43,8 @@ function transformBlogPost(post: BlogPost, locale: string) {
     title: (post[titleKey] as string) || post.title_en,
     excerpt: (post[excerptKey] as string | null) || post.excerpt_en,
     content: (post[contentKey] as string | null) || post.content_en,
+    // Map cover_image_url to featured_image for frontend compatibility
+    featured_image: (post as Record<string, unknown>).cover_image_url || null,
   };
 }
 
@@ -68,9 +71,10 @@ export async function GET(request: NextRequest) {
 
     // Build query - select only required fields for list view (faster)
     const selectFields = [
-      'id', 'slug', 'category', 'tags', 'author_id', 'featured_image',
+      'id', 'slug', 'category', 'tags', 'author_id', 'cover_image_url',
       'published_at', 'view_count', 'status',
       'title_en', 'excerpt_en',
+      'title_ko', 'excerpt_ko',
       'title_zh_tw', 'excerpt_zh_tw',
       'title_zh_cn', 'excerpt_zh_cn',
       'title_ja', 'excerpt_ja',
