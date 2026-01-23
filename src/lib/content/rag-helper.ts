@@ -61,14 +61,32 @@ export interface RAGOptions {
 // INITIALIZATION
 // =====================================================
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Lazy initialization to prevent build-time errors when env vars are missing
+let _openai: OpenAI | null = null;
+let _vectorIndex: Index | null = null;
 
-const vectorIndex = new Index({
-  url: process.env.UPSTASH_VECTOR_REST_URL!,
-  token: process.env.UPSTASH_VECTOR_REST_TOKEN!,
-});
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY is not configured');
+    }
+    _openai = new OpenAI({ apiKey });
+  }
+  return _openai;
+}
+
+function getVectorIndex(): Index {
+  if (!_vectorIndex) {
+    const url = process.env.UPSTASH_VECTOR_REST_URL;
+    const token = process.env.UPSTASH_VECTOR_REST_TOKEN;
+    if (!url || !token) {
+      throw new Error('Upstash Vector credentials are not configured (UPSTASH_VECTOR_REST_URL, UPSTASH_VECTOR_REST_TOKEN)');
+    }
+    _vectorIndex = new Index({ url, token });
+  }
+  return _vectorIndex;
+}
 
 // =====================================================
 // MAIN FUNCTION
@@ -134,7 +152,7 @@ async function querySEOGuide(
   topK: number
 ): Promise<SEOGuideline[]> {
   try {
-    const results = await vectorIndex.query({
+    const results = await getVectorIndex().query({
       vector: embedding,
       topK,
       filter: 'source = "google-seo-guide"',
@@ -173,7 +191,7 @@ async function querySimilarContent(
       filter += ` AND locale = "${locale}"`;
     }
 
-    const results = await vectorIndex.query({
+    const results = await getVectorIndex().query({
       vector: embedding,
       topK,
       filter,
@@ -206,7 +224,7 @@ async function queryUserFeedback(
   try {
     const filter = `source = "user-feedback" AND locale = "${locale}"`;
 
-    const results = await vectorIndex.query({
+    const results = await getVectorIndex().query({
       vector: embedding,
       topK,
       filter,
@@ -233,7 +251,7 @@ async function queryUserFeedback(
  * Create embedding using OpenAI
  */
 async function createEmbedding(text: string): Promise<number[]> {
-  const response = await openai.embeddings.create({
+  const response = await getOpenAI().embeddings.create({
     model: 'text-embedding-3-small',
     input: text,
   });

@@ -12,18 +12,44 @@ import Anthropic from '@anthropic-ai/sdk';
 import { buildImprovementPromptV4 } from '@/lib/content/prompts/system-prompt-v4';
 import { getAuthorForKeyword } from '@/lib/content/persona';
 
-const vectorIndex = new Index({
-  url: process.env.UPSTASH_VECTOR_REST_URL!,
-  token: process.env.UPSTASH_VECTOR_REST_TOKEN!,
-});
+// Lazy initialization to prevent build-time errors when env vars are missing
+let _vectorIndex: Index | null = null;
+let _openai: OpenAI | null = null;
+let _anthropic: Anthropic | null = null;
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+function getVectorIndex(): Index {
+  if (!_vectorIndex) {
+    const url = process.env.UPSTASH_VECTOR_REST_URL;
+    const token = process.env.UPSTASH_VECTOR_REST_TOKEN;
+    if (!url || !token) {
+      throw new Error('Upstash Vector credentials not configured');
+    }
+    _vectorIndex = new Index({ url, token });
+  }
+  return _vectorIndex;
+}
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY not configured');
+    }
+    _openai = new OpenAI({ apiKey });
+  }
+  return _openai;
+}
+
+function getAnthropic(): Anthropic {
+  if (!_anthropic) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      throw new Error('ANTHROPIC_API_KEY not configured');
+    }
+    _anthropic = new Anthropic({ apiKey });
+  }
+  return _anthropic;
+}
 
 // =====================================================
 // POST HANDLER
@@ -108,14 +134,14 @@ export async function POST(request: NextRequest) {
     // 1. Store feedback in Upstash Vector for RAG
     console.log(`📝 Storing feedback in vector database...`);
 
-    const feedbackEmbedding = await openai.embeddings.create({
+    const feedbackEmbedding = await getOpenAI().embeddings.create({
       model: 'text-embedding-3-small',
       input: feedbackText,
     });
 
     const feedbackId = `feedback-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
-    await vectorIndex.upsert({
+    await getVectorIndex().upsert({
       id: feedbackId,
       vector: feedbackEmbedding.data[0].embedding,
       metadata: {
@@ -152,7 +178,7 @@ export async function POST(request: NextRequest) {
         author,
       });
 
-      const response = await anthropic.messages.create({
+      const response = await getAnthropic().messages.create({
         model: 'claude-sonnet-4-5',
         max_tokens: 16000,
         temperature: 0.7,
