@@ -257,6 +257,63 @@ export default function BlogDetailPage() {
     }
   }, [slug, locale]);
 
+  // Dynamic SEO meta tags - Update document title and meta tags when post loads
+  useEffect(() => {
+    if (post) {
+      // Update document title
+      const metaTitle = post.metaTitle || post.title;
+      document.title = `${metaTitle} | GetCareKorea`;
+
+      // Update or create meta description
+      let metaDescription = document.querySelector('meta[name="description"]');
+      if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.setAttribute('name', 'description');
+        document.head.appendChild(metaDescription);
+      }
+      metaDescription.setAttribute('content', post.metaDescription || post.excerpt || '');
+
+      // Update Open Graph tags
+      const ogTags = [
+        { property: 'og:title', content: metaTitle },
+        { property: 'og:description', content: post.metaDescription || post.excerpt || '' },
+        { property: 'og:type', content: 'article' },
+        { property: 'og:url', content: typeof window !== 'undefined' ? window.location.href : '' },
+        { property: 'og:image', content: post.cover_image_url || '' },
+        { property: 'og:site_name', content: 'GetCareKorea' },
+        { property: 'article:published_time', content: post.published_at || '' },
+      ];
+
+      ogTags.forEach(({ property, content }) => {
+        let tag = document.querySelector(`meta[property="${property}"]`);
+        if (!tag) {
+          tag = document.createElement('meta');
+          tag.setAttribute('property', property);
+          document.head.appendChild(tag);
+        }
+        tag.setAttribute('content', content);
+      });
+
+      // Update Twitter Card tags
+      const twitterTags = [
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: metaTitle },
+        { name: 'twitter:description', content: post.metaDescription || post.excerpt || '' },
+        { name: 'twitter:image', content: post.cover_image_url || '' },
+      ];
+
+      twitterTags.forEach(({ name, content }) => {
+        let tag = document.querySelector(`meta[name="${name}"]`);
+        if (!tag) {
+          tag = document.createElement('meta');
+          tag.setAttribute('name', name);
+          document.head.appendChild(tag);
+        }
+        tag.setAttribute('content', content);
+      });
+    }
+  }, [post]);
+
   // Show floating CTA after scrolling - must be declared before any conditional returns
   useEffect(() => {
     const handleScroll = () => {

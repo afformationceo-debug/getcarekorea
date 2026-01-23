@@ -72,56 +72,72 @@ async function generateImages(images: ImageMetadata[], keyword: string): Promise
     console.log(`   🎨 Generating: ${img.placeholder}...`);
 
     try {
-      // Real stock photo style - authentic, professional, natural
-      const enhancedPrompt = `PROFESSIONAL STOCK PHOTOGRAPHY: ${img.prompt}
+      // Ultra-realistic photo style - like iPhone or DSLR candid shots
+      const enhancedPrompt = `ULTRA REALISTIC PHOTOGRAPH: ${img.prompt}
 
-CAMERA & TECHNICAL:
-- Shot on Canon EOS 5D Mark IV, 50mm f/1.8 lens
-- Natural window lighting, no harsh flash
-- Shallow depth of field with soft bokeh background
-- ISO 400, 1/125s, natural white balance
+CRITICAL - THIS MUST LOOK LIKE A REAL PHONE PHOTO:
+- Shot on iPhone 15 Pro or Samsung Galaxy S24
+- Slightly imperfect framing (not perfectly centered)
+- Natural motion blur on edges
+- Realistic lens flare from windows
+- Visible environmental reflections
 
-AUTHENTICITY REQUIREMENTS:
-- Real candid moments, not overly posed
-- Natural expressions and body language
-- Genuine interactions between people
-- Documentary-style approach
+SKIN & HUMAN REALISM (MOST IMPORTANT):
+- Visible skin pores and texture
+- Natural skin imperfections (moles, slight blemishes, under-eye shadows)
+- Realistic skin shine and oil
+- Veins slightly visible on hands
+- Natural asymmetric facial features
+- Real wrinkles appropriate to age
+- Hair with individual strands and flyaways
+- Realistic ear and nose cartilage texture
 
-PEOPLE & APPEARANCE:
-- Real looking people with natural skin texture
-- Diverse ages and appearances
-- Natural makeup, realistic hair
-- Professional but comfortable attire
-- Authentic Asian features for Korean medical staff
+CLOTHING & FABRIC:
+- Natural fabric wrinkles and folds
+- Visible stitching on clothes
+- Slightly worn look on everyday items
+- Real shadows in fabric creases
 
-ENVIRONMENT:
-- Modern, clean Korean medical clinic interior
-- Bright, airy spaces with natural light
-- Real medical equipment visible but not focus
-- Plants, artwork, comfortable waiting areas
-- High-end Gangnam clinic aesthetic
+ENVIRONMENT DETAILS:
+- Dust particles visible in light beams
+- Fingerprints on glass surfaces
+- Slight scuff marks on floors
+- Real reflections in windows and screens
+- Cables and cords visible (not hidden)
+- Coffee cups, papers, everyday clutter
 
-LIGHTING:
-- Soft natural daylight from large windows
-- Warm, inviting atmosphere
-- No harsh shadows or artificial blue tint
-- Golden hour warmth for some scenes
+LIGHTING (CRITICAL):
+- Mixed lighting sources (window + overhead)
+- Realistic color temperature differences
+- Natural shadow gradients
+- Slight overexposure near windows (like real photos)
+- Underexposed corners (vignette)
 
-COLOR GRADING:
-- Natural, true-to-life colors
-- Slightly warm tones
-- Not oversaturated or HDR
-- Like photos from premium clinic websites
+KOREAN MEDICAL CLINIC SETTING:
+- Modern Gangnam-style clinic interior
+- Real Korean text on signs and documents
+- Actual medical equipment brands visible
+- Staff in proper Korean medical attire
+- International patients with diverse appearances
 
-MUST AVOID:
-- AI artifacts, plastic skin, uncanny faces
-- Perfect symmetry or overly smooth features
-- Stock photo cliche poses (thumbs up, forced smiles)
-- Clinical, cold, sterile feeling
-- Obviously generated or fake looking images
-- Watermarks or text overlays
+CAMERA ARTIFACTS TO INCLUDE:
+- Slight chromatic aberration on edges
+- Natural depth of field blur
+- Minor lens distortion
+- Realistic JPEG compression feel
+- Occasional slight blur from hand movement
 
-This should look exactly like a real photo from a premium Korean medical tourism clinic's website or brochure.`;
+ABSOLUTELY FORBIDDEN:
+- Perfect, airbrushed skin
+- Symmetrical features
+- Overly saturated colors
+- HDR or hyper-sharp look
+- Stock photo poses
+- Empty, sterile environments
+- Any text or watermarks
+- Cartoon or illustrated elements
+
+The image should be indistinguishable from a real photo taken by a patient or staff member at a Korean clinic.`;
 
       const response = await openai.images.generate({
         model: 'dall-e-3',
