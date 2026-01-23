@@ -72,41 +72,49 @@ async function generateImages(images: ImageMetadata[], keyword: string): Promise
     console.log(`   🎨 Generating: ${img.placeholder}...`);
 
     try {
-      // Modern editorial illustration style - clean, professional, no AI artifacts
-      const enhancedPrompt = `EDITORIAL ILLUSTRATION STYLE: ${img.prompt}
+      // Cute kawaii-style cartoon illustration - friendly and approachable
+      const enhancedPrompt = `CUTE KAWAII CARTOON STYLE: ${img.prompt}
 
-STYLE: Modern minimalist editorial illustration for premium medical publication
-- Clean vector-inspired aesthetic with subtle gradients
-- Soft, muted color palette (dusty blues, warm grays, soft whites, gentle purples)
-- Flat design elements with subtle shadows for depth
-- Professional medical/healthcare visual language
+STYLE: Adorable kawaii-inspired cartoon illustration
+- Cute, rounded character designs with big expressive eyes
+- Soft pastel color palette (pink, mint, lavender, peach, baby blue)
+- Simple, clean lines with minimal details
+- Chibi-style proportions (big heads, small bodies)
+- Friendly, warm, and approachable feel
 
-COMPOSITION:
-- Balanced, intentional negative space
-- Clear visual hierarchy
-- Geometric simplicity with organic touches
-- Magazine-quality editorial feel
+CHARACTER DESIGN:
+- Round, simplified faces with rosy cheeks
+- Small dot noses, simple curved smiles
+- Large sparkly eyes (anime/kawaii style)
+- Soft, fluffy hair with simple shapes
+- Cute simplified hands (mitten-style or simple)
 
 COLOR PALETTE:
-- Primary: Soft teal (#5B8A9A), Warm white (#F5F0EB)
-- Accent: Gentle coral (#E8A598), Light purple (#B8A9C9)
-- Neutrals: Warm gray tones
+- Primary: Soft pink (#FFB6C1), Mint green (#98FB98), Lavender (#E6E6FA)
+- Accent: Peach (#FFDAB9), Baby blue (#89CFF0), Cream (#FFFDD0)
+- Warm undertones throughout
 
-ELEMENTS TO INCLUDE:
-- Abstract representations of medical concepts
-- Clean iconographic elements
-- Subtle Korean design influences (minimalist, refined)
-- Professional healthcare environment suggested through simple shapes
+SETTING/ELEMENTS:
+- Cute simplified medical equipment with faces/personalities
+- Sparkles, stars, hearts, and small decorative elements
+- Soft gradient backgrounds (pastel to white)
+- Fluffy clouds or soft shapes as decorations
+- Little emoji-style icons scattered around
+
+MOOD:
+- Warm, comforting, and reassuring
+- Professional but approachable
+- Makes medical topics feel less intimidating
+- Like a friendly children's book illustration
 
 ABSOLUTELY AVOID:
-- Photorealistic human faces or bodies
-- Detailed facial features
-- Uncanny valley effects
-- Busy or cluttered compositions
-- Harsh colors or high contrast
-- Generic stock photo aesthetics
+- Realistic human proportions
+- Scary or clinical medical imagery
+- Dark or harsh colors
+- Complex detailed backgrounds
+- Anything that looks AI-generated or uncanny
 
-This should look like a premium illustration from The New York Times health section or a high-end medical journal.`;
+This should look like it belongs in a cute Korean/Japanese lifestyle magazine or a friendly healthcare app.`;
 
       const response = await openai.images.generate({
         model: 'dall-e-3',
@@ -249,12 +257,12 @@ First 40-60 words must directly answer the query with specific numbers.
 Each FAQ answer: direct answer first, then explanation.
 
 ### 6. Images (5 REQUIRED)
-Include 5 images with EDITORIAL ILLUSTRATION style prompts:
-- Modern minimalist illustration (NOT photorealistic)
-- Abstract medical concepts, clean iconographic elements
-- Soft muted colors (dusty blues, warm grays, gentle purples)
-- Premium magazine editorial aesthetic
-- NO human faces or bodies - use abstract representations
+Include 5 images with CUTE KAWAII CARTOON style prompts:
+- Adorable chibi-style characters with big eyes and rosy cheeks
+- Soft pastel colors (pink, mint, lavender, peach, baby blue)
+- Cute simplified medical elements with friendly personalities
+- Sparkles, hearts, and decorative elements
+- Warm, comforting, approachable mood - NOT scary medical imagery
 
 ### 7. Content Length: 1500-2500 words
 

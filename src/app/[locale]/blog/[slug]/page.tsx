@@ -759,88 +759,155 @@ export default function BlogDetailPage() {
             </Card>
           </motion.div>
 
-          {/* Author Profile Section (Top) */}
+          {/* About Your Interpreter - Detailed Profile Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.18 }}
             className="mb-8"
           >
-            <Card className="overflow-hidden border border-border/50 shadow-lg">
-              <CardContent className="p-5 lg:p-6">
-                <div className="flex items-center gap-4">
-                  {/* Author Avatar */}
-                  {post.authorPersona ? (
-                    <Link href={`/${locale}/interpreters/${post.authorPersona.slug}`} className="flex-shrink-0">
-                      {post.authorPersona.photo_url ? (
-                        <Image
-                          src={post.authorPersona.photo_url}
-                          alt={getLocalizedAuthorName(post.authorPersona, locale)}
-                          width={64}
-                          height={64}
-                          className="rounded-full object-cover ring-2 ring-violet-200 dark:ring-violet-800 hover:ring-violet-400 transition-all"
-                        />
-                      ) : (
-                        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center ring-2 ring-violet-200 dark:ring-violet-800">
-                          <User className="h-7 w-7 text-white" />
-                        </div>
-                      )}
-                    </Link>
-                  ) : (
-                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-violet-500 via-purple-500 to-pink-500 flex items-center justify-center ring-2 ring-violet-200 dark:ring-violet-800 flex-shrink-0">
-                      <Sparkles className="h-7 w-7 text-white" />
-                    </div>
-                  )}
-
-                  {/* Author Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {post.authorPersona ? (
-                        <Link
-                          href={`/${locale}/interpreters/${post.authorPersona.slug}`}
-                          className="font-bold hover:text-violet-600 transition-colors"
-                        >
-                          {getLocalizedAuthorName(post.authorPersona, locale)}
-                        </Link>
-                      ) : (
-                        <span className="font-bold">{getDefaultAuthorName(locale)}</span>
-                      )}
-                      <Badge className="bg-gradient-to-r from-violet-500 to-purple-500 text-white text-[10px]">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        {locale === 'ko' ? '인증됨' : 'Verified'}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {post.authorPersona ? (
-                        <>Medical Tourism Expert | {post.authorPersona.years_of_experience} Years</>
-                      ) : (
-                        <>{locale === 'ko' ? '의료 관광 전문 팀' : 'Medical Tourism Expert Team'}</>
-                      )}
-                    </p>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {formatDate(post.published_at)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Globe className="h-3 w-3" />
-                        {post.authorPersona?.languages?.slice(0, 3).map(l => l.code.toUpperCase()).join(', ') || 'KO, EN, JA'}
-                      </span>
-                    </div>
+            <Card className="overflow-hidden border-2 border-teal-200 dark:border-teal-800 shadow-xl bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-teal-950/50 dark:via-background dark:to-cyan-950/50">
+              <CardContent className="p-6 lg:p-8">
+                {/* Section Header */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 shadow-lg">
+                    <User className="h-5 w-5 text-white" />
                   </div>
+                  <div>
+                    <h3 className="font-bold text-lg">
+                      {locale === 'ko' ? '담당 의료 통역사 소개' :
+                       locale === 'ja' ? '担当医療通訳者について' :
+                       locale === 'zh-TW' || locale === 'zh-CN' ? '您的医疗翻译' :
+                       'About Your Medical Interpreter'}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {locale === 'ko' ? '이 글의 저자이자 여러분의 한국 의료 여정을 함께할 전문가입니다' :
+                       'The author of this article and your dedicated expert for medical journey in Korea'}
+                    </p>
+                  </div>
+                </div>
 
-                  {/* CTA Button */}
-                  <div className="hidden sm:block flex-shrink-0">
+                {/* Interpreter Profile Card */}
+                <div className="flex flex-col sm:flex-row gap-6">
+                  {/* Avatar & Quick Actions */}
+                  <div className="flex flex-col items-center sm:items-start gap-3">
+                    {post.authorPersona ? (
+                      <Link href={`/${locale}/interpreters/${post.authorPersona.slug}`} className="group">
+                        {post.authorPersona.photo_url ? (
+                          <div className="relative">
+                            <Image
+                              src={post.authorPersona.photo_url}
+                              alt={getLocalizedAuthorName(post.authorPersona, locale)}
+                              width={100}
+                              height={100}
+                              className="rounded-2xl object-cover ring-4 ring-teal-200 dark:ring-teal-700 group-hover:ring-teal-400 transition-all shadow-lg"
+                            />
+                            <div className="absolute -bottom-2 -right-2 p-1.5 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-900">
+                              <CheckCircle className="h-3 w-3 text-white" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="h-24 w-24 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center ring-4 ring-teal-200 dark:ring-teal-700 shadow-lg">
+                            <User className="h-10 w-10 text-white" />
+                          </div>
+                        )}
+                      </Link>
+                    ) : (
+                      <div className="h-24 w-24 rounded-2xl bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-500 flex items-center justify-center ring-4 ring-teal-200 dark:ring-teal-700 shadow-lg">
+                        <Sparkles className="h-10 w-10 text-white" />
+                      </div>
+                    )}
+
+                    {/* Contact Button */}
                     <Button
                       size="sm"
-                      className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+                      className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 shadow-md"
                       asChild
                     >
                       <a href={floatingMessengerCTA.link} target="_blank" rel="noopener noreferrer">
-                        <MessageCircle className="h-4 w-4 mr-1" />
-                        {locale === 'ko' ? '상담하기' : 'Consult'}
+                        <MessageCircle className="h-4 w-4 mr-1.5" />
+                        {locale === 'ko' ? '무료 상담' : 'Free Consult'}
                       </a>
                     </Button>
+                  </div>
+
+                  {/* Interpreter Details */}
+                  <div className="flex-1 space-y-4">
+                    {/* Name & Title */}
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {post.authorPersona ? (
+                          <Link
+                            href={`/${locale}/interpreters/${post.authorPersona.slug}`}
+                            className="font-bold text-xl hover:text-teal-600 transition-colors"
+                          >
+                            {getLocalizedAuthorName(post.authorPersona, locale)}
+                          </Link>
+                        ) : (
+                          <span className="font-bold text-xl">{getDefaultAuthorName(locale)}</span>
+                        )}
+                        <Badge className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-[10px]">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          {locale === 'ko' ? '공인 통역사' : 'Certified'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {post.authorPersona ? (
+                          <>
+                            {locale === 'ko' ? '의료 관광 전문가' : 'Medical Tourism Specialist'} | {post.authorPersona.years_of_experience}{locale === 'ko' ? '년 경력' : ' Years Experience'}
+                          </>
+                        ) : (
+                          <>{locale === 'ko' ? '의료 관광 전문 팀' : 'Medical Tourism Expert Team'}</>
+                        )}
+                      </p>
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="p-2.5 rounded-lg bg-white/60 dark:bg-white/5 border border-teal-100 dark:border-teal-800 text-center">
+                        <Calendar className="h-4 w-4 mx-auto mb-1 text-teal-500" />
+                        <p className="text-[10px] text-muted-foreground">
+                          {locale === 'ko' ? '작성일' : 'Published'}
+                        </p>
+                        <p className="font-semibold text-xs">{formatDate(post.published_at)}</p>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-white/60 dark:bg-white/5 border border-teal-100 dark:border-teal-800 text-center">
+                        <Globe className="h-4 w-4 mx-auto mb-1 text-teal-500" />
+                        <p className="text-[10px] text-muted-foreground">
+                          {locale === 'ko' ? '언어' : 'Languages'}
+                        </p>
+                        <p className="font-semibold text-xs">
+                          {post.authorPersona?.languages?.slice(0, 3).map(l => l.code.toUpperCase()).join(', ') || 'KO, EN, JA'}
+                        </p>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-white/60 dark:bg-white/5 border border-teal-100 dark:border-teal-800 text-center">
+                        <Award className="h-4 w-4 mx-auto mb-1 text-teal-500" />
+                        <p className="text-[10px] text-muted-foreground">
+                          {locale === 'ko' ? '전문분야' : 'Specialty'}
+                        </p>
+                        <p className="font-semibold text-xs truncate">
+                          {post.authorPersona?.specialties?.[0] || formatCategoryName(post.category || 'Medical')}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Bio */}
+                    {post.authorPersona?.bio_en && (
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {locale === 'ko' ? (post.authorPersona.bio_ko || post.authorPersona.bio_en) : post.authorPersona.bio_en}
+                      </p>
+                    )}
+
+                    {/* View Full Profile Link */}
+                    {post.authorPersona && (
+                      <Link
+                        href={`/${locale}/interpreters/${post.authorPersona.slug}`}
+                        className="inline-flex items-center gap-1 text-sm text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 font-medium"
+                      >
+                        {locale === 'ko' ? '전체 프로필 보기' : 'View Full Profile'}
+                        <ChevronRight className="h-4 w-4" />
+                      </Link>
+                    )}
                   </div>
                 </div>
               </CardContent>
