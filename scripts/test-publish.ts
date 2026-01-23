@@ -89,7 +89,7 @@ async function generateImages(images: ImageMetadata[], keyword: string): Promise
         style: 'natural',
       });
 
-      if (response.data[0]?.url) {
+      if (response.data && response.data[0]?.url) {
         generated.push({
           placeholder: img.placeholder,
           url: response.data[0].url,
