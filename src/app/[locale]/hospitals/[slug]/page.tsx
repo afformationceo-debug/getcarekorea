@@ -3,6 +3,62 @@ import { setRequestLocale } from 'next-intl/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { HospitalDetailClient } from './HospitalDetailClient';
 import type { Locale } from '@/lib/i18n/config';
+import type { Metadata } from 'next';
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://getcarekorea.com';
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const supabase = await createAdminClient();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: hospital } = await (supabase.from('hospitals') as any)
+    .select('name_en, name_ko, description_en, category, city, district, avg_rating, review_count, google_photos, cover_image_url')
+    .eq('slug', slug)
+    .in('status', ['published', 'draft'])
+    .single();
+
+  if (!hospital) {
+    return {
+      title: 'Hospital Not Found',
+    };
+  }
+
+  const hospitalName = hospital.name_en || hospital.name_ko;
+  const description = hospital.description_en || `${hospitalName} - Top rated medical clinic in ${hospital.city}, Korea`;
+  const image = hospital.google_photos?.[0] || hospital.cover_image_url;
+
+  return {
+    title: `${hospitalName} | GetCareKorea`,
+    description: description.slice(0, 160),
+    openGraph: {
+      title: `${hospitalName} - Medical Tourism Korea`,
+      description: description.slice(0, 160),
+      url: `${baseUrl}/${locale}/hospitals/${slug}`,
+      siteName: 'GetCareKorea',
+      images: image ? [{ url: image, width: 1200, height: 630 }] : [],
+      locale: locale,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: hospitalName,
+      description: description.slice(0, 160),
+      images: image ? [image] : [],
+    },
+    alternates: {
+      canonical: `${baseUrl}/${locale}/hospitals/${slug}`,
+      languages: {
+        'en': `${baseUrl}/en/hospitals/${slug}`,
+        'ko': `${baseUrl}/ko/hospitals/${slug}`,
+        'ja': `${baseUrl}/ja/hospitals/${slug}`,
+        'zh-CN': `${baseUrl}/zh-CN/hospitals/${slug}`,
+        'zh-TW': `${baseUrl}/zh-TW/hospitals/${slug}`,
+      },
+    },
+  };
+}
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string }>;

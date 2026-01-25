@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Script from 'next/script';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -136,6 +137,92 @@ interface HospitalDetailClientProps {
   locale: Locale;
 }
 
+// Generate Schema.org JSON-LD markup for SEO
+function generateSchemaMarkup(hospital: Hospital, locale: Locale) {
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://getcarekorea.com';
+
+  // MedicalOrganization schema
+  const medicalOrgSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'MedicalOrganization',
+    '@id': `${baseUrl}/${locale}/hospitals/${hospital.slug}`,
+    name: hospital.name,
+    alternateName: hospital.name_ko || hospital.name_en,
+    description: hospital.description,
+    url: `${baseUrl}/${locale}/hospitals/${hospital.slug}`,
+    logo: hospital.logo_url,
+    image: hospital.cover_image_url || hospital.gallery?.[0],
+    telephone: hospital.phone,
+    email: hospital.email,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: hospital.address,
+      addressLocality: hospital.district || hospital.city,
+      addressRegion: hospital.city,
+      addressCountry: 'KR',
+    },
+    geo: hospital.latitude && hospital.longitude ? {
+      '@type': 'GeoCoordinates',
+      latitude: hospital.latitude,
+      longitude: hospital.longitude,
+    } : undefined,
+    aggregateRating: hospital.review_count > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: hospital.avg_rating.toFixed(1),
+      reviewCount: hospital.review_count,
+      bestRating: '5',
+      worstRating: '1',
+    } : undefined,
+    medicalSpecialty: hospital.specialties?.map(s => ({
+      '@type': 'MedicalSpecialty',
+      name: s,
+    })),
+    availableLanguage: hospital.languages?.map(lang => ({
+      '@type': 'Language',
+      name: lang,
+    })),
+    hasCredential: hospital.certifications?.map(cert => ({
+      '@type': 'EducationalOccupationalCredential',
+      credentialCategory: cert,
+    })),
+    sameAs: [
+      hospital.website,
+      hospital.google_maps_url,
+    ].filter(Boolean),
+    priceRange: '$$-$$$$',
+    currenciesAccepted: 'KRW, USD',
+    paymentAccepted: 'Cash, Credit Card',
+  };
+
+  // BreadcrumbList schema
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: `${baseUrl}/${locale}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Hospitals',
+        item: `${baseUrl}/${locale}/hospitals`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: hospital.name,
+        item: `${baseUrl}/${locale}/hospitals/${hospital.slug}`,
+      },
+    ],
+  };
+
+  return [medicalOrgSchema, breadcrumbSchema];
+}
+
 export function HospitalDetailClient({
   hospital,
   relatedBlogPosts = [],
@@ -151,8 +238,19 @@ export function HospitalDetailClient({
     ...hospital.gallery,
   ].filter(Boolean) as string[];
 
+  // Generate schema markup
+  const schemaMarkup = generateSchemaMarkup(hospital, locale);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-muted/30 to-background">
+      {/* JSON-LD Schema.org markup for SEO */}
+      <Script
+        id="hospital-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schemaMarkup),
+        }}
+      />
       {/* Breadcrumb */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -1653,8 +1751,8 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
     >
       {/* Main CTA Card - Interpreter Focus */}
       {/* Desktop: sticky in sidebar, Mobile: hidden (shown at bottom via MobileBottomCTA) */}
-      <div className="hidden lg:block lg:sticky lg:top-24 z-10">
-      <Card className="overflow-hidden border-0 shadow-2xl">
+      {/* Desktop CTA - NOT sticky to avoid covering content */}
+      <Card className="hidden lg:block overflow-hidden border-0 shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-violet-500/5 to-purple-500/5" />
         <CardContent className="relative p-6">
           <div className="text-center mb-6">
@@ -1714,7 +1812,6 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
           </div>
         </CardContent>
       </Card>
-      </div>
 
       {/* Contact Info */}
       <Card className="overflow-hidden border-0 shadow-lg">

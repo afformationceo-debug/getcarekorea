@@ -115,7 +115,7 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
   const [selectedSpecialty, setSelectedSpecialty] = useState('all');
   const [selectedCity, setSelectedCity] = useState('all');
   const [sortBy, setSortBy] = useState('rating');
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'grouped'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'grouped'>('grouped');
   const [showFilters, setShowFilters] = useState(false);
   const [groupBy, setGroupBy] = useState<'category' | 'district'>('category');
 
@@ -750,17 +750,68 @@ function HospitalListCard({ hospital, locale }: { hospital: Hospital; locale: Lo
   );
 }
 
-// Category display name mapping
-const categoryDisplayNames: Record<string, string> = {
-  'plastic-surgery': 'Plastic Surgery',
-  'dermatology': 'Dermatology',
-  'dental': 'Dental',
-  'ophthalmology': 'Ophthalmology',
-  'traditional-medicine': 'Traditional Korean Medicine',
-  'university-hospital': 'University Hospital',
-  'hair-transplant': 'Hair Transplant',
-  'health-checkup': 'Health Checkup',
+// Category display name and styling mapping
+const categoryConfig: Record<string, { name: string; color: string; bgColor: string; emoji: string }> = {
+  'plastic-surgery': {
+    name: 'Plastic Surgery',
+    color: 'text-pink-600 dark:text-pink-400',
+    bgColor: 'bg-pink-100 dark:bg-pink-950 border-pink-200 dark:border-pink-800',
+    emoji: '💎'
+  },
+  'dermatology': {
+    name: 'Dermatology',
+    color: 'text-purple-600 dark:text-purple-400',
+    bgColor: 'bg-purple-100 dark:bg-purple-950 border-purple-200 dark:border-purple-800',
+    emoji: '✨'
+  },
+  'dental': {
+    name: 'Dental',
+    color: 'text-cyan-600 dark:text-cyan-400',
+    bgColor: 'bg-cyan-100 dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800',
+    emoji: '🦷'
+  },
+  'ophthalmology': {
+    name: 'Ophthalmology',
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-100 dark:bg-blue-950 border-blue-200 dark:border-blue-800',
+    emoji: '👁️'
+  },
+  'traditional-medicine': {
+    name: 'Traditional Korean Medicine',
+    color: 'text-green-600 dark:text-green-400',
+    bgColor: 'bg-green-100 dark:bg-green-950 border-green-200 dark:border-green-800',
+    emoji: '🌿'
+  },
+  'university-hospital': {
+    name: 'University Hospital',
+    color: 'text-indigo-600 dark:text-indigo-400',
+    bgColor: 'bg-indigo-100 dark:bg-indigo-950 border-indigo-200 dark:border-indigo-800',
+    emoji: '🏥'
+  },
+  'hair-transplant': {
+    name: 'Hair Transplant',
+    color: 'text-amber-600 dark:text-amber-400',
+    bgColor: 'bg-amber-100 dark:bg-amber-950 border-amber-200 dark:border-amber-800',
+    emoji: '💇'
+  },
+  'health-checkup': {
+    name: 'Health Checkup',
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bgColor: 'bg-emerald-100 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800',
+    emoji: '🩺'
+  },
+  'other': {
+    name: 'Other Clinics',
+    color: 'text-gray-600 dark:text-gray-400',
+    bgColor: 'bg-gray-100 dark:bg-gray-950 border-gray-200 dark:border-gray-800',
+    emoji: '🏨'
+  },
 };
+
+// Legacy mapping for compatibility
+const categoryDisplayNames: Record<string, string> = Object.fromEntries(
+  Object.entries(categoryConfig).map(([key, value]) => [key, value.name])
+);
 
 // Group by options
 type GroupByOption = 'category' | 'district' | 'rating' | 'popularity';
@@ -904,25 +955,36 @@ function GroupedHospitalsView({
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {sortedGroups.slice(0, 4).map(([group, groupHospitals]) => {
+      {/* Quick Stats - Category Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {sortedGroups.map(([group, groupHospitals]) => {
           const displayInfo = getGroupDisplayName(group);
+          const config = localGroupBy === 'category' ? (categoryConfig[group] || categoryConfig['other']) : null;
+
           return (
             <motion.button
               key={group}
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
                 const element = document.getElementById(`group-${group}`);
                 element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
-              className="p-4 rounded-xl border bg-card hover:border-primary/50 transition-all text-left"
+              className={`p-4 rounded-2xl border-2 transition-all text-left shadow-sm hover:shadow-md ${
+                config ? config.bgColor : 'bg-card border-border hover:border-primary/50'
+              }`}
             >
-              <p className="font-bold text-lg">{groupHospitals.length}</p>
-              <p className="text-sm text-muted-foreground truncate">{displayInfo.name}</p>
+              <div className="flex items-center justify-between mb-2">
+                {config && <span className="text-2xl">{config.emoji}</span>}
+                <span className={`font-bold text-2xl ${config ? config.color : 'text-foreground'}`}>
+                  {groupHospitals.length}
+                </span>
+              </div>
+              <p className={`font-semibold truncate ${config ? config.color : 'text-foreground'}`}>
+                {displayInfo.name}
+              </p>
               {displayInfo.description && (
-                <p className="text-xs text-muted-foreground/70">{displayInfo.description}</p>
+                <p className="text-xs text-muted-foreground mt-1">{displayInfo.description}</p>
               )}
             </motion.button>
           );
@@ -934,6 +996,7 @@ function GroupedHospitalsView({
         const displayInfo = getGroupDisplayName(group);
         const isExpanded = expandedGroups.has(group);
         const visibleHospitals = isExpanded ? groupHospitals : groupHospitals.slice(0, 8);
+        const config = localGroupBy === 'category' ? (categoryConfig[group] || categoryConfig['other']) : null;
 
         return (
         <motion.div
@@ -941,25 +1004,34 @@ function GroupedHospitalsView({
           id={`group-${group}`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-4 scroll-mt-24"
+          className="space-y-5 scroll-mt-24"
         >
-          {/* Group Header */}
-          <div className="flex items-center justify-between border-b border-border/50 pb-3">
-            <div>
-              <h3 className="text-xl font-bold flex items-center gap-2">
-                {localGroupBy === 'category' && <Building2 className="h-5 w-5 text-primary" />}
-                {localGroupBy === 'district' && <MapPin className="h-5 w-5 text-primary" />}
-                {localGroupBy === 'rating' && <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />}
-                {localGroupBy === 'popularity' && <HeartPulse className="h-5 w-5 text-rose-500" />}
-                {displayInfo.name}
-              </h3>
-              {displayInfo.description && (
-                <p className="text-sm text-muted-foreground mt-0.5">{displayInfo.description}</p>
-              )}
+          {/* Group Header - Enhanced */}
+          <div className={`rounded-2xl p-5 border-2 ${config ? config.bgColor : 'bg-muted/30 border-border'}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {config ? (
+                  <span className="text-3xl">{config.emoji}</span>
+                ) : (
+                  <>
+                    {localGroupBy === 'district' && <MapPin className="h-6 w-6 text-primary" />}
+                    {localGroupBy === 'rating' && <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />}
+                    {localGroupBy === 'popularity' && <HeartPulse className="h-6 w-6 text-rose-500" />}
+                  </>
+                )}
+                <div>
+                  <h3 className={`text-xl font-bold ${config ? config.color : 'text-foreground'}`}>
+                    {displayInfo.name}
+                  </h3>
+                  {displayInfo.description && (
+                    <p className="text-sm text-muted-foreground">{displayInfo.description}</p>
+                  )}
+                </div>
+              </div>
+              <Badge className={`text-sm px-3 py-1 ${config ? `${config.bgColor} ${config.color} border` : ''}`}>
+                {groupHospitals.length} {groupHospitals.length === 1 ? 'hospital' : 'hospitals'}
+              </Badge>
             </div>
-            <Badge variant="secondary" className="text-sm">
-              {groupHospitals.length} {groupHospitals.length === 1 ? 'hospital' : 'hospitals'}
-            </Badge>
           </div>
 
           {/* Hospital Cards */}
