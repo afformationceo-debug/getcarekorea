@@ -24,26 +24,37 @@ export default async function HospitalsPage({ params }: PageProps) {
     .order('is_featured', { ascending: false })
     .order('avg_rating', { ascending: false });
 
-  const hospitals = (hospitalsData || []).map((h: Record<string, unknown>) => ({
-    id: h.id as string,
-    slug: h.slug as string,
-    name: (h[`name_${localeSuffix}`] || h.name_en || h.name_ko) as string,
-    description: (h[`description_${localeSuffix}`] || h.description_en || h.description_ko) as string,
-    image: (h.cover_image_url || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=600&fit=crop') as string,
-    city: (h.city || 'Seoul') as string,
-    specialties: (h.specialties || []) as string[],
-    languages: (h.languages || ['EN']) as string[],
-    rating: (h.avg_rating || 4.5) as number,
-    reviews: (h.review_count || 0) as number,
-    certifications: (h.certifications || []) as string[],
-    badges: [
-      ...(h.is_featured ? ['Featured'] : []),
-      ...((h.avg_rating as number) >= 4.8 ? ['Top Rated'] : []),
-    ],
-    priceRange: '$1,000 - $10,000',
-    hasCCTV: (h.has_cctv || false) as boolean,
-    hasFemaleDoctor: (h.has_female_doctor || false) as boolean,
-  }));
+  const hospitals = (hospitalsData || []).map((h: Record<string, unknown>) => {
+    // Use first Google photo if available, otherwise fall back to cover_image_url
+    const googlePhotos = h.google_photos as string[] | null;
+    const coverImage = googlePhotos && googlePhotos.length > 0
+      ? googlePhotos[0]
+      : (h.cover_image_url || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=600&fit=crop');
+
+    return {
+      id: h.id as string,
+      slug: h.slug as string,
+      name: (h[`name_${localeSuffix}`] || h.name_en || h.name_ko) as string,
+      description: (h[`description_${localeSuffix}`] || h.description_en || h.description_ko) as string,
+      image: coverImage as string,
+      city: (h.city || 'Seoul') as string,
+      district: h.district as string | undefined,
+      specialties: (h.specialties || []) as string[],
+      languages: (h.languages || ['Korean', 'English']) as string[],
+      rating: (h.avg_rating || 4.5) as number,
+      reviews: (h.review_count || 0) as number,
+      certifications: (h.certifications || []) as string[],
+      badges: [
+        ...(h.is_featured ? ['Featured'] : []),
+        ...((h.avg_rating as number) >= 4.8 ? ['Top Rated'] : []),
+      ],
+      priceRange: '$1,000 - $10,000',
+      hasCCTV: (h.has_cctv || false) as boolean,
+      hasFemaleDoctor: (h.has_female_doctor || false) as boolean,
+      category: h.category as string | undefined,
+      source: h.source as string | undefined,
+    };
+  });
 
   // If no data in DB, use fallback data
   const finalHospitals = hospitals.length > 0 ? hospitals : getFallbackHospitals();

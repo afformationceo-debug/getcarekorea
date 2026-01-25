@@ -21,7 +21,8 @@ dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 // =====================================================
 
 const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN;
-const APIFY_ACTOR_ID = 'compass/crawler-google-places';
+// Use tilde format for API calls: username~actor-name
+const APIFY_ACTOR_ID = 'compass~crawler-google-places';
 
 // Supabase client
 const supabase = createClient(
@@ -166,12 +167,16 @@ async function runApifyCrawler(searchQuery: string, maxResults: number = 100): P
 // =====================================================
 
 function generateSlug(name: string): string {
+  // Remove Korean characters for URL-safe slugs
+  // Keep only English letters, numbers, and spaces
   return name
     .toLowerCase()
-    .replace(/[^a-z0-9가-힣\s]/g, '')
+    .replace(/[가-힣]/g, '')  // Remove Korean characters
+    .replace(/[^a-z0-9\s-]/g, '')  // Keep only alphanumeric and spaces
     .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')  // Replace multiple dashes with single
     .replace(/^-+|-+$/g, '')
-    .substring(0, 100);
+    .substring(0, 80) || 'hospital';  // Fallback if empty
 }
 
 function extractDistrict(address: string): string | undefined {
@@ -243,7 +248,7 @@ function processPlaceData(place: GooglePlaceResult, category: string): HospitalD
 // DATABASE FUNCTIONS
 // =====================================================
 
-async function saveHospitalToDatabase(hospital: HospitalData): Promise<boolean> {
+async function saveHospitalToDatabase(hospital: HospitalData): Promise<{ success: boolean; isNew: boolean }> {
   try {
     // Check if already exists by google_place_id
     const { data: existing } = await supabase
@@ -262,20 +267,30 @@ async function saveHospitalToDatabase(hospital: HospitalData): Promise<boolean> 
         })
         .eq('google_place_id', hospital.google_place_id);
 
-      if (error) throw error;
-      return false; // Updated, not new
+      if (error) {
+        console.error(`   ❌ Update failed for ${hospital.name_ko}:`, error.message);
+        return { success: false, isNew: false };
+      }
+      return { success: true, isNew: false };
     } else {
       // Insert new
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('hospitals')
-        .insert(hospital);
+        .insert(hospital)
+        .select('id')
+        .single();
 
-      if (error) throw error;
-      return true; // New insert
+      if (error) {
+        console.error(`   ❌ Insert failed for ${hospital.name_ko}:`, error.message);
+        console.error(`      Details:`, error.details || error.hint || 'No details');
+        return { success: false, isNew: true };
+      }
+      console.log(`   ✅ Inserted with ID: ${data.id}`);
+      return { success: true, isNew: true };
     }
   } catch (error) {
     console.error(`   ❌ Failed to save ${hospital.name_ko}:`, error);
-    return false;
+    return { success: false, isNew: false };
   }
 }
 
@@ -312,14 +327,16 @@ async function crawlAllCategories() {
 
       for (const place of places) {
         const hospitalData = processPlaceData(place, category.category);
-        const isNew = await saveHospitalToDatabase(hospitalData);
+        const result = await saveHospitalToDatabase(hospitalData);
 
         stats.totalCrawled++;
-        if (isNew) {
+        if (result.success && result.isNew) {
           stats.newInserted++;
           console.log(`   ✅ NEW: ${hospitalData.name_ko}`);
-        } else {
+        } else if (result.success) {
           stats.updated++;
+        } else {
+          stats.errors++;
         }
       }
 
@@ -378,8 +395,12 @@ async function crawlSingleCategory(query: string, category: string, maxResults: 
       console.log('');
 
       // Save to database
-      const isNew = await saveHospitalToDatabase(hospitalData);
-      console.log(`      ${isNew ? '✅ Saved (new)' : '📝 Updated'}`);
+      const result = await saveHospitalToDatabase(hospitalData);
+      if (result.success) {
+        console.log(`      ${result.isNew ? '✅ Saved (new)' : '📝 Updated'}`);
+      } else {
+        console.log(`      ⚠️ Save failed`);
+      }
       console.log('');
     }
 

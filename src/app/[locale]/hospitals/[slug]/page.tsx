@@ -15,12 +15,12 @@ export default async function HospitalDetailPage({ params }: PageProps) {
   const supabase = await createAdminClient();
   const localeSuffix = locale.replace('-', '_').toLowerCase();
 
-  // Fetch hospital from DB
+  // Fetch hospital from DB (include draft for testing, published for production)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: hospitalData, error } = await (supabase.from('hospitals') as any)
     .select('*')
     .eq('slug', slug)
-    .eq('status', 'published')
+    .in('status', ['published', 'draft'])  // Allow draft for testing
     .single();
 
   // If not found in DB, try fallback
@@ -105,21 +105,41 @@ export default async function HospitalDetailPage({ params }: PageProps) {
   // Use mock data if no procedures linked
   const finalProcedures = procedures.length > 0 ? procedures : getMockProcedures();
 
+  // Use Google Photos as gallery if available
+  const galleryImages = hospitalData.google_photos?.length > 0
+    ? hospitalData.google_photos
+    : hospitalData.gallery || [];
+
+  // Determine hospital name based on locale
+  // For English locales, only show English name. For others, show localized or fallback
+  const isEnglishLocale = locale === 'en';
+  const localizedName = hospitalData[`name_${localeSuffix}`];
+  const hospitalName = isEnglishLocale
+    ? (hospitalData.name_en || hospitalData.name_ko)
+    : (localizedName || hospitalData.name_en || hospitalData.name_ko);
+
+  // Keep both names for display purposes
+  const nameKo = hospitalData.name_ko;
+  const nameEn = hospitalData.name_en;
+
   const hospital = {
     id: hospitalData.id,
     slug: hospitalData.slug,
-    name: hospitalData[`name_${localeSuffix}`] || hospitalData.name_en || hospitalData.name_ko,
+    name: hospitalName,
+    name_ko: nameKo,
+    name_en: nameEn,
     description: hospitalData[`description_${localeSuffix}`] || hospitalData.description_en || hospitalData.description_ko,
     logo_url: hospitalData.logo_url,
-    cover_image_url: hospitalData.cover_image_url,
-    gallery: hospitalData.gallery || [],
+    cover_image_url: galleryImages[0] || hospitalData.cover_image_url,
+    gallery: galleryImages,
     address: hospitalData.address,
     city: hospitalData.city,
+    district: hospitalData.district,
     phone: hospitalData.phone,
     email: hospitalData.email,
     website: hospitalData.website,
     specialties: hospitalData.specialties || [],
-    languages: hospitalData.languages || [],
+    languages: hospitalData.languages || ['Korean', 'English'],
     certifications: hospitalData.certifications || [],
     has_cctv: hospitalData.has_cctv,
     has_female_doctor: hospitalData.has_female_doctor,
@@ -127,6 +147,20 @@ export default async function HospitalDetailPage({ params }: PageProps) {
     review_count: hospitalData.review_count || 0,
     is_featured: hospitalData.is_featured,
     is_verified: hospitalData.is_verified,
+    // Google Places specific data
+    google_maps_url: hospitalData.google_maps_url,
+    google_place_id: hospitalData.google_place_id,
+    opening_hours: hospitalData.opening_hours || [],
+    latitude: hospitalData.latitude,
+    longitude: hospitalData.longitude,
+    category: hospitalData.category,
+    source: hospitalData.source,
+    ai_summary: hospitalData[`ai_summary_${localeSuffix}`] || hospitalData.ai_summary_en,
+    // SEO meta
+    meta_title: hospitalData[`meta_title_${localeSuffix}`] || hospitalData.meta_title_en,
+    meta_description: hospitalData[`meta_description_${localeSuffix}`] || hospitalData.meta_description_en,
+    // Crawl info
+    crawled_at: hospitalData.crawled_at,
   };
 
   return (

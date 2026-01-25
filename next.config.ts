@@ -19,6 +19,16 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'oaidalleapiprodscus.blob.core.windows.net',
       },
+      {
+        // Google Places Photos
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        // Google Maps Static
+        protocol: 'https',
+        hostname: 'maps.googleapis.com',
+      },
     ],
     // Optimize image loading
     formats: ['image/avif', 'image/webp'],
