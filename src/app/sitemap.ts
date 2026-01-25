@@ -2,7 +2,8 @@ import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { locales } from '@/lib/i18n/config';
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://getcarekorea.com';
+// IMPORTANT: Always use production URL for sitemap (Google Search Console requirement)
+const baseUrl = 'https://getcarekorea.com';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createClient(

@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://getcarekorea.com';
+  // IMPORTANT: Always use production URL for robots.txt
+  const baseUrl = 'https://getcarekorea.com';
 
   return {
     rules: [

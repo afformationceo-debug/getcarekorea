@@ -1683,6 +1683,8 @@ function MobileBottomCTA({ hospital, locale }: { hospital: Hospital; locale: Loc
 }
 
 function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Locale }) {
+  const t = useTranslations('hospitals.detail');
+
   // Get locale-specific CTA text
   const getCTAText = () => {
     const ctaMap: Record<string, { title: string; subtitle: string; cta1: string; cta2: string; interpreter: string }> = {
@@ -1816,7 +1818,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
       {/* Contact Info */}
       <Card className="overflow-hidden border-0 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-muted/50 to-muted/30">
-          <CardTitle className="text-base">Contact Information</CardTitle>
+          <CardTitle className="text-base">{t('contactInfo')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 pt-4">
           {hospital.phone && (
@@ -1829,7 +1831,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
                 <Phone className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Phone</p>
+                <p className="text-xs text-muted-foreground">{t('phone')}</p>
                 <p className="font-medium">{hospital.phone}</p>
               </div>
             </motion.a>
@@ -1846,8 +1848,8 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
                 <Globe className="h-5 w-5 text-violet-500" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Website</p>
-                <p className="font-medium">Visit Website</p>
+                <p className="text-xs text-muted-foreground">{t('website')}</p>
+                <p className="font-medium">{t('visitWebsite')}</p>
               </div>
             </motion.a>
           )}
@@ -1860,7 +1862,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
                 <MapPin className="h-5 w-5 text-emerald-500" />
               </div>
               <div className="flex-1">
-                <p className="text-xs text-muted-foreground">Address</p>
+                <p className="text-xs text-muted-foreground">{t('address')}</p>
                 <p className="font-medium">{hospital.address}</p>
                 <p className="text-sm text-muted-foreground">{hospital.city}{hospital.district ? `, ${hospital.district}` : ''}</p>
                 {hospital.google_maps_url && (
@@ -1870,7 +1872,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 mt-2 text-xs text-primary hover:underline"
                   >
-                    View on Google Maps
+                    {t('viewOnGoogleMaps')}
                     <ChevronRight className="h-3 w-3" />
                   </a>
                 )}
@@ -1887,7 +1889,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
                 <Clock className="h-5 w-5 text-amber-500" />
               </div>
               <div className="flex-1">
-                <p className="text-xs text-muted-foreground">Opening Hours</p>
+                <p className="text-xs text-muted-foreground">{t('operatingHours')}</p>
                 <div className="text-sm space-y-0.5 mt-1">
                   {hospital.opening_hours.slice(0, 7).map((hour, idx) => {
                     // Parse JSON string if needed
@@ -1919,16 +1921,16 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            Why Book Through Us?
+            {t('whyBookWithUs')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {[
-            { icon: MessageCircle, text: 'Free Interpreter Service', desc: 'Professional medical interpreters' },
-            { icon: Shield, text: 'Verified Hospitals', desc: 'All clinics vetted by us' },
-            { icon: Award, text: 'Best Price Guarantee', desc: 'No hidden fees' },
-            { icon: Clock, text: '24/7 Support', desc: 'We\'re here when you need us' },
-            { icon: Heart, text: 'Aftercare Included', desc: 'Follow-up consultations' },
+            { icon: MessageCircle, textKey: 'freeInterpreter', descKey: 'freeInterpreterDesc' },
+            { icon: Shield, textKey: 'verifiedHospitals', descKey: 'verifiedHospitalsDesc' },
+            { icon: Award, textKey: 'bestPrice', descKey: 'bestPriceDesc' },
+            { icon: Clock, textKey: 'support247', descKey: 'support247Desc' },
+            { icon: Heart, textKey: 'aftercare', descKey: 'aftercareDesc' },
           ].map((item, index) => (
             <motion.div
               key={index}
@@ -1941,8 +1943,8 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
                 <item.icon className="h-4 w-4 text-green-600" />
               </div>
               <div>
-                <p className="font-medium text-sm">{item.text}</p>
-                <p className="text-xs text-muted-foreground">{item.desc}</p>
+                <p className="font-medium text-sm">{t(item.textKey)}</p>
+                <p className="text-xs text-muted-foreground">{t(item.descKey)}</p>
               </div>
             </motion.div>
           ))}
@@ -1957,12 +1959,12 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
               <MessageCircle className="h-6 w-6" />
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-sm">Have Questions?</p>
-              <p className="text-xs text-muted-foreground">Chat with us directly</p>
+              <p className="font-semibold text-sm">{t('haveQuestions')}</p>
+              <p className="text-xs text-muted-foreground">{t('chatWithUs')}</p>
             </div>
             <Button size="sm" className="bg-green-500 hover:bg-green-600" asChild>
               <Link href={`/${locale}/contact`}>
-                Chat
+                {t('chat')}
               </Link>
             </Button>
           </div>
