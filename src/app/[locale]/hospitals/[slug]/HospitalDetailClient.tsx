@@ -1652,8 +1652,9 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
       className="space-y-4"
     >
       {/* Main CTA Card - Interpreter Focus */}
-      {/* Desktop: sticky sidebar, Mobile: static (shown at bottom via separate mobile CTA) */}
-      <Card className="hidden lg:block lg:sticky lg:top-24 overflow-hidden border-0 shadow-2xl">
+      {/* Desktop: sticky in sidebar, Mobile: hidden (shown at bottom via MobileBottomCTA) */}
+      <div className="hidden lg:block lg:sticky lg:top-24 z-10">
+      <Card className="overflow-hidden border-0 shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-violet-500/5 to-purple-500/5" />
         <CardContent className="relative p-6">
           <div className="text-center mb-6">
@@ -1713,6 +1714,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
           </div>
         </CardContent>
       </Card>
+      </div>
 
       {/* Contact Info */}
       <Card className="overflow-hidden border-0 shadow-lg">

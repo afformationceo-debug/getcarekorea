@@ -25,6 +25,8 @@ import {
   Award,
   CheckCircle2,
   HeartPulse,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -760,6 +762,16 @@ const categoryDisplayNames: Record<string, string> = {
   'health-checkup': 'Health Checkup',
 };
 
+// Group by options
+type GroupByOption = 'category' | 'district' | 'rating' | 'popularity';
+
+const groupByLabels: Record<GroupByOption, { label: string; icon: React.ReactNode }> = {
+  category: { label: 'Category', icon: <Building2 className="h-4 w-4" /> },
+  district: { label: 'District', icon: <MapPin className="h-4 w-4" /> },
+  rating: { label: 'Rating', icon: <Star className="h-4 w-4" /> },
+  popularity: { label: 'Popularity', icon: <HeartPulse className="h-4 w-4" /> },
+};
+
 // Grouped View Component
 function GroupedHospitalsView({
   hospitals,
@@ -772,11 +784,43 @@ function GroupedHospitalsView({
   setGroupBy: (value: 'category' | 'district') => void;
   locale: Locale;
 }) {
-  // Group hospitals
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [localGroupBy, setLocalGroupBy] = useState<GroupByOption>(groupBy);
+
+  // Update parent state when local changes
+  const handleGroupByChange = (value: GroupByOption) => {
+    setLocalGroupBy(value);
+    if (value === 'category' || value === 'district') {
+      setGroupBy(value);
+    }
+  };
+
+  // Group hospitals based on groupBy option
   const groupedHospitals = hospitals.reduce((acc, hospital) => {
-    const key = groupBy === 'category'
-      ? (hospital.category || 'other')
-      : (hospital.district || 'Seoul');
+    let key: string;
+
+    switch (localGroupBy) {
+      case 'category':
+        key = hospital.category || 'other';
+        break;
+      case 'district':
+        key = hospital.district || 'Seoul';
+        break;
+      case 'rating':
+        if (hospital.rating >= 4.8) key = 'excellent';
+        else if (hospital.rating >= 4.5) key = 'very-good';
+        else if (hospital.rating >= 4.0) key = 'good';
+        else key = 'standard';
+        break;
+      case 'popularity':
+        if (hospital.reviews >= 500) key = 'most-popular';
+        else if (hospital.reviews >= 100) key = 'popular';
+        else if (hospital.reviews >= 50) key = 'moderate';
+        else key = 'new';
+        break;
+      default:
+        key = hospital.category || 'other';
+    }
 
     if (!acc[key]) {
       acc[key] = [];
@@ -785,62 +829,134 @@ function GroupedHospitalsView({
     return acc;
   }, {} as Record<string, Hospital[]>);
 
-  // Sort groups by hospital count
-  const sortedGroups = Object.entries(groupedHospitals)
-    .sort((a, b) => b[1].length - a[1].length);
+  // Sort groups
+  const sortedGroups = Object.entries(groupedHospitals).sort((a, b) => {
+    if (localGroupBy === 'rating') {
+      const ratingOrder = ['excellent', 'very-good', 'good', 'standard'];
+      return ratingOrder.indexOf(a[0]) - ratingOrder.indexOf(b[0]);
+    }
+    if (localGroupBy === 'popularity') {
+      const popOrder = ['most-popular', 'popular', 'moderate', 'new'];
+      return popOrder.indexOf(a[0]) - popOrder.indexOf(b[0]);
+    }
+    return b[1].length - a[1].length;
+  });
+
+  // Group display names
+  const getGroupDisplayName = (key: string): { name: string; description?: string } => {
+    if (localGroupBy === 'category') {
+      return { name: categoryDisplayNames[key] || key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') };
+    }
+    if (localGroupBy === 'district') {
+      return { name: key };
+    }
+    if (localGroupBy === 'rating') {
+      const ratingNames: Record<string, { name: string; description: string }> = {
+        'excellent': { name: 'Excellent', description: '4.8+ Rating' },
+        'very-good': { name: 'Very Good', description: '4.5-4.8 Rating' },
+        'good': { name: 'Good', description: '4.0-4.5 Rating' },
+        'standard': { name: 'Standard', description: 'Below 4.0' },
+      };
+      return ratingNames[key] || { name: key };
+    }
+    if (localGroupBy === 'popularity') {
+      const popNames: Record<string, { name: string; description: string }> = {
+        'most-popular': { name: 'Most Popular', description: '500+ Reviews' },
+        'popular': { name: 'Popular', description: '100-500 Reviews' },
+        'moderate': { name: 'Growing', description: '50-100 Reviews' },
+        'new': { name: 'New & Promising', description: 'Under 50 Reviews' },
+      };
+      return popNames[key] || { name: key };
+    }
+    return { name: key };
+  };
+
+  const toggleGroup = (key: string) => {
+    const newExpanded = new Set(expandedGroups);
+    if (newExpanded.has(key)) {
+      newExpanded.delete(key);
+    } else {
+      newExpanded.add(key);
+    }
+    setExpandedGroups(newExpanded);
+  };
 
   return (
     <div className="space-y-8">
-      {/* Group By Toggle */}
-      <div className="flex items-center gap-4 justify-center">
-        <span className="text-sm text-muted-foreground">Group by:</span>
-        <div className="flex rounded-lg border bg-muted/50 p-1">
-          <button
-            onClick={() => setGroupBy('category')}
-            className={`px-4 py-2 text-sm rounded-md transition-all ${
-              groupBy === 'category'
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'hover:bg-muted'
-            }`}
-          >
-            Category
-          </button>
-          <button
-            onClick={() => setGroupBy('district')}
-            className={`px-4 py-2 text-sm rounded-md transition-all ${
-              groupBy === 'district'
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'hover:bg-muted'
-            }`}
-          >
-            District
-          </button>
+      {/* Group By Toggle - Enhanced */}
+      <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
+        <span className="text-sm text-muted-foreground font-medium">Group by:</span>
+        <div className="flex flex-wrap justify-center rounded-xl border bg-muted/30 p-1.5 gap-1">
+          {(Object.keys(groupByLabels) as GroupByOption[]).map((option) => (
+            <button
+              key={option}
+              onClick={() => handleGroupByChange(option)}
+              className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all ${
+                localGroupBy === option
+                  ? 'bg-primary text-primary-foreground shadow-md'
+                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {groupByLabels[option].icon}
+              {groupByLabels[option].label}
+            </button>
+          ))}
         </div>
       </div>
 
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {sortedGroups.slice(0, 4).map(([group, groupHospitals]) => {
+          const displayInfo = getGroupDisplayName(group);
+          return (
+            <motion.button
+              key={group}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                const element = document.getElementById(`group-${group}`);
+                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="p-4 rounded-xl border bg-card hover:border-primary/50 transition-all text-left"
+            >
+              <p className="font-bold text-lg">{groupHospitals.length}</p>
+              <p className="text-sm text-muted-foreground truncate">{displayInfo.name}</p>
+              {displayInfo.description && (
+                <p className="text-xs text-muted-foreground/70">{displayInfo.description}</p>
+              )}
+            </motion.button>
+          );
+        })}
+      </div>
+
       {/* Grouped Sections */}
-      {sortedGroups.map(([group, groupHospitals]) => (
+      {sortedGroups.map(([group, groupHospitals]) => {
+        const displayInfo = getGroupDisplayName(group);
+        const isExpanded = expandedGroups.has(group);
+        const visibleHospitals = isExpanded ? groupHospitals : groupHospitals.slice(0, 8);
+
+        return (
         <motion.div
           key={group}
+          id={`group-${group}`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
+          className="space-y-4 scroll-mt-24"
         >
           {/* Group Header */}
           <div className="flex items-center justify-between border-b border-border/50 pb-3">
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              {groupBy === 'category' ? (
-                <>
-                  <Building2 className="h-5 w-5 text-primary" />
-                  {categoryDisplayNames[group] || group.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                </>
-              ) : (
-                <>
-                  <MapPin className="h-5 w-5 text-primary" />
-                  {group}
-                </>
+            <div>
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                {localGroupBy === 'category' && <Building2 className="h-5 w-5 text-primary" />}
+                {localGroupBy === 'district' && <MapPin className="h-5 w-5 text-primary" />}
+                {localGroupBy === 'rating' && <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />}
+                {localGroupBy === 'popularity' && <HeartPulse className="h-5 w-5 text-rose-500" />}
+                {displayInfo.name}
+              </h3>
+              {displayInfo.description && (
+                <p className="text-sm text-muted-foreground mt-0.5">{displayInfo.description}</p>
               )}
-            </h3>
+            </div>
             <Badge variant="secondary" className="text-sm">
               {groupHospitals.length} {groupHospitals.length === 1 ? 'hospital' : 'hospitals'}
             </Badge>
@@ -848,7 +964,7 @@ function GroupedHospitalsView({
 
           {/* Hospital Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {groupHospitals.slice(0, 8).map((hospital) => (
+            {visibleHospitals.map((hospital) => (
               <Link
                 key={hospital.id}
                 href={`/${locale}/hospitals/${hospital.slug}`}
@@ -903,17 +1019,32 @@ function GroupedHospitalsView({
             ))}
           </div>
 
-          {/* Show More */}
+          {/* Show More / Show Less */}
           {groupHospitals.length > 8 && (
             <div className="text-center pt-2">
-              <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground">
-                View all {groupHospitals.length} hospitals
-                <ArrowRight className="h-4 w-4" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-muted-foreground hover:text-primary"
+                onClick={() => toggleGroup(group)}
+              >
+                {isExpanded ? (
+                  <>
+                    Show less
+                    <ChevronUp className="h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    View all {groupHospitals.length} hospitals
+                    <ChevronDown className="h-4 w-4" />
+                  </>
+                )}
               </Button>
             </div>
           )}
         </motion.div>
-      ))}
+      );
+      })}
     </div>
   );
 }
