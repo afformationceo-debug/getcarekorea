@@ -438,5 +438,318 @@
     "hospitalsDescription": "Browse JCI-accredited hospitals and clinics in Korea. Compare prices, read reviews, and book your medical journey.",
     "interpretersTitle": "Medical Interpreters in Korea - GetCareKorea",
     "interpretersDescription": "Find certified medical interpreters who speak your language. Professional support for your medical journey in Korea."
+  },
+  "landing": {
+    "hero": {
+      "badge": "AI-Powered Medical Tourism",
+      "stats": {
+        "patients": "Patients",
+        "hospitals": "Hospitals",
+        "interpreters": "Interpreters",
+        "jciCertified": "JCI Certified"
+      },
+      "getConsultation": "Get Free Consultation",
+      "browseHospitals": "Browse Hospitals",
+      "trustBadges": {
+        "safe": "100% Safe & Verified",
+        "rating": "4.9/5 Rating",
+        "languages": "7 Languages"
+      },
+      "floatingBadges": {
+        "freeInterpreter": "Free Interpreter",
+        "limitedEvent": "Limited Event",
+        "bestPrice": "Best Price",
+        "guaranteed": "Guaranteed"
+      }
+    },
+    "trust": {
+      "jciAccredited": "JCI Accredited",
+      "avgRating": "4.9/5 Average Rating",
+      "patientsServed": "10,000+ Patients Served",
+      "partnerHospitals": "200+ Partner Hospitals",
+      "languagesSupported": "7 Languages Supported",
+      "support247": "24/7 Support"
+    },
+    "categories": {
+      "badge": "Medical Specialties",
+      "popular": "Popular"
+    },
+    "whyUs": {
+      "badge": "Why Choose Us",
+      "title": "Platform vs Direct Booking",
+      "subtitle": "See why thousands of patients choose GetCareKorea over booking directly with hospitals",
+      "getCareKorea": "GetCareKorea",
+      "direct": "Direct",
+      "comparison": {
+        "interpreter": "Professional Medical Interpreter",
+        "priceMatch": "Best Price Guarantee",
+        "support": "24/7 Support",
+        "verified": "Verified Hospitals Only",
+        "aftercare": "Aftercare Coordination",
+        "airportPickup": "Airport Pickup Service",
+        "accommodation": "Accommodation Booking",
+        "singleContact": "Single Point of Contact"
+      },
+      "benefits": {
+        "freeInterpreter": {
+          "title": "Free Interpreter",
+          "description": "Professional medical interpreter at no extra cost"
+        },
+        "bestPrice": {
+          "title": "Best Price",
+          "description": "We match any competitor price"
+        },
+        "verified": {
+          "title": "Verified Only",
+          "description": "All hospitals personally vetted"
+        },
+        "support": {
+          "title": "24/7 Support",
+          "description": "Always here when you need us"
+        }
+      }
+    },
+    "howItWorks": {
+      "badge": "Simple Process",
+      "title": "Your Journey to Korea",
+      "subtitle": "From initial consultation to successful recovery - we're with you every step of the way",
+      "stepLabel": "Step {number}",
+      "steps": {
+        "consultation": {
+          "title": "AI Consultation",
+          "description": "Chat with our AI assistant to understand your needs and get personalized recommendations"
+        },
+        "matching": {
+          "title": "Hospital Matching",
+          "description": "We match you with the best hospitals and doctors based on your specific requirements"
+        },
+        "booking": {
+          "title": "Easy Booking",
+          "description": "Book your procedure with our secure payment system and get instant confirmation"
+        },
+        "travel": {
+          "title": "Travel Support",
+          "description": "Receive help with visa, flights, accommodation, and airport pickup arrangements"
+        },
+        "treatment": {
+          "title": "Treatment Day",
+          "description": "Your interpreter meets you at the hospital and assists throughout the procedure"
+        },
+        "recovery": {
+          "title": "Recovery Care",
+          "description": "Post-op care coordination, follow-up appointments, and safe return home"
+        }
+      }
+    },
+    "testimonials": {
+      "badge": "Testimonials",
+      "title": "Loved by Patients Worldwide",
+      "subtitle": "Join thousands of satisfied patients who transformed their lives through GetCareKorea",
+      "stats": {
+        "happyPatients": "Happy Patients",
+        "avgRating": "Average Rating",
+        "countries": "Countries",
+        "satisfaction": "Satisfaction Rate"
+      }
+    },
+    "freeInterpreter": {
+      "badge": "Limited Time Event",
+      "title": "Free Interpreter Service",
+      "subtitle": "Get a professional medical interpreter at",
+      "noExtraCost": "NO EXTRA COST",
+      "description": "Book any procedure through GetCareKorea and receive complimentary interpretation",
+      "features": {
+        "medical": "Certified medical interpreters",
+        "languages": "7+ languages available",
+        "support": "Full-day support included"
+      },
+      "cta": "Claim Free Interpreter",
+      "disclaimer": "*For bookings made through our platform"
+    },
+    "pricing": {
+      "badge": "Save Up To 70%",
+      "procedure": "Procedure",
+      "korea": "Korea",
+      "usa": "USA",
+      "savings": "Savings",
+      "bestPriceGuarantee": "Best Price Guarantee",
+      "priceMatchDesc": "We match any lower price + 10% off",
+      "foundBetter": "Found a better price elsewhere? We'll beat it by",
+      "discount": "10%",
+      "procedures": {
+        "rhinoplasty": "Rhinoplasty",
+        "faceLift": "Face Lift",
+        "breastAugmentation": "Breast Augmentation",
+        "liposuction": "Liposuction",
+        "hairTransplant": "Hair Transplant",
+        "dentalImplant": "Dental Implant",
+        "lasik": "LASIK",
+        "healthCheckup": "Health Checkup"
+      }
+    },
+    "featuredHospitals": {
+      "badge": "Featured Partners",
+      "viewAll": "View All Hospitals"
+    },
+    "localInfo": {
+      "badge": "Complete Support",
+      "title": "Everything You Need in Korea",
+      "subtitle": "From the moment you land to your safe return home, we've got you covered",
+      "allIncluded": "All Services Included in Your Package",
+      "allIncludedDesc": "No hidden fees. Everything you need for a smooth medical journey is included when you book through GetCareKorea.",
+      "getQuote": "Get Your Free Package Quote",
+      "categories": {
+        "restaurants": {
+          "title": "Recovery-Friendly Restaurants",
+          "description": "Curated list of soft food restaurants near top clinics",
+          "items": ["Porridge Cafes", "Soup Restaurants", "Juice Bars", "Healthy Cafes"]
+        },
+        "accommodation": {
+          "title": "Medical Stay Hotels",
+          "description": "Partner hotels with medical tourism packages",
+          "items": ["Recovery Suites", "Near Hospitals", "Nurse Call", "Meal Service"]
+        },
+        "transport": {
+          "title": "Transportation",
+          "description": "Seamless travel between hospital and hotel",
+          "items": ["Airport Pickup", "Hospital Shuttle", "Private Car", "Wheelchair Access"]
+        },
+        "pharmacy": {
+          "title": "Pharmacies & Supplies",
+          "description": "24-hour pharmacies and medical supply stores",
+          "items": ["24h Pharmacy", "Medical Supplies", "Prescription Help", "Delivery"]
+        }
+      }
+    },
+    "cta": {
+      "badge": "Start Your Journey Today",
+      "getConsultation": "Get Free Consultation",
+      "chatWithAI": "Chat with AI",
+      "phone": "+82-2-XXX-XXXX",
+      "support247": "24/7 Support Available"
+    }
+  },
+  "about": {
+    "hero": {
+      "badge": "Our Story",
+      "title1": "Transforming",
+      "title2": "Medical Tourism",
+      "subtitle": "We're on a mission to make world-class Korean healthcare accessible to everyone, everywhere."
+    },
+    "stats": {
+      "patients": "Happy Patients",
+      "hospitals": "Partner Hospitals",
+      "languages": "Languages",
+      "countries": "Countries Served"
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "To bridge the gap between international patients and Korea's world-renowned healthcare system, providing seamless, trustworthy, and affordable medical tourism experiences."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "description": "To become the global leader in medical tourism, setting the standard for patient care, transparency, and cross-cultural healthcare delivery."
+    },
+    "values": {
+      "badge": "Our Values",
+      "title": "What Drives Us",
+      "subtitle": "Our core values guide everything we do, from patient care to partner relationships.",
+      "items": {
+        "trust": {
+          "title": "Trust & Safety",
+          "description": "We only partner with JCI-accredited hospitals and verified medical professionals."
+        },
+        "excellence": {
+          "title": "Excellence",
+          "description": "We strive for the highest standards in every aspect of our service."
+        },
+        "compassion": {
+          "title": "Compassion",
+          "description": "We understand the vulnerability of medical travel and provide caring support."
+        },
+        "innovation": {
+          "title": "Innovation",
+          "description": "We leverage AI and technology to enhance the patient experience."
+        }
+      }
+    },
+    "journey": {
+      "badge": "Our Journey",
+      "title": "Milestones",
+      "items": {
+        "founded": {
+          "year": "2018",
+          "title": "Company Founded",
+          "description": "Started with a mission to make Korean healthcare accessible globally"
+        },
+        "partnerships": {
+          "year": "2019",
+          "title": "100 Hospital Partners",
+          "description": "Reached milestone of partnering with 100 verified hospitals"
+        },
+        "expansion": {
+          "year": "2021",
+          "title": "Global Expansion",
+          "description": "Expanded services to 50+ countries across 6 continents"
+        },
+        "ai": {
+          "year": "2023",
+          "title": "AI Integration",
+          "description": "Launched AI-powered consultation and matching system"
+        },
+        "milestone": {
+          "year": "2024",
+          "title": "50,000 Patients",
+          "description": "Celebrated helping 50,000 international patients"
+        }
+      }
+    },
+    "team": {
+      "badge": "Our Team",
+      "title": "Meet the Leadership",
+      "subtitle": "A dedicated team of healthcare professionals and technology experts working to transform medical tourism.",
+      "members": {
+        "sarah": {
+          "name": "Dr. Sarah Kim",
+          "role": "Medical Director",
+          "bio": "Former Chief of International Medicine at Samsung Medical Center"
+        },
+        "james": {
+          "name": "James Park",
+          "role": "CEO",
+          "bio": "15+ years experience in healthcare technology and operations"
+        },
+        "mina": {
+          "name": "Dr. Mina Lee",
+          "role": "Chief Medical Officer",
+          "bio": "Board-certified plastic surgeon with international training"
+        },
+        "david": {
+          "name": "David Chen",
+          "role": "CTO",
+          "bio": "Former Google engineer specializing in healthcare AI"
+        }
+      }
+    },
+    "ctaSection": {
+      "title": "Ready to Start Your Journey?",
+      "subtitle": "Join thousands of international patients who have trusted GetCareKorea for their medical tourism needs.",
+      "getConsultation": "Get Free Consultation",
+      "exploreHospitals": "Explore Hospitals"
+    }
+  },
+  "interpreter": {
+    "verified": "Verified",
+    "native": "(Native)",
+    "videoIntro": "Video intro",
+    "perHour": "/hour",
+    "perDay": "/day",
+    "viewProfile": "View Profile"
+  },
+  "hospitalCard": {
+    "noImage": "No image"
+  },
+  "chatWidget": {
+    "poweredBy": "Powered by Claude AI"
   }
 }

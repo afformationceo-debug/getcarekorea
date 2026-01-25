@@ -438,5 +438,318 @@
     "hospitalsDescription": "韓国のJCI認定病院・クリニックを閲覧。価格比較、レビュー確認、医療の旅を予約。",
     "interpretersTitle": "韓国の医療通訳 - GetCareKorea",
     "interpretersDescription": "あなたの言語を話す認定医療通訳を見つける。韓国での医療の旅をプロがサポート。"
+  },
+  "landing": {
+    "hero": {
+      "badge": "AI搭載医療ツーリズム",
+      "stats": {
+        "patients": "患者",
+        "hospitals": "病院",
+        "interpreters": "通訳",
+        "jciCertified": "JCI認定"
+      },
+      "getConsultation": "無料相談を受ける",
+      "browseHospitals": "病院を探す",
+      "trustBadges": {
+        "safe": "100%安全・認証済み",
+        "rating": "4.9/5 評価",
+        "languages": "7言語対応"
+      },
+      "floatingBadges": {
+        "freeInterpreter": "無料通訳",
+        "limitedEvent": "期間限定",
+        "bestPrice": "最安値",
+        "guaranteed": "保証"
+      }
+    },
+    "trust": {
+      "jciAccredited": "JCI認定",
+      "avgRating": "4.9/5 平均評価",
+      "patientsServed": "10,000人以上の患者",
+      "partnerHospitals": "200以上の提携病院",
+      "languagesSupported": "7言語対応",
+      "support247": "24時間サポート"
+    },
+    "categories": {
+      "badge": "診療科目",
+      "popular": "人気"
+    },
+    "whyUs": {
+      "badge": "選ばれる理由",
+      "title": "プラットフォーム vs 直接予約",
+      "subtitle": "なぜ多くの患者さんが病院への直接予約ではなくGetCareKoreaを選ぶのか",
+      "getCareKorea": "GetCareKorea",
+      "direct": "直接",
+      "comparison": {
+        "interpreter": "専門医療通訳",
+        "priceMatch": "最安値保証",
+        "support": "24時間サポート",
+        "verified": "認証病院のみ",
+        "aftercare": "アフターケア調整",
+        "airportPickup": "空港送迎サービス",
+        "accommodation": "宿泊予約",
+        "singleContact": "窓口一本化"
+      },
+      "benefits": {
+        "freeInterpreter": {
+          "title": "無料通訳",
+          "description": "追加費用なしで専門医療通訳"
+        },
+        "bestPrice": {
+          "title": "最安値",
+          "description": "他社価格にマッチング"
+        },
+        "verified": {
+          "title": "認証済みのみ",
+          "description": "全病院を直接審査"
+        },
+        "support": {
+          "title": "24時間サポート",
+          "description": "いつでもお手伝いします"
+        }
+      }
+    },
+    "howItWorks": {
+      "badge": "簡単な流れ",
+      "title": "韓国への旅",
+      "subtitle": "初回相談から回復まで - すべての段階でサポートします",
+      "stepLabel": "ステップ{number}",
+      "steps": {
+        "consultation": {
+          "title": "AI相談",
+          "description": "AIアシスタントとチャットして、パーソナライズされた提案を受けましょう"
+        },
+        "matching": {
+          "title": "病院マッチング",
+          "description": "ご要望に合った最適な病院と医師をマッチングします"
+        },
+        "booking": {
+          "title": "簡単予約",
+          "description": "安全な決済システムで予約し、即時確認を受けましょう"
+        },
+        "travel": {
+          "title": "渡航サポート",
+          "description": "ビザ、航空券、宿泊、空港送迎の手配をサポート"
+        },
+        "treatment": {
+          "title": "施術当日",
+          "description": "通訳が病院で待機し、施術の全過程をサポートします"
+        },
+        "recovery": {
+          "title": "回復ケア",
+          "description": "術後ケア、フォローアップ予約、安全な帰国をサポート"
+        }
+      }
+    },
+    "testimonials": {
+      "badge": "体験談",
+      "title": "世界中の患者様に愛されています",
+      "subtitle": "GetCareKoreaを通じて人生を変えた何千人もの満足した患者様と一緒に",
+      "stats": {
+        "happyPatients": "満足した患者",
+        "avgRating": "平均評価",
+        "countries": "国",
+        "satisfaction": "満足度"
+      }
+    },
+    "freeInterpreter": {
+      "badge": "期間限定イベント",
+      "title": "無料通訳サービス",
+      "subtitle": "専門医療通訳を",
+      "noExtraCost": "追加費用なしで",
+      "description": "GetCareKoreaで予約すると無料通訳サービスを提供",
+      "features": {
+        "medical": "認定医療通訳",
+        "languages": "7言語以上対応",
+        "support": "終日サポート込み"
+      },
+      "cta": "無料通訳を申請",
+      "disclaimer": "*プラットフォーム経由の予約に限る"
+    },
+    "pricing": {
+      "badge": "最大70%節約",
+      "procedure": "施術",
+      "korea": "韓国",
+      "usa": "アメリカ",
+      "savings": "節約額",
+      "bestPriceGuarantee": "最安値保証",
+      "priceMatchDesc": "より低い価格にマッチング + 10%追加割引",
+      "foundBetter": "他でより安い価格を見つけましたか？",
+      "discount": "10%",
+      "procedures": {
+        "rhinoplasty": "鼻整形",
+        "faceLift": "フェイスリフト",
+        "breastAugmentation": "豊胸手術",
+        "liposuction": "脂肪吸引",
+        "hairTransplant": "植毛",
+        "dentalImplant": "歯科インプラント",
+        "lasik": "レーシック",
+        "healthCheckup": "健康診断"
+      }
+    },
+    "featuredHospitals": {
+      "badge": "おすすめパートナー",
+      "viewAll": "全病院を見る"
+    },
+    "localInfo": {
+      "badge": "完全サポート",
+      "title": "韓国で必要なすべて",
+      "subtitle": "到着から安全な帰国まで、すべてをサポートします",
+      "allIncluded": "パッケージに含まれるサービス",
+      "allIncludedDesc": "隠れた費用なし。GetCareKoreaでの予約には、スムーズな医療の旅に必要なすべてが含まれています。",
+      "getQuote": "無料パッケージ見積もりを取得",
+      "categories": {
+        "restaurants": {
+          "title": "回復に優しいレストラン",
+          "description": "トップクリニック近くの柔らかい食事レストラン厳選リスト",
+          "items": ["おかゆカフェ", "スープレストラン", "ジュースバー", "ヘルシーカフェ"]
+        },
+        "accommodation": {
+          "title": "医療専用ホテル",
+          "description": "医療ツーリズムパッケージのある提携ホテル",
+          "items": ["回復スイート", "病院近く", "ナースコール", "食事サービス"]
+        },
+        "transport": {
+          "title": "交通",
+          "description": "病院とホテル間のスムーズな移動",
+          "items": ["空港送迎", "病院シャトル", "プライベートカー", "車椅子対応"]
+        },
+        "pharmacy": {
+          "title": "薬局・医療用品",
+          "description": "24時間薬局と医療用品店",
+          "items": ["24時間薬局", "医療用品", "処方サポート", "配達"]
+        }
+      }
+    },
+    "cta": {
+      "badge": "今すぐ始めましょう",
+      "getConsultation": "無料相談を受ける",
+      "chatWithAI": "AIとチャット",
+      "phone": "+82-2-XXX-XXXX",
+      "support247": "24時間相談対応"
+    }
+  },
+  "about": {
+    "hero": {
+      "badge": "会社概要",
+      "title1": "医療ツーリズムの",
+      "title2": "革新",
+      "subtitle": "世界最高水準の韓国医療をすべての人に提供することが私たちの使命です。"
+    },
+    "stats": {
+      "patients": "満足した患者",
+      "hospitals": "提携病院",
+      "languages": "言語",
+      "countries": "サービス国"
+    },
+    "mission": {
+      "title": "ミッション",
+      "description": "海外患者と世界的に有名な韓国医療システムの間のギャップを解消し、シームレスで信頼できる、手頃な医療ツーリズム体験を提供します。"
+    },
+    "vision": {
+      "title": "ビジョン",
+      "description": "患者ケア、透明性、異文化間医療サービス提供の基準を設定し、医療ツーリズムのグローバルリーダーになること。"
+    },
+    "values": {
+      "badge": "価値観",
+      "title": "私たちを動かすもの",
+      "subtitle": "コアバリューは、患者ケアからパートナー関係まで、すべての指針となります。",
+      "items": {
+        "trust": {
+          "title": "信頼と安全",
+          "description": "JCI認定病院と認証済み医療専門家とのみ提携しています。"
+        },
+        "excellence": {
+          "title": "卓越性",
+          "description": "サービスのあらゆる面で最高の基準を追求します。"
+        },
+        "compassion": {
+          "title": "思いやり",
+          "description": "医療渡航の困難さを理解し、温かいサポートを提供します。"
+        },
+        "innovation": {
+          "title": "革新",
+          "description": "AIとテクノロジーを活用して患者体験を向上させます。"
+        }
+      }
+    },
+    "journey": {
+      "badge": "歩み",
+      "title": "マイルストーン",
+      "items": {
+        "founded": {
+          "year": "2018",
+          "title": "会社設立",
+          "description": "韓国医療を世界に届けるという使命で設立"
+        },
+        "partnerships": {
+          "year": "2019",
+          "title": "100病院提携",
+          "description": "認証済み100病院とのパートナーシップ達成"
+        },
+        "expansion": {
+          "year": "2021",
+          "title": "グローバル展開",
+          "description": "6大陸50カ国以上にサービス拡大"
+        },
+        "ai": {
+          "year": "2023",
+          "title": "AI統合",
+          "description": "AI搭載の相談・マッチングシステムを開始"
+        },
+        "milestone": {
+          "year": "2024",
+          "title": "50,000人の患者",
+          "description": "50,000人の海外患者サポートを達成"
+        }
+      }
+    },
+    "team": {
+      "badge": "チーム紹介",
+      "title": "リーダーシップ紹介",
+      "subtitle": "医療ツーリズムを革新するために尽力する医療専門家とテクノロジー専門家のチームです。",
+      "members": {
+        "sarah": {
+          "name": "キム・サラ医師",
+          "role": "メディカルディレクター",
+          "bio": "元サムスンソウル病院国際診療センター長"
+        },
+        "james": {
+          "name": "パク・ジェームス",
+          "role": "CEO",
+          "bio": "15年以上のヘルスケアテクノロジーと運営経験"
+        },
+        "mina": {
+          "name": "イ・ミナ医師",
+          "role": "最高医療責任者",
+          "bio": "国際研修を受けた認定形成外科専門医"
+        },
+        "david": {
+          "name": "デビッド・チェン",
+          "role": "CTO",
+          "bio": "元Googleエンジニア、ヘルスケアAI専門"
+        }
+      }
+    },
+    "ctaSection": {
+      "title": "旅を始める準備はできましたか？",
+      "subtitle": "GetCareKoreaを信頼して医療ツーリズムを任せた何千人もの海外患者と一緒に。",
+      "getConsultation": "無料相談を受ける",
+      "exploreHospitals": "病院を探す"
+    }
+  },
+  "interpreter": {
+    "verified": "認証済み",
+    "native": "(ネイティブ)",
+    "videoIntro": "動画紹介",
+    "perHour": "/時間",
+    "perDay": "/日",
+    "viewProfile": "プロフィールを見る"
+  },
+  "hospitalCard": {
+    "noImage": "画像なし"
+  },
+  "chatWidget": {
+    "poweredBy": "Claude AI搭載"
   }
 }

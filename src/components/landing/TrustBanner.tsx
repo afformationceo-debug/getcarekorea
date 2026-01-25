@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   ShieldCheck,
   Star,
@@ -10,16 +11,18 @@ import {
   Clock,
 } from 'lucide-react';
 
-const trustItems = [
-  { icon: ShieldCheck, label: 'JCI Accredited' },
-  { icon: Star, label: '4.9/5 Average Rating' },
-  { icon: Users, label: '10,000+ Patients Served' },
-  { icon: Building2, label: '200+ Partner Hospitals' },
-  { icon: Languages, label: '7 Languages Supported' },
-  { icon: Clock, label: '24/7 Support' },
-];
-
 export function TrustBanner() {
+  const t = useTranslations('landing.trust');
+
+  const trustItems = [
+    { icon: ShieldCheck, label: t('jciAccredited') },
+    { icon: Star, label: t('avgRating') },
+    { icon: Users, label: t('patientsServed') },
+    { icon: Building2, label: t('partnerHospitals') },
+    { icon: Languages, label: t('languagesSupported') },
+    { icon: Clock, label: t('support247') },
+  ];
+
   return (
     <section className="relative overflow-hidden border-y bg-muted/30 py-6">
       {/* Animated gradient line */}
@@ -38,7 +41,7 @@ export function TrustBanner() {
         >
           {trustItems.map((item, index) => (
             <motion.div
-              key={item.label}
+              key={index}
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

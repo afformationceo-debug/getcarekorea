@@ -114,6 +114,7 @@ const item = {
 
 export function CategoriesSection() {
   const t = useTranslations('categories');
+  const tLanding = useTranslations('landing.categories');
 
   return (
     <section className="relative py-20 lg:py-28">
@@ -137,7 +138,7 @@ export function CategoriesSection() {
             viewport={{ once: true }}
             className="mb-4 inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary"
           >
-            Medical Specialties
+            {tLanding('badge')}
           </motion.span>
           <h2 className="mb-4 text-3xl font-bold tracking-tight lg:text-5xl">
             {t('title')}
@@ -171,7 +172,7 @@ export function CategoriesSection() {
                     {/* Popular badge */}
                     {category.popular && (
                       <div className="absolute -right-8 top-3 rotate-45 bg-primary px-8 py-0.5 text-[10px] font-semibold text-white">
-                        Popular
+                        {tLanding('popular')}
                       </div>
                     )}
 

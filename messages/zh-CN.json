@@ -438,5 +438,318 @@
     "hospitalsDescription": "浏览韩国JCI认证医院和诊所。比较价格、阅读评论、预约您的医疗之旅。",
     "interpretersTitle": "韩国医疗翻译 - GetCareKorea",
     "interpretersDescription": "找到会说您语言的认证医疗翻译。为您在韩国的医疗之旅提供专业支持。"
+  },
+  "landing": {
+    "hero": {
+      "badge": "AI驱动医疗旅游",
+      "stats": {
+        "patients": "患者",
+        "hospitals": "医院",
+        "interpreters": "翻译",
+        "jciCertified": "JCI认证"
+      },
+      "getConsultation": "获取免费咨询",
+      "browseHospitals": "浏览医院",
+      "trustBadges": {
+        "safe": "100%安全验证",
+        "rating": "4.9/5 评分",
+        "languages": "7种语言"
+      },
+      "floatingBadges": {
+        "freeInterpreter": "免费翻译",
+        "limitedEvent": "限时活动",
+        "bestPrice": "最优价格",
+        "guaranteed": "保证"
+      }
+    },
+    "trust": {
+      "jciAccredited": "JCI认证",
+      "avgRating": "4.9/5 平均评分",
+      "patientsServed": "10,000+患者服务",
+      "partnerHospitals": "200+合作医院",
+      "languagesSupported": "7种语言支持",
+      "support247": "24小时支持"
+    },
+    "categories": {
+      "badge": "医疗专科",
+      "popular": "热门"
+    },
+    "whyUs": {
+      "badge": "为什么选择我们",
+      "title": "平台 vs 直接预约",
+      "subtitle": "了解为什么数千名患者选择GetCareKorea而不是直接向医院预约",
+      "getCareKorea": "GetCareKorea",
+      "direct": "直接",
+      "comparison": {
+        "interpreter": "专业医疗翻译",
+        "priceMatch": "最优价格保证",
+        "support": "24小时支持",
+        "verified": "仅限验证医院",
+        "aftercare": "术后护理协调",
+        "airportPickup": "机场接送服务",
+        "accommodation": "住宿预订",
+        "singleContact": "单一联系窗口"
+      },
+      "benefits": {
+        "freeInterpreter": {
+          "title": "免费翻译",
+          "description": "无额外费用的专业医疗翻译"
+        },
+        "bestPrice": {
+          "title": "最优价格",
+          "description": "匹配任何竞争对手价格"
+        },
+        "verified": {
+          "title": "仅限验证",
+          "description": "所有医院亲自审核"
+        },
+        "support": {
+          "title": "24小时支持",
+          "description": "随时为您服务"
+        }
+      }
+    },
+    "howItWorks": {
+      "badge": "简单流程",
+      "title": "您的韩国之旅",
+      "subtitle": "从初次咨询到成功康复 - 我们全程陪伴",
+      "stepLabel": "第{number}步",
+      "steps": {
+        "consultation": {
+          "title": "AI咨询",
+          "description": "与AI助手交流，获取个性化推荐"
+        },
+        "matching": {
+          "title": "医院匹配",
+          "description": "根据您的需求匹配最佳医院和医生"
+        },
+        "booking": {
+          "title": "轻松预约",
+          "description": "使用安全支付系统预约，即时确认"
+        },
+        "travel": {
+          "title": "旅行支持",
+          "description": "获取签证、机票、住宿、机场接送的协助"
+        },
+        "treatment": {
+          "title": "治疗当天",
+          "description": "翻译在医院等候，全程协助治疗过程"
+        },
+        "recovery": {
+          "title": "康复护理",
+          "description": "术后护理协调、后续预约、安全返家"
+        }
+      }
+    },
+    "testimonials": {
+      "badge": "用户评价",
+      "title": "深受全球患者喜爱",
+      "subtitle": "加入通过GetCareKorea改变生活的数千名满意患者",
+      "stats": {
+        "happyPatients": "满意患者",
+        "avgRating": "平均评分",
+        "countries": "国家",
+        "satisfaction": "满意度"
+      }
+    },
+    "freeInterpreter": {
+      "badge": "限时活动",
+      "title": "免费翻译服务",
+      "subtitle": "获得专业医疗翻译",
+      "noExtraCost": "无额外费用",
+      "description": "通过GetCareKorea预约即可获得免费翻译服务",
+      "features": {
+        "medical": "认证医疗翻译",
+        "languages": "7种以上语言",
+        "support": "全天支持"
+      },
+      "cta": "申请免费翻译",
+      "disclaimer": "*仅限通过平台预约"
+    },
+    "pricing": {
+      "badge": "节省高达70%",
+      "procedure": "疗程",
+      "korea": "韩国",
+      "usa": "美国",
+      "savings": "节省",
+      "bestPriceGuarantee": "最优价格保证",
+      "priceMatchDesc": "匹配更低价格 + 10%额外折扣",
+      "foundBetter": "在其他地方找到更优惠的价格？",
+      "discount": "10%",
+      "procedures": {
+        "rhinoplasty": "鼻整形",
+        "faceLift": "面部拉皮",
+        "breastAugmentation": "隆胸",
+        "liposuction": "抽脂",
+        "hairTransplant": "植发",
+        "dentalImplant": "牙科植体",
+        "lasik": "激光手术",
+        "healthCheckup": "健康检查"
+      }
+    },
+    "featuredHospitals": {
+      "badge": "推荐伙伴",
+      "viewAll": "查看所有医院"
+    },
+    "localInfo": {
+      "badge": "完整支持",
+      "title": "在韩国您需要的一切",
+      "subtitle": "从抵达到安全返家，全程照顾",
+      "allIncluded": "套餐包含的所有服务",
+      "allIncludedDesc": "无隐藏费用。通过GetCareKorea预约，顺畅医疗之旅所需的一切都已包含。",
+      "getQuote": "获取免费套餐报价",
+      "categories": {
+        "restaurants": {
+          "title": "康复友好餐厅",
+          "description": "顶级诊所附近精选软食餐厅",
+          "items": ["粥店", "汤品餐厅", "果汁吧", "健康咖啡厅"]
+        },
+        "accommodation": {
+          "title": "医疗专用酒店",
+          "description": "提供医疗旅游套餐的合作酒店",
+          "items": ["康复套房", "医院附近", "护士呼叫", "餐饮服务"]
+        },
+        "transport": {
+          "title": "交通",
+          "description": "医院和酒店之间的顺畅接送",
+          "items": ["机场接送", "医院接驳", "专车", "轮椅通道"]
+        },
+        "pharmacy": {
+          "title": "药店和用品",
+          "description": "24小时药店和医疗用品店",
+          "items": ["24小时药店", "医疗用品", "处方协助", "配送"]
+        }
+      }
+    },
+    "cta": {
+      "badge": "立即开始您的旅程",
+      "getConsultation": "获取免费咨询",
+      "chatWithAI": "与AI聊天",
+      "phone": "+82-2-XXX-XXXX",
+      "support247": "24小时咨询服务"
+    }
+  },
+  "about": {
+    "hero": {
+      "badge": "关于我们",
+      "title1": "医疗旅游的",
+      "title2": "革新",
+      "subtitle": "将世界顶级的韩国医疗服务带给每个人是我们的使命。"
+    },
+    "stats": {
+      "patients": "满意患者",
+      "hospitals": "合作医院",
+      "languages": "语言",
+      "countries": "服务国家"
+    },
+    "mission": {
+      "title": "我们的使命",
+      "description": "消除国际患者与世界知名韩国医疗系统之间的障碍，提供无缝、可信赖且实惠的医疗旅游体验。"
+    },
+    "vision": {
+      "title": "我们的愿景",
+      "description": "成为医疗旅游的全球领导者，树立患者护理、透明度和跨文化医疗服务的标准。"
+    },
+    "values": {
+      "badge": "核心价值",
+      "title": "驱动我们的力量",
+      "subtitle": "核心价值指导我们从患者护理到合作伙伴关系的一切。",
+      "items": {
+        "trust": {
+          "title": "信任与安全",
+          "description": "我们只与JCI认证医院和验证过的医疗专业人员合作。"
+        },
+        "excellence": {
+          "title": "卓越",
+          "description": "我们在服务的各个方面追求最高标准。"
+        },
+        "compassion": {
+          "title": "关怀",
+          "description": "我们理解医疗旅行的困难，提供温暖的支持。"
+        },
+        "innovation": {
+          "title": "创新",
+          "description": "我们利用AI和技术提升患者体验。"
+        }
+      }
+    },
+    "journey": {
+      "badge": "发展历程",
+      "title": "里程碑",
+      "items": {
+        "founded": {
+          "year": "2018",
+          "title": "公司成立",
+          "description": "以将韩国医疗带向全球的使命创立"
+        },
+        "partnerships": {
+          "year": "2019",
+          "title": "100家医院合作",
+          "description": "达成与100家验证医院的合作"
+        },
+        "expansion": {
+          "year": "2021",
+          "title": "全球扩展",
+          "description": "服务扩展至6大洲50多个国家"
+        },
+        "ai": {
+          "year": "2023",
+          "title": "AI整合",
+          "description": "推出AI驱动的咨询和匹配系统"
+        },
+        "milestone": {
+          "year": "2024",
+          "title": "50,000名患者",
+          "description": "达成服务50,000名国际患者"
+        }
+      }
+    },
+    "team": {
+      "badge": "团队介绍",
+      "title": "领导团队",
+      "subtitle": "致力于革新医疗旅游的医疗专业人员和技术专家团队。",
+      "members": {
+        "sarah": {
+          "name": "金莎拉医师",
+          "role": "医疗总监",
+          "bio": "前三星首尔医院国际诊疗中心主任"
+        },
+        "james": {
+          "name": "朴詹姆斯",
+          "role": "首席执行官",
+          "bio": "15年以上医疗科技和运营经验"
+        },
+        "mina": {
+          "name": "李美娜医师",
+          "role": "首席医疗官",
+          "bio": "接受国际培训的认证整形外科专家"
+        },
+        "david": {
+          "name": "大卫·陈",
+          "role": "首席技术官",
+          "bio": "前Google工程师，医疗AI专家"
+        }
+      }
+    },
+    "ctaSection": {
+      "title": "准备开始您的旅程了吗？",
+      "subtitle": "加入信任GetCareKorea的数千名国际患者。",
+      "getConsultation": "获取免费咨询",
+      "exploreHospitals": "浏览医院"
+    }
+  },
+  "interpreter": {
+    "verified": "已验证",
+    "native": "(母语)",
+    "videoIntro": "视频介绍",
+    "perHour": "/小时",
+    "perDay": "/天",
+    "viewProfile": "查看简介"
+  },
+  "hospitalCard": {
+    "noImage": "无图片"
+  },
+  "chatWidget": {
+    "poweredBy": "由Claude AI驱动"
   }
 }

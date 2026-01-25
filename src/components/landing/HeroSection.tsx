@@ -17,6 +17,7 @@ import { HeroChatWidget } from '@/components/chat/ChatWidget';
 
 export function HeroSection() {
   const t = useTranslations('hero');
+  const tLanding = useTranslations('landing');
 
   return (
     <section className="relative min-h-[90vh] overflow-hidden bg-gradient-to-b from-background via-background to-primary/5">
@@ -72,7 +73,7 @@ export function HeroSection() {
                 className="gap-2 rounded-full px-4 py-2 text-sm font-medium"
               >
                 <Sparkles className="h-4 w-4 text-primary" />
-                AI-Powered Medical Tourism
+                {tLanding('hero.badge')}
               </Badge>
             </motion.div>
 
@@ -106,10 +107,10 @@ export function HeroSection() {
               className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6"
             >
               {[
-                { value: '10K+', label: 'Patients', icon: Star },
-                { value: '200+', label: 'Hospitals', icon: Stethoscope },
-                { value: '500+', label: 'Interpreters', icon: Globe2 },
-                { value: '100%', label: 'JCI Certified', icon: Shield },
+                { value: '10K+', label: tLanding('hero.stats.patients'), icon: Star },
+                { value: '200+', label: tLanding('hero.stats.hospitals'), icon: Stethoscope },
+                { value: '500+', label: tLanding('hero.stats.interpreters'), icon: Globe2 },
+                { value: '100%', label: tLanding('hero.stats.jciCertified'), icon: Shield },
               ].map((stat, index) => (
                 <motion.div
                   key={stat.label}
@@ -134,12 +135,12 @@ export function HeroSection() {
             >
               <Button size="lg" className="gap-2 rounded-full px-8 shadow-lg shadow-primary/30" asChild>
                 <Link href="/inquiry">
-                  Get Free Consultation
+                  {tLanding('hero.getConsultation')}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
-                <Link href="/hospitals">Browse Hospitals</Link>
+                <Link href="/hospitals">{tLanding('hero.browseHospitals')}</Link>
               </Button>
             </motion.div>
 
@@ -152,15 +153,15 @@ export function HeroSection() {
             >
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-green-500" />
-                <span>100% Safe & Verified</span>
+                <span>{tLanding('hero.trustBadges.safe')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4 text-yellow-500" />
-                <span>4.9/5 Rating</span>
+                <span>{tLanding('hero.trustBadges.rating')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Globe2 className="h-4 w-4 text-blue-500" />
-                <span>7 Languages</span>
+                <span>{tLanding('hero.trustBadges.languages')}</span>
               </div>
             </motion.div>
           </motion.div>
@@ -190,8 +191,8 @@ export function HeroSection() {
                     <Shield className="h-4 w-4 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold">Free Interpreter</p>
-                    <p className="text-[10px] text-muted-foreground">Limited Event</p>
+                    <p className="text-xs font-semibold">{tLanding('hero.floatingBadges.freeInterpreter')}</p>
+                    <p className="text-[10px] text-muted-foreground">{tLanding('hero.floatingBadges.limitedEvent')}</p>
                   </div>
                 </div>
               </motion.div>
@@ -206,8 +207,8 @@ export function HeroSection() {
                     <Star className="h-4 w-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold">Best Price</p>
-                    <p className="text-[10px] text-muted-foreground">Guaranteed</p>
+                    <p className="text-xs font-semibold">{tLanding('hero.floatingBadges.bestPrice')}</p>
+                    <p className="text-[10px] text-muted-foreground">{tLanding('hero.floatingBadges.guaranteed')}</p>
                   </div>
                 </div>
               </motion.div>
