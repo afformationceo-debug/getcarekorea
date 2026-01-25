@@ -1,9 +1,16 @@
 /**
  * DALL-E 3 API Client
  *
- * OpenAI DALL-E 3 이미지 생성 API 클라이언트
- * - 나노바나나 대체
- * - 고품질 이미지 생성
+ * ⚠️ DEPRECATED: DO NOT USE THIS FILE
+ * =====================================
+ * This file uses DALL-E 3 which is NO LONGER the approved model.
+ *
+ * ✅ USE INSTEAD: @/lib/images/imagen4-client.ts
+ *
+ * GetCareKorea uses Google Imagen 4 for ALL image generation.
+ * Model: google/imagen-4 (via Replicate API)
+ *
+ * @deprecated Use imagen4-client.ts instead
  */
 
 import OpenAI from 'openai';

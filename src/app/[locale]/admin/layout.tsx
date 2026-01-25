@@ -9,6 +9,10 @@ import {
   BarChart3,
   Settings,
   MessageSquare,
+  Activity,
+  Bell,
+  Gauge,
+  MessageCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -28,7 +32,11 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
     { href: '/admin/inquiries', label: 'Inquiries', icon: MessageSquare },
     { href: '/admin/keywords', label: 'Keywords', icon: Search },
     { href: '/admin/content', label: 'Content', icon: FileText },
+    { href: '/admin/progress', label: 'Progress', icon: Gauge },
+    { href: '/admin/feedback', label: 'Feedback', icon: MessageCircle },
     { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+    { href: '/admin/system', label: 'System', icon: Activity },
+    { href: '/admin/notifications', label: 'Notifications', icon: Bell },
     { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];
 

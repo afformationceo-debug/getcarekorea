@@ -1,21 +1,15 @@
 /**
- * Image Generation Pipeline (DALL-E 3)
+ * Imagen 4 Image Generation Pipeline
  *
- * ⚠️ DEPRECATED: DO NOT USE THIS FILE
- * =====================================
- * This file uses DALL-E 3 which is NO LONGER the approved model.
+ * ⚠️ IMPORTANT: GetCareKorea uses Google Imagen 4 for ALL image generation
+ * DO NOT use DALL-E, Flux, or other models.
  *
- * ✅ USE INSTEAD: @/lib/images/imagen4-pipeline.ts
- *
- * GetCareKorea uses Google Imagen 4 for ALL image generation.
  * Model: google/imagen-4 (via Replicate API)
- *
- * @deprecated Use imagen4-pipeline.ts instead
+ * @see https://replicate.com/google/imagen-4/api
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
-import { createDalleClient, DalleClient, optimizePromptForDalle } from './dalle-client';
-import { generateImagePrompt, generateSimplePrompt, GeneratedPrompt } from './prompt-generator';
+import { Imagen4Client, IMAGEN4_CONFIG } from './imagen4-client';
 import type { Locale } from '@/lib/i18n/config';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,7 +26,7 @@ export interface ImagePipelineOptions {
   category: string;
   locale: Locale;
   keyword?: string;
-  useSimplePrompt?: boolean;
+  aspectRatio?: '1:1' | '16:9' | '9:16' | '4:3' | '3:4';
 }
 
 export interface ImagePipelineResult {
@@ -40,10 +34,10 @@ export interface ImagePipelineResult {
   imageUrl?: string;
   thumbnailUrl?: string;
   generationId?: string;
-  prompt?: GeneratedPrompt;
-  revisedPrompt?: string;
+  prompt?: string;
   error?: string;
   timeMs?: number;
+  model?: string;
 }
 
 export interface BatchImageResult {
@@ -59,45 +53,120 @@ export interface BatchImageResult {
 }
 
 // =====================================================
+// SINGLETON CLIENT
+// =====================================================
+
+let imagen4Client: Imagen4Client | null = null;
+
+function getImagen4Client(): Imagen4Client | null {
+  if (!process.env.REPLICATE_API_TOKEN) {
+    return null;
+  }
+  if (!imagen4Client) {
+    imagen4Client = new Imagen4Client();
+  }
+  return imagen4Client;
+}
+
+// =====================================================
+// PROMPT GENERATION
+// =====================================================
+
+/**
+ * Generate image prompt from blog post metadata
+ */
+function generatePromptFromContent(options: ImagePipelineOptions): string {
+  const { title, excerpt, category, keyword } = options;
+
+  // Base prompt from title and excerpt
+  let prompt = `Professional medical photography for blog post titled "${title}".`;
+
+  if (excerpt) {
+    prompt += ` Context: ${excerpt.substring(0, 200)}`;
+  }
+
+  // Category-specific additions
+  const categoryPrompts: Record<string, string> = {
+    'Dermatology': 'Featuring modern Korean dermatology clinic, skin treatment procedure, dermatologist consultation.',
+    'Plastic Surgery': 'Featuring premium Korean plastic surgery clinic, consultation room, before/after documentation.',
+    'Dentistry': 'Featuring advanced Korean dental clinic, dental treatment, modern dental equipment.',
+    'Health Checkup': 'Featuring comprehensive health screening center, medical examination, health diagnostic equipment.',
+    'Hair Transplant': 'Featuring Korean hair restoration clinic, hair transplant procedure, follicle extraction.',
+    'General': 'Featuring modern Korean medical facility, patient care, professional healthcare.',
+  };
+
+  prompt += ' ' + (categoryPrompts[category] || categoryPrompts['General']);
+
+  // Add keyword if provided
+  if (keyword) {
+    prompt += ` Related to ${keyword} treatment in Korea.`;
+  }
+
+  return prompt;
+}
+
+/**
+ * Generate alt text for SEO
+ */
+function generateAltText(options: ImagePipelineOptions): string {
+  const { title, category, keyword } = options;
+
+  let alt = `${category} treatment`;
+  if (keyword) {
+    alt += ` for ${keyword}`;
+  }
+  alt += ` at premium Korean medical clinic - ${title}`;
+
+  // Ensure alt text is within 10-25 words
+  const words = alt.split(/\s+/);
+  if (words.length > 25) {
+    alt = words.slice(0, 25).join(' ') + '...';
+  }
+
+  return alt;
+}
+
+// =====================================================
 // IMAGE PIPELINE
 // =====================================================
 
 /**
- * 단일 블로그 포스트 이미지 생성 파이프라인
+ * Run image generation pipeline for a single blog post
+ *
+ * ⚠️ Uses Google Imagen 4 - DO NOT change to DALL-E or Flux
  */
 export async function runImagePipeline(
   supabase: AnySupabaseClient,
   options: ImagePipelineOptions
 ): Promise<ImagePipelineResult> {
   const startTime = Date.now();
-  const client = createDalleClient();
+  const client = getImagen4Client();
 
   if (!client) {
     return {
       success: false,
-      error: 'DALL-E client not configured (OPENAI_API_KEY missing)',
+      error: 'Imagen 4 client not configured (REPLICATE_API_TOKEN missing)',
       timeMs: Date.now() - startTime,
     };
   }
 
   try {
-    // 1. 프롬프트 생성
-    const prompt = options.useSimplePrompt
-      ? generateSimplePrompt(options)
-      : await generateImagePrompt(options);
+    // 1. Generate prompt
+    const prompt = generatePromptFromContent(options);
+    const altText = generateAltText(options);
 
-    // 2. DALL-E용 프롬프트 최적화
-    const optimizedPrompt = optimizePromptForDalle(prompt.prompt, options.category);
+    console.log(`\n🎨 Imagen 4 Pipeline: Generating image for ${options.blogPostId}`);
+    console.log(`   Category: ${options.category}`);
+    console.log(`   Prompt: ${prompt.substring(0, 100)}...`);
 
-    // 3. 이미지 생성 기록 생성
+    // 2. Create image generation record
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: generation, error: insertError } = await (supabase
       .from('image_generations') as any)
       .insert({
         blog_post_id: options.blogPostId,
-        prompt: optimizedPrompt,
-        negative_prompt: prompt.negativePrompt,
-        model: 'dall-e-3',
+        prompt: prompt,
+        model: IMAGEN4_CONFIG.MODEL,
         status: 'generating',
         created_at: new Date().toISOString(),
       })
@@ -108,20 +177,19 @@ export async function runImagePipeline(
       console.error('Failed to create image generation record:', insertError);
     }
 
-    // 4. DALL-E 3 API 호출
+    // 3. Generate image with Imagen 4
     const response = await client.generateImage({
-      prompt: optimizedPrompt,
-      size: '1792x1024', // OG Image에 적합한 가로형
-      quality: 'standard',
-      style: 'natural',
+      prompt,
+      aspectRatio: options.aspectRatio || '16:9',
+      outputFormat: 'webp',
+      outputQuality: 90,
     });
 
     if (!response.success || !response.imageUrl) {
-      // 실패 기록
+      // Update record as failed
       if (generation?.id) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase
-          .from('image_generations') as any)
+        await (supabase.from('image_generations') as any)
           .update({
             status: 'failed',
             error_message: response.error,
@@ -134,34 +202,32 @@ export async function runImagePipeline(
         prompt,
         error: response.error || 'Image generation failed',
         timeMs: Date.now() - startTime,
+        model: IMAGEN4_CONFIG.MODEL,
       };
     }
 
-    // 5. Supabase Storage에 업로드
+    // 4. Upload to Supabase Storage
     const storedUrl = await uploadToStorage(
       supabase,
-      client,
       response.imageUrl,
       options.blogPostId,
-      prompt.suggestedFileName
+      `cover-${Date.now()}`
     );
 
-    // 6. 블로그 포스트 업데이트
+    // 5. Update blog post with cover image
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase
-      .from('blog_posts') as any)
+    await (supabase.from('blog_posts') as any)
       .update({
         cover_image_url: storedUrl,
-        cover_image_alt: prompt.altText,
+        cover_image_alt: altText,
         updated_at: new Date().toISOString(),
       })
       .eq('id', options.blogPostId);
 
-    // 7. 생성 기록 완료
+    // 6. Update generation record as completed
     if (generation?.id) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase
-        .from('image_generations') as any)
+      await (supabase.from('image_generations') as any)
         .update({
           status: 'completed',
           image_url: storedUrl,
@@ -170,12 +236,16 @@ export async function runImagePipeline(
         .eq('id', generation.id);
     }
 
+    console.log(`   ✅ Image generated successfully`);
+    console.log(`   URL: ${storedUrl.substring(0, 80)}...`);
+
     return {
       success: true,
       imageUrl: storedUrl,
       prompt,
-      revisedPrompt: response.revisedPrompt,
+      generationId: generation?.id,
       timeMs: Date.now() - startTime,
+      model: IMAGEN4_CONFIG.MODEL,
     };
   } catch (error) {
     console.error('Image pipeline error:', error);
@@ -183,23 +253,23 @@ export async function runImagePipeline(
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
       timeMs: Date.now() - startTime,
+      model: IMAGEN4_CONFIG.MODEL,
     };
   }
 }
 
 /**
- * 배치 이미지 생성
+ * Run batch image generation
  */
 export async function runBatchImagePipeline(
   supabase: AnySupabaseClient,
   blogPostIds: string[],
   options: {
-    useSimplePrompt?: boolean;
     concurrency?: number;
     onProgress?: (completed: number, total: number) => void;
   } = {}
 ): Promise<BatchImageResult> {
-  const { useSimplePrompt = false, concurrency = 2, onProgress } = options;
+  const { concurrency = IMAGEN4_CONFIG.MAX_CONCURRENT, onProgress } = options;
 
   const result: BatchImageResult = {
     total: blogPostIds.length,
@@ -208,10 +278,12 @@ export async function runBatchImagePipeline(
     results: [],
   };
 
-  // 블로그 포스트 정보 조회
+  console.log(`\n🎨 Imagen 4 Batch Pipeline: ${blogPostIds.length} posts`);
+  console.log(`   Concurrency: ${concurrency}`);
+
+  // Fetch blog post info
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: posts, error } = await (supabase
-    .from('blog_posts') as any)
+  const { data: posts, error } = await (supabase.from('blog_posts') as any)
     .select('id, title_en, excerpt_en, category')
     .in('id', blogPostIds);
 
@@ -225,19 +297,18 @@ export async function runBatchImagePipeline(
     return result;
   }
 
-  // 동시 처리 제한을 위한 청크 분할
+  // Process in batches
   for (let i = 0; i < posts.length; i += concurrency) {
-    const chunk = posts.slice(i, i + concurrency);
+    const batch = posts.slice(i, i + concurrency);
 
-    const chunkResults = await Promise.all(
-      chunk.map(async (post: { id: string; title_en: string; excerpt_en: string; category: string }) => {
+    const batchResults = await Promise.all(
+      batch.map(async (post: { id: string; title_en: string; excerpt_en: string; category: string }) => {
         const pipelineResult = await runImagePipeline(supabase, {
           blogPostId: post.id,
           title: post.title_en || 'Untitled',
           excerpt: post.excerpt_en || '',
           category: post.category || 'general',
           locale: 'en',
-          useSimplePrompt,
         });
 
         return {
@@ -249,7 +320,7 @@ export async function runBatchImagePipeline(
       })
     );
 
-    for (const res of chunkResults) {
+    for (const res of batchResults) {
       result.results.push(res);
       if (res.success) {
         result.successful++;
@@ -262,11 +333,13 @@ export async function runBatchImagePipeline(
       onProgress(result.successful + result.failed, result.total);
     }
 
-    // DALL-E rate limit 고려 - 요청 간 딜레이
+    // Delay between batches
     if (i + concurrency < posts.length) {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
+
+  console.log(`\n✅ Batch complete: ${result.successful}/${result.total} succeeded`);
 
   return result;
 }
@@ -276,39 +349,43 @@ export async function runBatchImagePipeline(
 // =====================================================
 
 /**
- * Supabase Storage에 이미지 업로드
+ * Upload image to Supabase Storage
  */
 async function uploadToStorage(
   supabase: AnySupabaseClient,
-  client: DalleClient,
   imageUrl: string,
   blogPostId: string,
   fileName: string
 ): Promise<string> {
   try {
-    // 이미지 다운로드
-    const imageBuffer = await client.downloadImage(imageUrl);
+    // Download image
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to download image: ${response.status}`);
+    }
 
-    // 파일 경로 생성
-    const timestamp = Date.now();
+    const imageBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(imageBuffer);
+
+    // Generate file path
     const sanitizedFileName = fileName.replace(/[^a-z0-9-]/gi, '-').substring(0, 50);
-    const filePath = `blog/${blogPostId}/${sanitizedFileName}-${timestamp}.png`;
+    const filePath = `blog/${blogPostId}/${sanitizedFileName}.webp`;
 
-    // Supabase Storage 업로드
+    // Upload to Supabase Storage
     const { error } = await supabase.storage
       .from('blog-images')
-      .upload(filePath, imageBuffer, {
-        contentType: 'image/png',
+      .upload(filePath, uint8Array, {
+        contentType: 'image/webp',
         upsert: true,
       });
 
     if (error) {
       console.error('Storage upload error:', error);
-      // 원본 URL 반환 (폴백) - 단, DALL-E URL은 1시간 후 만료됨
+      // Return original URL as fallback (note: Replicate URLs may expire)
       return imageUrl;
     }
 
-    // Public URL 생성
+    // Get public URL
     const { data: { publicUrl } } = supabase.storage
       .from('blog-images')
       .getPublicUrl(filePath);
@@ -321,23 +398,20 @@ async function uploadToStorage(
 }
 
 /**
- * 기존 이미지 삭제
+ * Delete stored image
  */
 export async function deleteStoredImage(
   supabase: AnySupabaseClient,
   blogPostId: string
 ): Promise<boolean> {
   try {
-    // 블로그 이미지 폴더 내 파일 목록 조회
     const { data: files } = await supabase.storage
       .from('blog-images')
       .list(`blog/${blogPostId}`);
 
     if (files && files.length > 0) {
       const filePaths = files.map(f => `blog/${blogPostId}/${f.name}`);
-      await supabase.storage
-        .from('blog-images')
-        .remove(filePaths);
+      await supabase.storage.from('blog-images').remove(filePaths);
     }
 
     return true;
@@ -352,7 +426,7 @@ export async function deleteStoredImage(
 // =====================================================
 
 /**
- * 이미지 생성이 필요한 포스트 조회
+ * Get posts that need images
  */
 export async function getPostsNeedingImages(
   supabase: AnySupabaseClient,
@@ -364,8 +438,7 @@ export async function getPostsNeedingImages(
   const { status = 'published', limit = 50 } = options;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: posts } = await (supabase
-    .from('blog_posts') as any)
+  const { data: posts } = await (supabase.from('blog_posts') as any)
     .select('id, title_en')
     .eq('status', status)
     .is('cover_image_url', null)
@@ -378,7 +451,7 @@ export async function getPostsNeedingImages(
 }
 
 /**
- * 이미지 생성 상태 조회
+ * Get image generation status for a blog post
  */
 export async function getImageGenerationStatus(
   supabase: AnySupabaseClient,
@@ -389,21 +462,20 @@ export async function getImageGenerationStatus(
     status: string;
     imageUrl?: string;
     createdAt: string;
+    model: string;
   };
 }> {
-  // 블로그 포스트 확인
+  // Check blog post
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: post } = await (supabase
-    .from('blog_posts') as any)
+  const { data: post } = await (supabase.from('blog_posts') as any)
     .select('cover_image_url')
     .eq('id', blogPostId)
     .single();
 
-  // 최근 생성 기록 확인
+  // Check latest generation record
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: generation } = await (supabase
-    .from('image_generations') as any)
-    .select('status, image_url, created_at')
+  const { data: generation } = await (supabase.from('image_generations') as any)
+    .select('status, image_url, created_at, model')
     .eq('blog_post_id', blogPostId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -415,6 +487,7 @@ export async function getImageGenerationStatus(
       status: generation.status,
       imageUrl: generation.image_url,
       createdAt: generation.created_at,
+      model: generation.model || IMAGEN4_CONFIG.MODEL,
     } : undefined,
   };
 }

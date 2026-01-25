@@ -25,15 +25,24 @@ export async function GET(request: NextRequest) {
     const locale = searchParams.get('locale');
     const category = searchParams.get('category');
     const search = searchParams.get('search');
+    const dateFrom = searchParams.get('dateFrom');
+    const dateTo = searchParams.get('dateTo');
+    const sortBy = searchParams.get('sortBy') || 'created_at';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
+
+    // Validate sortBy to prevent SQL injection
+    const validSortColumns = ['created_at', 'updated_at', 'view_count', 'title_en', 'title'];
+    const safeSortBy = validSortColumns.includes(sortBy) ? (sortBy === 'title' ? 'title_en' : sortBy) : 'created_at';
+    const ascending = sortOrder === 'asc';
 
     // Build query
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query = (adminSupabase.from('blog_posts') as any)
       .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false });
+      .order(safeSortBy, { ascending });
 
     // Apply filters
     if (status && status !== 'all') {
@@ -44,8 +53,32 @@ export async function GET(request: NextRequest) {
       query = query.eq('category', category);
     }
 
+    // Language filter - check if specific language content exists
+    if (locale && locale !== 'all') {
+      const localeKey = `content_${locale.replace('-', '_').toLowerCase()}`;
+      query = query.not(localeKey, 'is', null);
+    }
+
+    // Date range filters
+    if (dateFrom) {
+      query = query.gte('created_at', `${dateFrom}T00:00:00.000Z`);
+    }
+    if (dateTo) {
+      query = query.lte('created_at', `${dateTo}T23:59:59.999Z`);
+    }
+
+    // Enhanced search - search across multiple fields including keywords
     if (search) {
-      query = query.or(`title_en.ilike.%${search}%,title_ko.ilike.%${search}%,slug.ilike.%${search}%`);
+      const searchLower = search.toLowerCase();
+      query = query.or(
+        `title_en.ilike.%${searchLower}%,` +
+        `title_ko.ilike.%${searchLower}%,` +
+        `title_ja.ilike.%${searchLower}%,` +
+        `title_zh_cn.ilike.%${searchLower}%,` +
+        `title_zh_tw.ilike.%${searchLower}%,` +
+        `slug.ilike.%${searchLower}%,` +
+        `tags.cs.{${search}}`
+      );
     }
 
     // Apply pagination

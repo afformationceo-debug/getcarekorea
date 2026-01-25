@@ -1,8 +1,16 @@
 /**
  * Image Generation & Alt Tag Helper
  *
- * Handles contextual image generation with DALL-E 3
- * and automatic alt tag generation for SEO and accessibility.
+ * ⚠️ DEPRECATED: DO NOT USE THIS FILE
+ * =====================================
+ * This file uses DALL-E 3 which is NO LONGER the approved model.
+ *
+ * ✅ USE INSTEAD: @/lib/content/imagen4-helper.ts
+ *
+ * GetCareKorea uses Google Imagen 4 for ALL image generation.
+ * Model: google/imagen-4 (via Replicate API)
+ *
+ * @deprecated Use imagen4-helper.ts instead
  */
 
 import OpenAI from 'openai';

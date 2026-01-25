@@ -1,8 +1,16 @@
 /**
  * Flux Pro 1.1 Image Generation Helper
  *
- * Uses Replicate API for ultra-realistic image generation.
- * Flux Pro 1.1 is currently the best model for photorealistic images.
+ * ⚠️ DEPRECATED: DO NOT USE THIS FILE
+ * =====================================
+ * This file uses Flux Pro 1.1 which is NO LONGER the approved model.
+ *
+ * ✅ USE INSTEAD: @/lib/content/imagen4-helper.ts
+ *
+ * GetCareKorea uses Google Imagen 4 for ALL image generation.
+ * Model: google/imagen-4 (via Replicate API)
+ *
+ * @deprecated Use imagen4-helper.ts instead
  */
 
 import Replicate from 'replicate';

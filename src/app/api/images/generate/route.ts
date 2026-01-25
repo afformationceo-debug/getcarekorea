@@ -3,14 +3,21 @@
  *
  * POST /api/images/generate - 단일/배치 이미지 생성
  * GET /api/images/generate - 이미지 생성 대기 중인 포스트 목록
+ *
+ * ⚠️ IMPORTANT: Uses Google Imagen 4 via Replicate API
+ * DO NOT change to DALL-E, Flux, or other models.
+ *
+ * @see https://replicate.com/google/imagen-4/api
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+// ⚠️ IMPORTANT: Use Imagen 4 for ALL image generation
 import {
   runImagePipeline,
   runBatchImagePipeline,
   getPostsNeedingImages,
+  IMAGEN4_CONFIG,
 } from '@/lib/images';
 
 export const runtime = 'nodejs';
@@ -85,7 +92,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { blogPostId, blogPostIds, useSimplePrompt = false } = body;
+    const { blogPostId, blogPostIds } = body;
+    // Note: useSimplePrompt is deprecated with Imagen 4
 
     // 단일 포스트 이미지 생성
     if (blogPostId) {
@@ -101,13 +109,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Post not found' }, { status: 404 });
       }
 
+      // ⚠️ Uses Imagen 4 - DO NOT change to DALL-E or Flux
       const result = await runImagePipeline(supabase, {
         blogPostId: post.id,
         title: post.title_en || 'Untitled',
         excerpt: post.excerpt_en || '',
         category: post.category || 'general',
         locale: 'en',
-        useSimplePrompt,
       });
 
       if (!result.success) {
@@ -126,8 +134,9 @@ export async function POST(request: NextRequest) {
           imageUrl: result.imageUrl,
           generationId: result.generationId,
           timeMs: result.timeMs,
+          model: IMAGEN4_CONFIG.MODEL,
         },
-        message: 'Image generated successfully',
+        message: 'Image generated successfully with Imagen 4',
       });
     }
 
@@ -140,9 +149,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // ⚠️ Uses Imagen 4 - DO NOT change to DALL-E or Flux
       const result = await runBatchImagePipeline(supabase, blogPostIds, {
-        useSimplePrompt,
-        concurrency: 2,
+        concurrency: IMAGEN4_CONFIG.MAX_CONCURRENT,
       });
 
       return NextResponse.json({
@@ -152,8 +161,9 @@ export async function POST(request: NextRequest) {
           successful: result.successful,
           failed: result.failed,
           results: result.results,
+          model: IMAGEN4_CONFIG.MODEL,
         },
-        message: `Generated ${result.successful}/${result.total} images`,
+        message: `Generated ${result.successful}/${result.total} images with Imagen 4`,
       });
     }
 

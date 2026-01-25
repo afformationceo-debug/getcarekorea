@@ -7,13 +7,21 @@
  * - Performance: 78% faster (4.5x speed improvement)
  * - Cost: 68% reduction
  * - Quality: Native content, not translations
+ *
+ * ⚠️ IMAGE GENERATION: Uses Google Imagen 4 via Replicate API
+ * DO NOT change to DALL-E, Flux, or other models.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { generateSingleLanguageContent } from '@/lib/content/single-content-generator';
-import { generateImages, injectImagesIntoHTML } from '@/lib/content/image-helper';
-import type { ImageMetadata } from '@/lib/content/image-helper';
+// ⚠️ IMPORTANT: Use Imagen 4 for image generation (NOT DALL-E or Flux)
+import {
+  generateImagen4Images,
+  insertImagesIntoContent,
+  type ImageMetadata,
+  IMAGE_GENERATION_CONFIG,
+} from '@/lib/content/imagen4-helper';
 import type { Locale } from '@/lib/content/multi-language-generator';
 
 export const maxDuration = 300; // 5 minutes (increased for image generation)
@@ -110,13 +118,14 @@ export async function POST(request: NextRequest) {
       additionalInstructions,
     });
 
-    // 4. Generate images with DALL-E 3 (if enabled and images metadata exists)
+    // 4. Generate images with Google Imagen 4 (via Replicate API)
+    // ⚠️ IMPORTANT: Always use Imagen 4 - DO NOT change to DALL-E or Flux
     let finalContent = generatedContent.content;
-    let generatedImageResults: any[] = [];
+    let generatedImageResults: Array<{ url: string; alt: string; placeholder: string }> = [];
     let totalImageCost = 0;
 
     if (includeImages && generatedContent.images && generatedContent.images.length > 0) {
-      console.log(`   🎨 Generating ${generatedContent.images.length} images with DALL-E 3...`);
+      console.log(`   🎨 Generating ${generatedContent.images.length} images with ${IMAGE_GENERATION_CONFIG.MODEL}...`);
 
       try {
         const imageMetadata: ImageMetadata[] = generatedContent.images.map(img => ({
@@ -125,17 +134,16 @@ export async function POST(request: NextRequest) {
           prompt: img.prompt,
           alt: img.alt,
           caption: img.caption,
-          contextBefore: img.contextBefore,
-          contextAfter: img.contextAfter,
         }));
 
-        const imageResult = await generateImages({
+        // Generate images with Imagen 4
+        const imageResult = await generateImagen4Images({
           images: imageMetadata,
           keyword,
           locale,
-          size: '1024x1024',
-          quality: 'hd',
-          style: 'natural',
+          aspectRatio: '16:9',      // Widescreen for blog posts
+          outputFormat: 'webp',     // Best compression
+          outputQuality: 90,        // High quality
         });
 
         generatedImageResults = imageResult.images;
@@ -143,15 +151,24 @@ export async function POST(request: NextRequest) {
 
         // Inject generated images into HTML content
         if (imageResult.images.length > 0) {
-          finalContent = injectImagesIntoHTML(generatedContent.content, imageResult.images);
-          console.log(`   ✅ ${imageResult.images.length} images generated and injected`);
+          // Create caption map
+          const captions: Record<string, string> = {};
+          generatedContent.images.forEach(img => {
+            if (img.caption) {
+              captions[img.placeholder] = img.caption;
+            }
+          });
+
+          finalContent = insertImagesIntoContent(generatedContent.content, imageResult.images, captions);
+          console.log(`   ✅ ${imageResult.images.length} images generated with Imagen 4 and injected`);
         }
 
         if (imageResult.errors.length > 0) {
           console.warn(`   ⚠️  ${imageResult.errors.length} images failed to generate`);
+          imageResult.errors.forEach(err => console.warn(`      - ${err.placeholder}: ${err.error}`));
         }
-      } catch (imageError: any) {
-        console.error(`   ❌ Image generation failed:`, imageError.message);
+      } catch (imageError: unknown) {
+        console.error(`   ❌ Image generation failed:`, imageError instanceof Error ? imageError.message : imageError);
         // Continue without images - don't fail the entire request
       }
     }

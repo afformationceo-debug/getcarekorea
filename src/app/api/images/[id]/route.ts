@@ -3,14 +3,19 @@
  *
  * GET /api/images/[id] - 특정 포스트의 이미지 생성 상태 조회
  * DELETE /api/images/[id] - 이미지 삭제 및 재생성
+ *
+ * ⚠️ IMPORTANT: Uses Google Imagen 4 via Replicate API
+ * DO NOT change to DALL-E, Flux, or other models.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+// ⚠️ IMPORTANT: Use Imagen 4 for ALL image generation
 import {
   getImageGenerationStatus,
   deleteStoredImage,
   runImagePipeline,
+  IMAGEN4_CONFIG,
 } from '@/lib/images';
 
 export const runtime = 'nodejs';
@@ -178,20 +183,20 @@ export async function PUT(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    const body = await request.json().catch(() => ({}));
-    const { useSimplePrompt = false } = body;
+    // Note: useSimplePrompt is deprecated with Imagen 4
+    await request.json().catch(() => ({}));
 
     // 기존 이미지 삭제
     await deleteStoredImage(supabase, blogPostId);
 
-    // 새 이미지 생성
+    // 새 이미지 생성 with Imagen 4
+    // ⚠️ DO NOT change to DALL-E or Flux
     const result = await runImagePipeline(supabase, {
       blogPostId: post.id,
       title: post.title_en || 'Untitled',
       excerpt: post.excerpt_en || '',
       category: post.category || 'general',
       locale: 'en',
-      useSimplePrompt,
     });
 
     if (!result.success) {
@@ -210,8 +215,9 @@ export async function PUT(
         imageUrl: result.imageUrl,
         generationId: result.generationId,
         timeMs: result.timeMs,
+        model: IMAGEN4_CONFIG.MODEL,
       },
-      message: 'Image regenerated successfully',
+      message: 'Image regenerated successfully with Imagen 4',
     });
   } catch (error) {
     console.error('Image regeneration error:', error);

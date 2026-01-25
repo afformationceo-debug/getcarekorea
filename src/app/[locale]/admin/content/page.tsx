@@ -35,6 +35,12 @@ import {
   Monitor,
   Smartphone,
   Tablet,
+  Filter,
+  SortAsc,
+  SortDesc,
+  CalendarDays,
+  Languages,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,6 +79,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 
@@ -158,6 +169,12 @@ export default function ContentPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [localeFilter, setLocaleFilter] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [sortBy, setSortBy] = useState<'created_at' | 'updated_at' | 'view_count' | 'title'>('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Modal states
   const [previewPost, setPreviewPost] = useState<BlogPost | null>(null);
@@ -182,6 +199,11 @@ export default function ContentPage() {
       if (searchQuery) params.set('search', searchQuery);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (categoryFilter !== 'all') params.set('category', categoryFilter);
+      if (localeFilter !== 'all') params.set('locale', localeFilter);
+      if (dateFrom) params.set('dateFrom', dateFrom);
+      if (dateTo) params.set('dateTo', dateTo);
+      params.set('sortBy', sortBy);
+      params.set('sortOrder', sortOrder);
 
       const response = await fetch(`/api/content?${params.toString()}`);
       const data = await response.json();
@@ -195,7 +217,7 @@ export default function ContentPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, statusFilter, categoryFilter]);
+  }, [searchQuery, statusFilter, categoryFilter, localeFilter, dateFrom, dateTo, sortBy, sortOrder]);
 
   useEffect(() => {
     fetchPosts();
@@ -551,12 +573,12 @@ export default function ContentPage() {
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          {/* Filters */}
-          <div className="flex gap-4">
-            <div className="relative flex-1">
+          {/* Basic Filters */}
+          <div className="flex flex-wrap gap-4">
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search articles..."
+                placeholder="Search articles by title, slug, keyword..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -587,7 +609,151 @@ export default function ContentPage() {
                 <SelectItem value="medical-tourism">Medical Tourism</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              variant={showAdvancedFilters ? 'secondary' : 'outline'}
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className="gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              고급 필터
+              <ChevronDown className={`h-4 w-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
+            </Button>
           </div>
+
+          {/* Advanced Filters */}
+          {showAdvancedFilters && (
+            <Card className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Locale Filter */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Languages className="h-4 w-4" />
+                    Language
+                  </label>
+                  <Select value={localeFilter} onValueChange={setLocaleFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Languages" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Languages</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="ko">한국어</SelectItem>
+                      <SelectItem value="ja">日本語</SelectItem>
+                      <SelectItem value="zh-CN">简体中文</SelectItem>
+                      <SelectItem value="zh-TW">繁體中文</SelectItem>
+                      <SelectItem value="th">ภาษาไทย</SelectItem>
+                      <SelectItem value="mn">Монгол</SelectItem>
+                      <SelectItem value="ru">Русский</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Date Range */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4" />
+                    From Date
+                  </label>
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4" />
+                    To Date
+                  </label>
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Sort Options */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
+                    Sort By
+                  </label>
+                  <div className="flex gap-2">
+                    <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="created_at">Created Date</SelectItem>
+                        <SelectItem value="updated_at">Updated Date</SelectItem>
+                        <SelectItem value="view_count">Views</SelectItem>
+                        <SelectItem value="title">Title</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    >
+                      {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Filters & Reset */}
+              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                <div className="flex flex-wrap gap-2">
+                  {localeFilter !== 'all' && (
+                    <Badge variant="secondary" className="gap-1">
+                      Language: {LOCALE_LABELS[localeFilter] || localeFilter}
+                      <X
+                        className="h-3 w-3 cursor-pointer"
+                        onClick={() => setLocaleFilter('all')}
+                      />
+                    </Badge>
+                  )}
+                  {dateFrom && (
+                    <Badge variant="secondary" className="gap-1">
+                      From: {dateFrom}
+                      <X
+                        className="h-3 w-3 cursor-pointer"
+                        onClick={() => setDateFrom('')}
+                      />
+                    </Badge>
+                  )}
+                  {dateTo && (
+                    <Badge variant="secondary" className="gap-1">
+                      To: {dateTo}
+                      <X
+                        className="h-3 w-3 cursor-pointer"
+                        onClick={() => setDateTo('')}
+                      />
+                    </Badge>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setStatusFilter('all');
+                    setCategoryFilter('all');
+                    setLocaleFilter('all');
+                    setDateFrom('');
+                    setDateTo('');
+                    setSortBy('created_at');
+                    setSortOrder('desc');
+                  }}
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Reset Filters
+                </Button>
+              </div>
+            </Card>
+          )}
 
           {/* Articles Table */}
           <Card>
