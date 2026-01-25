@@ -193,6 +193,9 @@
   "inquiry": {
     "title": "免费咨询",
     "subtitle": "告诉我们您的需求，我们将为您连接合适的医院",
+    "heroTagline": "免费咨询",
+    "heroTitle1": "开始您的",
+    "heroTitle2": "医疗之旅",
     "form": {
       "name": "姓名",
       "email": "电子邮件",
@@ -201,11 +204,14 @@
       "procedure": "感兴趣的项目",
       "message": "您的留言",
       "submit": "发送询问",
-      "submitting": "发送中..."
+      "submitting": "发送中...",
+      "formTitle": "咨询表单",
+      "formDescription": "请填写以下表单，我们将在24小时内回复您"
     },
     "success": {
       "title": "感谢您！",
-      "message": "我们已收到您的询问。我们的团队将在24小时内与您联系。"
+      "message": "我们已收到您的询问。我们的团队将在24小时内与您联系。",
+      "backHome": "返回首页"
     },
     "messengers": {
       "whatsapp": "WhatsApp",
@@ -213,6 +219,40 @@
       "wechat": "微信",
       "telegram": "Telegram",
       "email": "电子邮件"
+    },
+    "sidebar": {
+      "quickContact": "快速联系",
+      "chatWithUs": "与我们聊天",
+      "phone": "电话",
+      "email": "电子邮件",
+      "whyTitle": "为什么选择GetCareKorea？",
+      "benefits": {
+        "1": "免费咨询，无任何义务",
+        "2": "仅与JCI认证医院合作",
+        "3": "专业医疗翻译",
+        "4": "最低价格保证",
+        "5": "全程24小时支援"
+      },
+      "aiTitle": "AI助手可用",
+      "aiDescription": "填写表单需要帮助吗？我们的AI可以协助您。",
+      "aiButton": "获取AI帮助"
+    },
+    "badges": {
+      "jciCertified": "JCI认证",
+      "response24h": "24小时回复",
+      "bestPrice": "最低价格",
+      "expertCare": "专业照护"
+    },
+    "procedures": {
+      "plasticSurgery": "整形外科",
+      "dermatology": "皮肤科",
+      "dental": "牙科",
+      "ophthalmology": "眼科",
+      "hairTransplant": "植发",
+      "healthCheckup": "健康检查",
+      "orthopedics": "骨科",
+      "fertility": "不孕症治疗",
+      "other": "其他"
     }
   },
   "reviews": {
@@ -232,6 +272,17 @@
   "blog": {
     "title": "医疗旅游指南",
     "subtitle": "专家见解与实用信息",
+    "heroTagline": "AI生成洞察",
+    "heroTitle1": "医疗旅游",
+    "heroTitle2": "博客与指南",
+    "heroDescription": "韩国医疗之旅的专家见解、患者故事和完整指南。",
+    "stats": {
+      "articles": "文章",
+      "readers": "读者",
+      "ranked": "排名"
+    },
+    "searchPlaceholder": "搜索文章...",
+    "allPosts": "所有文章",
     "categories": {
       "guides": "指南",
       "tips": "小技巧",
@@ -240,7 +291,19 @@
     },
     "readTime": "{minutes} 分钟阅读",
     "publishedOn": "发布于 {date}",
-    "relatedPosts": "相关文章"
+    "relatedPosts": "相关文章",
+    "noArticles": "找不到文章",
+    "noArticlesSearch": "请尝试其他搜索词",
+    "noArticlesEmpty": "请稍后再来看看新内容",
+    "loadMore": "加载更多",
+    "loading": "加载中...",
+    "retry": "重试",
+    "newsletter": {
+      "title": "获取医疗旅游最新资讯",
+      "description": "订阅我们的电子报，获取最新文章、指南和专属优惠。",
+      "placeholder": "输入电子邮件",
+      "subscribe": "订阅"
+    }
   },
   "pricing": {
     "title": "透明定价",

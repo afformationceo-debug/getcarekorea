@@ -1,6 +1,85 @@
-import { setRequestLocale } from 'next-intl/server';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
+import Script from 'next/script';
+import type { Metadata } from 'next';
+import { locales, type Locale } from '@/lib/i18n/config';
+
+const baseUrl = 'https://getcarekorea.com';
+
+// SEO Metadata for home page
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'meta' });
+
+  return {
+    title: t('homeTitle'),
+    description: t('homeDescription'),
+    openGraph: {
+      title: t('homeTitle'),
+      description: t('homeDescription'),
+      url: `${baseUrl}/${locale}`,
+      siteName: 'GetCareKorea',
+      images: [{ url: `${baseUrl}/og-image.jpg`, width: 1200, height: 630 }],
+      locale: locale,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: t('homeTitle'),
+      description: t('homeDescription'),
+    },
+    alternates: {
+      canonical: `${baseUrl}/${locale}`,
+      languages: Object.fromEntries(
+        locales.map((loc) => [loc, `${baseUrl}/${loc}`])
+      ),
+    },
+  };
+}
+
+// JSON-LD Schema for Organization and WebSite
+function generateHomeSchema(locale: Locale) {
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': `${baseUrl}/#organization`,
+    name: 'GetCareKorea',
+    url: baseUrl,
+    logo: `${baseUrl}/logo.png`,
+    description: 'Premium medical tourism platform connecting international patients with top Korean hospitals and certified medical interpreters.',
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'KR',
+      addressLocality: 'Seoul',
+    },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      availableLanguage: ['English', 'Korean', 'Japanese', 'Chinese', 'Thai', 'Russian', 'Mongolian'],
+    },
+    sameAs: [
+      'https://www.instagram.com/getcarekorea',
+      'https://www.facebook.com/getcarekorea',
+    ],
+  };
+
+  const webSiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${baseUrl}/#website`,
+    name: 'GetCareKorea',
+    url: baseUrl,
+    inLanguage: locale,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${baseUrl}/${locale}/hospitals?q={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  return [organizationSchema, webSiteSchema];
+}
 
 // Critical above-the-fold components - load immediately
 import { HeroSection } from '@/components/landing/HeroSection';
@@ -43,8 +122,19 @@ export default async function HomePage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const schemaMarkup = generateHomeSchema(locale as Locale);
+
   return (
     <div className="flex flex-col overflow-x-hidden">
+      {/* JSON-LD Schema for SEO */}
+      <Script
+        id="home-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schemaMarkup),
+        }}
+      />
+
       {/* Hero with AI Chat - Critical, loads first */}
       <HeroSection />
 

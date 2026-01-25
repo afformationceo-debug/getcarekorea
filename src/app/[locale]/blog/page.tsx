@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations, useLocale } from 'next-intl';
-import Link from 'next/link';
+import { Link } from '@/lib/i18n/navigation';
 import Image from 'next/image';
 import {
   Search,
@@ -82,7 +82,7 @@ export default function BlogPage() {
 
   // Categories - dynamically computed from posts
   const [categories, setCategories] = useState<Category[]>([
-    { id: 'all', name: 'All Posts', count: 0 },
+    { id: 'all', name: t('allPosts'), count: 0 },
   ]);
 
   // Fetch posts
@@ -135,7 +135,7 @@ export default function BlogPage() {
         });
 
         const newCategories: Category[] = [
-          { id: 'all', name: 'All Posts', count: data.meta.total },
+          { id: 'all', name: t('allPosts'), count: data.meta.total },
         ];
 
         categoryMap.forEach((count, cat) => {
@@ -228,18 +228,18 @@ export default function BlogPage() {
               <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}>
                 <Sparkles className="h-4 w-4 text-cyan-400" />
               </motion.div>
-              <span className="text-sm font-medium text-white/90">AI-Generated Insights</span>
+              <span className="text-sm font-medium text-white/90">{t('heroTagline')}</span>
             </motion.div>
 
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-white lg:text-6xl">
-              <span className="block">Medical Tourism</span>
+              <span className="block">{t('heroTitle1')}</span>
               <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
-                Blog & Guides
+                {t('heroTitle2')}
               </span>
             </h1>
 
             <p className="mx-auto mb-10 max-w-2xl text-lg text-white/70 lg:text-xl">
-              Expert insights, patient stories, and comprehensive guides for your medical journey to Korea.
+              {t('heroDescription')}
             </p>
 
             {/* Stats */}
@@ -250,9 +250,9 @@ export default function BlogPage() {
               className="mx-auto grid max-w-2xl grid-cols-3 gap-4"
             >
               {[
-                { icon: BookOpen, value: total > 0 ? `${total}+` : '...', label: 'Articles' },
-                { icon: Eye, value: '500K+', label: 'Readers' },
-                { icon: TrendingUp, value: '#1', label: 'Ranked' },
+                { icon: BookOpen, value: total > 0 ? `${total}+` : '...', label: t('stats.articles') },
+                { icon: Eye, value: '500K+', label: t('stats.readers') },
+                { icon: TrendingUp, value: '#1', label: t('stats.ranked') },
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}
@@ -286,7 +286,7 @@ export default function BlogPage() {
             <div className="mb-4 relative">
               <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search articles..."
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-14 rounded-xl border-0 bg-background/50 pl-12 text-base shadow-inner"
@@ -317,7 +317,7 @@ export default function BlogPage() {
             <AlertCircle className="h-5 w-5" />
             <span>{error}</span>
             <Button variant="ghost" size="sm" onClick={() => fetchPosts(1, false)}>
-              Retry
+              {t('retry')}
             </Button>
           </div>
         )}
@@ -333,11 +333,11 @@ export default function BlogPage() {
         {!loading && posts.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <BookOpen className="mb-4 h-16 w-16 text-muted-foreground" />
-            <h3 className="mb-2 text-xl font-bold">No articles found</h3>
+            <h3 className="mb-2 text-xl font-bold">{t('noArticles')}</h3>
             <p className="text-muted-foreground">
               {searchQuery
-                ? 'Try a different search term'
-                : 'Check back later for new content'}
+                ? t('noArticlesSearch')
+                : t('noArticlesEmpty')}
             </p>
           </div>
         )}
@@ -425,11 +425,11 @@ export default function BlogPage() {
                   {loadingMore ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Loading...
+                      {t('loading')}
                     </>
                   ) : (
                     <>
-                      Load More Articles
+                      {t('loadMore')}
                       <ChevronRight className="h-4 w-4" />
                     </>
                   )}
@@ -459,18 +459,18 @@ export default function BlogPage() {
                 <Sparkles className="h-8 w-8 text-white" />
               </motion.div>
               <h3 className="mb-3 text-2xl font-bold text-white lg:text-3xl">
-                Stay Updated with Medical Tourism Insights
+                {t('newsletter.title')}
               </h3>
               <p className="mx-auto mb-6 max-w-xl text-white/70">
-                Subscribe to our newsletter for the latest articles, guides, and exclusive offers.
+                {t('newsletter.description')}
               </p>
               <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
                 <Input
-                  placeholder="Enter your email"
+                  placeholder={t('newsletter.placeholder')}
                   className="h-12 rounded-xl border-white/20 bg-white/10 text-white placeholder:text-white/50"
                 />
                 <Button className="h-12 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-8">
-                  Subscribe
+                  {t('newsletter.subscribe')}
                 </Button>
               </div>
             </div>

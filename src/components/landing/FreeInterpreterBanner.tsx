@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
+import { Link } from '@/lib/i18n/navigation';
 import { Languages, Sparkles, ArrowRight, Gift, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 

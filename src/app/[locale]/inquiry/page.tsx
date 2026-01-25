@@ -162,7 +162,7 @@ function InquiryFormContent() {
                   className="w-full border-white/20 text-white hover:bg-white/10"
                   asChild
                 >
-                  <a href="/">Back to Home</a>
+                  <a href="/">{t('success.backHome')}</a>
                 </Button>
               </div>
             </motion.div>
@@ -206,13 +206,13 @@ function InquiryFormContent() {
               <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}>
                 <Sparkles className="h-4 w-4 text-cyan-400" />
               </motion.div>
-              <span className="text-sm font-medium text-white/90">Free Consultation</span>
+              <span className="text-sm font-medium text-white/90">{t('heroTagline')}</span>
             </motion.div>
 
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-white lg:text-5xl">
-              <span className="block">Start Your</span>
+              <span className="block">{t('heroTitle1')}</span>
               <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
-                Medical Journey
+                {t('heroTitle2')}
               </span>
             </h1>
 
@@ -228,10 +228,10 @@ function InquiryFormContent() {
               className="flex flex-wrap justify-center gap-4"
             >
               {[
-                { icon: Shield, text: 'JCI Certified' },
-                { icon: Clock, text: '24h Response' },
-                { icon: Award, text: 'Best Price' },
-                { icon: HeartPulse, text: 'Expert Care' },
+                { icon: Shield, text: t('badges.jciCertified') },
+                { icon: Clock, text: t('badges.response24h') },
+                { icon: Award, text: t('badges.bestPrice') },
+                { icon: HeartPulse, text: t('badges.expertCare') },
               ].map((item, i) => (
                 <Badge key={i} variant="secondary" className="bg-white/10 text-white/80 backdrop-blur-sm px-4 py-2">
                   <item.icon className="mr-2 h-4 w-4" />
@@ -262,8 +262,8 @@ function InquiryFormContent() {
                       <FileText className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <CardTitle>Inquiry Form</CardTitle>
-                      <p className="text-sm text-muted-foreground">Fill out the form below and we'll get back to you within 24 hours</p>
+                      <CardTitle>{t('form.formTitle')}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{t('form.formDescription')}</p>
                     </div>
                   </div>
                 </CardHeader>
@@ -479,7 +479,7 @@ function InquiryFormContent() {
                 <CardHeader className="bg-gradient-to-r from-violet-500/10 to-purple-500/10">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Zap className="h-5 w-5 text-violet-500" />
-                    Quick Contact
+                    {t('sidebar.quickContact')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 p-4">
@@ -493,7 +493,7 @@ function InquiryFormContent() {
                     </div>
                     <div>
                       <p className="font-medium">{ctaConfig.displayName}</p>
-                      <p className="text-sm text-muted-foreground">Chat with us</p>
+                      <p className="text-sm text-muted-foreground">{t('sidebar.chatWithUs')}</p>
                     </div>
                   </motion.a>
                   <motion.a
@@ -505,7 +505,7 @@ function InquiryFormContent() {
                       <Phone className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-medium">Phone</p>
+                      <p className="font-medium">{t('sidebar.phone')}</p>
                       <p className="text-sm text-muted-foreground">+82-2-XXX-XXXX</p>
                     </div>
                   </motion.a>
@@ -518,7 +518,7 @@ function InquiryFormContent() {
                       <Mail className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-medium">Email</p>
+                      <p className="font-medium">{t('sidebar.email')}</p>
                       <p className="text-sm text-muted-foreground">support@getcarekorea.com</p>
                     </div>
                   </motion.a>
@@ -530,17 +530,17 @@ function InquiryFormContent() {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Award className="h-5 w-5 text-violet-500" />
-                    Why GetCareKorea?
+                    {t('sidebar.whyTitle')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
                     {[
-                      'Free consultation with no obligation',
-                      'JCI-accredited hospitals only',
-                      'Professional medical interpreters',
-                      'Best price guarantee',
-                      '24/7 support throughout your journey',
+                      t('sidebar.benefits.1'),
+                      t('sidebar.benefits.2'),
+                      t('sidebar.benefits.3'),
+                      t('sidebar.benefits.4'),
+                      t('sidebar.benefits.5'),
                     ].map((item, index) => (
                       <motion.li
                         key={index}
@@ -567,13 +567,13 @@ function InquiryFormContent() {
                   >
                     <Sparkles className="h-6 w-6 text-white" />
                   </motion.div>
-                  <h3 className="mb-2 font-bold text-white">AI Assistant Available</h3>
+                  <h3 className="mb-2 font-bold text-white">{t('sidebar.aiTitle')}</h3>
                   <p className="mb-4 text-sm text-white/70">
-                    Need help filling out the form? Our AI can assist you.
+                    {t('sidebar.aiDescription')}
                   </p>
                   <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
                     <Sparkles className="mr-2 h-4 w-4" />
-                    Get AI Help
+                    {t('sidebar.aiButton')}
                   </Button>
                 </CardContent>
               </Card>

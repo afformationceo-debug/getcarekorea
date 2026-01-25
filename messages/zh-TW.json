@@ -193,6 +193,9 @@
   "inquiry": {
     "title": "免費諮詢",
     "subtitle": "告訴我們您的需求，我們將為您連接合適的醫院",
+    "heroTagline": "免費諮詢",
+    "heroTitle1": "開始您的",
+    "heroTitle2": "醫療之旅",
     "form": {
       "name": "姓名",
       "email": "電子郵件",
@@ -201,11 +204,14 @@
       "procedure": "感興趣的療程",
       "message": "您的訊息",
       "submit": "發送詢問",
-      "submitting": "發送中..."
+      "submitting": "發送中...",
+      "formTitle": "諮詢表單",
+      "formDescription": "請填寫以下表單，我們將在24小時內回覆您"
     },
     "success": {
       "title": "感謝您！",
-      "message": "我們已收到您的詢問。我們的團隊將在24小時內與您聯繫。"
+      "message": "我們已收到您的詢問。我們的團隊將在24小時內與您聯繫。",
+      "backHome": "返回首頁"
     },
     "messengers": {
       "whatsapp": "WhatsApp",
@@ -213,6 +219,40 @@
       "wechat": "微信",
       "telegram": "Telegram",
       "email": "電子郵件"
+    },
+    "sidebar": {
+      "quickContact": "快速聯繫",
+      "chatWithUs": "與我們聊天",
+      "phone": "電話",
+      "email": "電子郵件",
+      "whyTitle": "為什麼選擇GetCareKorea？",
+      "benefits": {
+        "1": "免費諮詢，無任何義務",
+        "2": "僅與JCI認證醫院合作",
+        "3": "專業醫療翻譯",
+        "4": "最低價格保證",
+        "5": "全程24小時支援"
+      },
+      "aiTitle": "AI助手可用",
+      "aiDescription": "填寫表單需要幫助嗎？我們的AI可以協助您。",
+      "aiButton": "獲取AI幫助"
+    },
+    "badges": {
+      "jciCertified": "JCI認證",
+      "response24h": "24小時回覆",
+      "bestPrice": "最低價格",
+      "expertCare": "專業照護"
+    },
+    "procedures": {
+      "plasticSurgery": "整形外科",
+      "dermatology": "皮膚科",
+      "dental": "牙科",
+      "ophthalmology": "眼科",
+      "hairTransplant": "植髮",
+      "healthCheckup": "健康檢查",
+      "orthopedics": "骨科",
+      "fertility": "不孕症治療",
+      "other": "其他"
     }
   },
   "reviews": {
@@ -232,6 +272,17 @@
   "blog": {
     "title": "醫療旅遊指南",
     "subtitle": "專家見解與實用資訊",
+    "heroTagline": "AI生成洞察",
+    "heroTitle1": "醫療旅遊",
+    "heroTitle2": "部落格與指南",
+    "heroDescription": "韓國醫療之旅的專家見解、患者故事和完整指南。",
+    "stats": {
+      "articles": "文章",
+      "readers": "讀者",
+      "ranked": "排名"
+    },
+    "searchPlaceholder": "搜尋文章...",
+    "allPosts": "所有文章",
     "categories": {
       "guides": "指南",
       "tips": "小技巧",
@@ -240,7 +291,19 @@
     },
     "readTime": "{minutes} 分鐘閱讀",
     "publishedOn": "發布於 {date}",
-    "relatedPosts": "相關文章"
+    "relatedPosts": "相關文章",
+    "noArticles": "找不到文章",
+    "noArticlesSearch": "請嘗試其他搜尋字詞",
+    "noArticlesEmpty": "請稍後再來看看新內容",
+    "loadMore": "載入更多",
+    "loading": "載入中...",
+    "retry": "重試",
+    "newsletter": {
+      "title": "獲取醫療旅遊最新資訊",
+      "description": "訂閱我們的電子報，獲取最新文章、指南和專屬優惠。",
+      "placeholder": "輸入電子郵件",
+      "subscribe": "訂閱"
+    }
   },
   "pricing": {
     "title": "透明定價",

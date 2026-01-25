@@ -1,11 +1,82 @@
 import { Suspense } from 'react';
-import { setRequestLocale } from 'next-intl/server';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { InterpretersPageClient } from './InterpretersPageClient';
 import { createAdminClient } from '@/lib/supabase/server';
-import type { Locale } from '@/lib/i18n/config';
+import { locales, type Locale } from '@/lib/i18n/config';
+import type { Metadata } from 'next';
+import Script from 'next/script';
+
+const baseUrl = 'https://getcarekorea.com';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
+}
+
+// SEO Metadata for interpreters listing page
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'meta' });
+
+  return {
+    title: t('interpretersTitle'),
+    description: t('interpretersDescription'),
+    openGraph: {
+      title: t('interpretersTitle'),
+      description: t('interpretersDescription'),
+      url: `${baseUrl}/${locale}/interpreters`,
+      siteName: 'GetCareKorea',
+      images: [{ url: `${baseUrl}/og-interpreters.jpg`, width: 1200, height: 630 }],
+      locale: locale,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: t('interpretersTitle'),
+      description: t('interpretersDescription'),
+    },
+    alternates: {
+      canonical: `${baseUrl}/${locale}/interpreters`,
+      languages: Object.fromEntries(
+        locales.map((loc) => [loc, `${baseUrl}/${loc}/interpreters`])
+      ),
+    },
+  };
+}
+
+// JSON-LD Schema for interpreters listing
+function generateInterpretersSchema(locale: Locale, interpreterCount: number) {
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: `${baseUrl}/${locale}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Interpreters',
+        item: `${baseUrl}/${locale}/interpreters`,
+      },
+    ],
+  };
+
+  const collectionPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Medical Interpreters in Korea',
+    description: 'Find certified medical interpreters for your healthcare journey in Korea.',
+    url: `${baseUrl}/${locale}/interpreters`,
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: interpreterCount,
+    },
+  };
+
+  return [breadcrumbSchema, collectionPageSchema];
 }
 
 // Map locale to name field suffix
@@ -172,11 +243,22 @@ export default async function InterpretersPage({ params }: PageProps) {
 
   // Fetch real data from author_personas table
   const interpreters = await fetchInterpreters(locale);
+  const schemaMarkup = generateInterpretersSchema(locale as Locale, interpreters.length);
 
   return (
-    <Suspense fallback={<InterpretersPageSkeleton />}>
-      <InterpretersPageClient interpreters={interpreters} locale={locale as Locale} />
-    </Suspense>
+    <>
+      {/* JSON-LD Schema for SEO */}
+      <Script
+        id="interpreters-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schemaMarkup),
+        }}
+      />
+      <Suspense fallback={<InterpretersPageSkeleton />}>
+        <InterpretersPageClient interpreters={interpreters} locale={locale as Locale} />
+      </Suspense>
+    </>
   );
 }
 

@@ -41,57 +41,99 @@ export interface CTAConfig {
   alternativePlatform?: MessengerPlatform;
 }
 
-export const localeCTAConfig: Record<Locale, CTAConfig> = {
+export interface CTAConfigExtended extends CTAConfig {
+  contactId: string; // Phone number for WhatsApp, ID for LINE/WeChat/Kakao, etc.
+  defaultMessage: string; // Localized default message
+}
+
+export const localeCTAConfig: Record<Locale, CTAConfigExtended> = {
   en: {
     platform: 'whatsapp',
     displayName: 'WhatsApp',
     icon: 'whatsapp',
     urlPrefix: 'https://wa.me/',
+    contactId: '821012345678', // TODO: Update with actual number
+    defaultMessage: 'Hi, I\'m interested in medical tourism services in Korea.',
   },
   ko: {
     platform: 'kakao',
     displayName: 'KakaoTalk',
     icon: 'kakao',
-    urlPrefix: 'https://open.kakao.com/',
+    urlPrefix: 'https://open.kakao.com/o/',
+    contactId: 'getcarekorea', // TODO: Update with actual open chat ID
+    defaultMessage: '안녕하세요, 한국 의료관광 서비스에 관심이 있습니다.',
   },
   'zh-TW': {
     platform: 'line',
     displayName: 'LINE',
     icon: 'line',
     urlPrefix: 'https://line.me/R/ti/p/',
+    contactId: '@getcarekorea', // TODO: Update with actual LINE ID
+    defaultMessage: '您好，我對韓國醫療旅遊服務感興趣。',
   },
   'zh-CN': {
     platform: 'wechat',
     displayName: 'WeChat',
     icon: 'wechat',
     urlPrefix: 'weixin://dl/chat?',
+    contactId: 'getcarekorea', // TODO: Update with actual WeChat ID
+    defaultMessage: '您好，我对韩国医疗旅游服务感兴趣。',
   },
   ja: {
     platform: 'line',
     displayName: 'LINE',
     icon: 'line',
     urlPrefix: 'https://line.me/R/ti/p/',
+    contactId: '@getcarekorea', // TODO: Update with actual LINE ID
+    defaultMessage: 'こんにちは、韓国の医療観光サービスに興味があります。',
   },
   th: {
     platform: 'line',
     displayName: 'LINE',
     icon: 'line',
     urlPrefix: 'https://line.me/R/ti/p/',
+    contactId: '@getcarekorea', // TODO: Update with actual LINE ID
+    defaultMessage: 'สวัสดีครับ/ค่ะ ฉันสนใจบริการท่องเที่ยวเชิงการแพทย์ในเกาหลี',
   },
   mn: {
     platform: 'whatsapp',
     displayName: 'WhatsApp',
     icon: 'whatsapp',
     urlPrefix: 'https://wa.me/',
+    contactId: '821012345678', // TODO: Update with actual number
+    defaultMessage: 'Сайн байна уу, би Солонгосын эмнэлгийн аялал жуулчлалын үйлчилгээг сонирхож байна.',
   },
   ru: {
     platform: 'whatsapp',
     displayName: 'WhatsApp',
     icon: 'whatsapp',
     urlPrefix: 'https://wa.me/',
+    contactId: '821012345678', // TODO: Update with actual number
+    defaultMessage: 'Здравствуйте, я интересуюсь услугами медицинского туризма в Корее.',
     alternativePlatform: 'telegram',
   },
 };
+
+// Get full messenger URL for a locale
+export function getMessengerUrl(locale: Locale): string {
+  const config = localeCTAConfig[locale];
+  const message = encodeURIComponent(config.defaultMessage);
+
+  switch (config.platform) {
+    case 'whatsapp':
+      return `${config.urlPrefix}${config.contactId}?text=${message}`;
+    case 'line':
+      return `${config.urlPrefix}${config.contactId}`;
+    case 'kakao':
+      return `${config.urlPrefix}${config.contactId}`;
+    case 'wechat':
+      return `${config.urlPrefix}${config.contactId}`;
+    case 'telegram':
+      return `https://t.me/${config.contactId}`;
+    default:
+      return config.urlPrefix + config.contactId;
+  }
+}
 
 // Language flags for visual display (using emoji flags)
 export const localeFlags: Record<Locale, string> = {

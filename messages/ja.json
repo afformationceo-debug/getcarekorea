@@ -193,6 +193,9 @@
   "inquiry": {
     "title": "無料相談",
     "subtitle": "ご要望をお聞かせください。適切な病院をご紹介します",
+    "heroTagline": "無料相談",
+    "heroTitle1": "医療の旅を",
+    "heroTitle2": "始めましょう",
     "form": {
       "name": "氏名",
       "email": "メールアドレス",
@@ -201,11 +204,14 @@
       "procedure": "興味のある施術",
       "message": "メッセージ",
       "submit": "送信",
-      "submitting": "送信中..."
+      "submitting": "送信中...",
+      "formTitle": "お問い合わせフォーム",
+      "formDescription": "以下のフォームにご記入ください。24時間以内にご連絡いたします"
     },
     "success": {
       "title": "ありがとうございます！",
-      "message": "お問い合わせを受け付けました。24時間以内にご連絡いたします。"
+      "message": "お問い合わせを受け付けました。24時間以内にご連絡いたします。",
+      "backHome": "ホームに戻る"
     },
     "messengers": {
       "whatsapp": "WhatsApp",
@@ -213,6 +219,40 @@
       "wechat": "WeChat",
       "telegram": "Telegram",
       "email": "メール"
+    },
+    "sidebar": {
+      "quickContact": "クイック連絡",
+      "chatWithUs": "チャット",
+      "phone": "電話",
+      "email": "メール",
+      "whyTitle": "なぜGetCareKorea？",
+      "benefits": {
+        "1": "無料相談、義務なし",
+        "2": "JCI認定病院のみ",
+        "3": "専門医療通訳者",
+        "4": "最低価格保証",
+        "5": "24時間サポート"
+      },
+      "aiTitle": "AIアシスタント利用可能",
+      "aiDescription": "フォーム記入にお困りですか？AIがお手伝いします。",
+      "aiButton": "AIヘルプを取得"
+    },
+    "badges": {
+      "jciCertified": "JCI認定",
+      "response24h": "24時間対応",
+      "bestPrice": "最低価格",
+      "expertCare": "専門ケア"
+    },
+    "procedures": {
+      "plasticSurgery": "美容外科",
+      "dermatology": "皮膚科",
+      "dental": "歯科",
+      "ophthalmology": "眼科",
+      "hairTransplant": "植毛",
+      "healthCheckup": "健康診断",
+      "orthopedics": "整形外科",
+      "fertility": "不妊治療",
+      "other": "その他"
     }
   },
   "reviews": {
@@ -232,6 +272,17 @@
   "blog": {
     "title": "医療ツーリズムガイド",
     "subtitle": "専門家の見解と役立つ情報",
+    "heroTagline": "AI生成インサイト",
+    "heroTitle1": "医療ツーリズム",
+    "heroTitle2": "ブログ＆ガイド",
+    "heroDescription": "韓国での医療旅行に関する専門家の見解、患者体験談、総合ガイド。",
+    "stats": {
+      "articles": "記事",
+      "readers": "読者",
+      "ranked": "ランキング"
+    },
+    "searchPlaceholder": "記事を検索...",
+    "allPosts": "すべての記事",
     "categories": {
       "guides": "ガイド",
       "tips": "ヒント",
@@ -240,7 +291,19 @@
     },
     "readTime": "{minutes}分で読める",
     "publishedOn": "{date}公開",
-    "relatedPosts": "関連記事"
+    "relatedPosts": "関連記事",
+    "noArticles": "記事が見つかりません",
+    "noArticlesSearch": "別の検索語をお試しください",
+    "noArticlesEmpty": "新しいコンテンツをお待ちください",
+    "loadMore": "もっと見る",
+    "loading": "読み込み中...",
+    "retry": "再試行",
+    "newsletter": {
+      "title": "医療ツーリズムの最新情報を受け取る",
+      "description": "最新記事、ガイド、限定オファーをお届けします。",
+      "placeholder": "メールアドレス",
+      "subscribe": "購読する"
+    }
   },
   "pricing": {
     "title": "透明な価格設定",

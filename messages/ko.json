@@ -1,101 +1,101 @@
 {
   "common": {
     "appName": "GetCareKorea",
-    "tagline": "Your Gateway to World-Class Healthcare in Korea",
-    "loading": "Loading...",
-    "error": "An error occurred",
-    "retry": "Try again",
-    "cancel": "Cancel",
-    "confirm": "Confirm",
-    "save": "Save",
-    "delete": "Delete",
-    "edit": "Edit",
-    "view": "View",
-    "close": "Close",
-    "back": "Back",
-    "next": "Next",
-    "previous": "Previous",
-    "search": "Search",
-    "filter": "Filter",
-    "sort": "Sort",
-    "all": "All",
-    "none": "None",
-    "yes": "Yes",
-    "no": "No",
-    "or": "or",
-    "and": "and",
-    "learnMore": "Learn More",
-    "seeAll": "See All",
-    "viewDetails": "View Details",
-    "getQuote": "Get Free Quote",
-    "bookNow": "Book Now",
-    "contactUs": "Contact Us",
-    "readMore": "Read More"
+    "tagline": "한국 최고급 의료 서비스의 관문",
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "retry": "다시 시도",
+    "cancel": "취소",
+    "confirm": "확인",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "편집",
+    "view": "보기",
+    "close": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "search": "검색",
+    "filter": "필터",
+    "sort": "정렬",
+    "all": "전체",
+    "none": "없음",
+    "yes": "예",
+    "no": "아니오",
+    "or": "또는",
+    "and": "그리고",
+    "learnMore": "자세히 보기",
+    "seeAll": "전체 보기",
+    "viewDetails": "상세 보기",
+    "getQuote": "무료 견적 받기",
+    "bookNow": "지금 예약",
+    "contactUs": "문의하기",
+    "readMore": "더 읽기"
   },
   "navigation": {
-    "home": "Home",
-    "hospitals": "Hospitals",
-    "procedures": "Procedures",
-    "interpreters": "Interpreters",
-    "blog": "Blog",
-    "about": "About Us",
-    "contact": "Contact",
-    "faq": "FAQ",
-    "myAccount": "My Account",
-    "signIn": "Sign In",
-    "signOut": "Sign Out",
-    "signUp": "Sign Up"
+    "home": "홈",
+    "hospitals": "병원",
+    "procedures": "시술",
+    "interpreters": "통역사",
+    "blog": "블로그",
+    "about": "회사 소개",
+    "contact": "문의",
+    "faq": "자주 묻는 질문",
+    "myAccount": "내 계정",
+    "signIn": "로그인",
+    "signOut": "로그아웃",
+    "signUp": "회원가입"
   },
   "hero": {
-    "title": "Premium Healthcare in Korea",
-    "subtitle": "Connect with top-rated hospitals and certified medical interpreters",
-    "description": "Experience world-class medical care at affordable prices. From cosmetic surgery to comprehensive health checkups, we help you every step of the way.",
-    "cta": "Get Free Consultation",
-    "ctaSecondary": "Explore Hospitals",
-    "trustBadge": "{count}+ Satisfied Patients",
-    "hospitalCount": "{count}+ Partner Hospitals",
-    "interpreterCount": "{count}+ Certified Interpreters"
+    "title": "한국 프리미엄 의료 서비스",
+    "subtitle": "최고의 병원과 인증된 의료 통역사를 연결합니다",
+    "description": "합리적인 가격으로 세계 최고 수준의 의료 서비스를 경험하세요. 성형 수술부터 종합 건강검진까지, 모든 과정을 함께합니다.",
+    "cta": "무료 상담 받기",
+    "ctaSecondary": "병원 둘러보기",
+    "trustBadge": "{count}명 이상 만족한 환자",
+    "hospitalCount": "{count}개 이상 제휴 병원",
+    "interpreterCount": "{count}명 이상 인증 통역사"
   },
   "categories": {
-    "title": "Medical Specialties",
-    "subtitle": "Find the perfect treatment for your needs",
-    "plasticSurgery": "Plastic Surgery",
-    "dermatology": "Dermatology",
-    "dental": "Dental",
-    "ophthalmology": "Ophthalmology",
-    "hairTransplant": "Hair Transplant",
-    "healthCheckup": "Health Checkup",
-    "orthopedics": "Orthopedics",
-    "fertility": "Fertility",
-    "weightLoss": "Weight Loss",
-    "cardiology": "Cardiology",
-    "oncology": "Oncology",
-    "traditionalMedicine": "Traditional Medicine",
-    "wellness": "Wellness"
+    "title": "진료 분야",
+    "subtitle": "필요에 맞는 완벽한 치료를 찾아보세요",
+    "plasticSurgery": "성형외과",
+    "dermatology": "피부과",
+    "dental": "치과",
+    "ophthalmology": "안과",
+    "hairTransplant": "모발이식",
+    "healthCheckup": "건강검진",
+    "orthopedics": "정형외과",
+    "fertility": "난임치료",
+    "weightLoss": "체중감량",
+    "cardiology": "심장내과",
+    "oncology": "종양내과",
+    "traditionalMedicine": "한방의학",
+    "wellness": "웰니스"
   },
   "hospitals": {
-    "title": "Top-Rated Hospitals",
-    "subtitle": "JCI-accredited facilities with experienced specialists",
-    "searchPlaceholder": "Search hospitals, procedures...",
+    "title": "최고 평점 병원",
+    "subtitle": "JCI 인증 시설과 숙련된 전문의",
+    "searchPlaceholder": "병원, 시술 검색...",
     "filters": {
-      "specialty": "Specialty",
-      "city": "City",
-      "language": "Language",
-      "rating": "Rating",
-      "priceRange": "Price Range",
-      "certification": "Certification"
+      "specialty": "전문 분야",
+      "city": "도시",
+      "language": "언어",
+      "rating": "평점",
+      "priceRange": "가격대",
+      "certification": "인증"
     },
     "sort": {
-      "rating": "Highest Rated",
-      "reviews": "Most Reviewed",
-      "featured": "Featured",
-      "newest": "Newest"
+      "rating": "평점 높은 순",
+      "reviews": "리뷰 많은 순",
+      "featured": "추천",
+      "newest": "최신순"
     },
     "card": {
-      "reviews": "{count} reviews",
-      "specialists": "{count} specialists",
-      "languages": "Languages: {languages}",
-      "from": "From"
+      "reviews": "리뷰 {count}개",
+      "specialists": "전문의 {count}명",
+      "languages": "지원 언어: {languages}",
+      "from": "시작가"
     },
     "detail": {
       "overview": "개요",
@@ -135,178 +135,241 @@
       "googleVerified": "구글 인증"
     },
     "badges": {
-      "jci": "JCI Accredited",
-      "cctv": "CCTV Monitored",
-      "femaleDoctor": "Female Doctor Available",
-      "verified": "Verified",
-      "featured": "Featured"
+      "jci": "JCI 인증",
+      "cctv": "CCTV 모니터링",
+      "femaleDoctor": "여의사 진료 가능",
+      "verified": "인증됨",
+      "featured": "추천"
     }
   },
   "interpreters": {
-    "title": "Medical Interpreters",
-    "subtitle": "Professional interpreters to assist your medical journey",
-    "searchPlaceholder": "Search by language, specialty...",
+    "title": "의료 통역사",
+    "subtitle": "의료 여행을 도와드릴 전문 통역사",
+    "searchPlaceholder": "언어, 전문 분야로 검색...",
     "filters": {
-      "language": "Language",
-      "specialty": "Medical Specialty",
-      "availability": "Availability",
-      "priceRange": "Price Range"
+      "language": "언어",
+      "specialty": "의료 전문 분야",
+      "availability": "예약 가능 여부",
+      "priceRange": "가격대"
     },
     "card": {
-      "hourlyRate": "${rate}/hour",
-      "dailyRate": "${rate}/day",
-      "languages": "Languages",
-      "bookings": "{count} completed bookings",
-      "available": "Available Now",
-      "unavailable": "Currently Unavailable"
+      "hourlyRate": "시간당 {rate}원",
+      "dailyRate": "일당 {rate}원",
+      "languages": "언어",
+      "bookings": "완료된 예약 {count}건",
+      "available": "예약 가능",
+      "unavailable": "현재 예약 불가"
     },
     "detail": {
-      "about": "About",
-      "experience": "Experience",
-      "languages": "Languages",
-      "specialties": "Specialties",
-      "reviews": "Reviews",
-      "availability": "Availability",
-      "bookInterpreter": "Book Interpreter"
+      "about": "소개",
+      "experience": "경력",
+      "languages": "언어",
+      "specialties": "전문 분야",
+      "reviews": "리뷰",
+      "availability": "예약 가능 시간",
+      "bookInterpreter": "통역사 예약"
     }
   },
   "chat": {
-    "title": "AI Medical Consultant",
-    "subtitle": "Get instant answers about medical tourism in Korea",
-    "placeholder": "Ask me anything about medical tourism in Korea...",
-    "welcomeMessage": "Hello! I'm your AI medical tourism consultant. I can help you find the right hospital, procedure, or interpreter. What would you like to know?",
+    "title": "AI 의료 상담사",
+    "subtitle": "한국 의료 관광에 대한 즉각적인 답변을 받아보세요",
+    "placeholder": "한국 의료 관광에 대해 무엇이든 물어보세요...",
+    "welcomeMessage": "안녕하세요! AI 의료 관광 상담사입니다. 적합한 병원, 시술, 통역사를 찾는 데 도움을 드릴 수 있습니다. 무엇이 궁금하신가요?",
     "suggestions": [
-      "What are the best plastic surgery clinics in Gangnam?",
-      "How much does rhinoplasty cost in Korea?",
-      "Do I need a medical visa to get treatment in Korea?",
-      "Can you recommend an English-speaking interpreter?"
+      "강남에서 가장 좋은 성형외과는 어디인가요?",
+      "한국에서 코 성형 비용은 얼마인가요?",
+      "한국에서 치료받으려면 의료 비자가 필요한가요?",
+      "한국어 통역사를 추천해 주실 수 있나요?"
     ],
-    "tryAsking": "Try asking:",
-    "thinking": "Thinking...",
-    "error": "Sorry, I encountered an error. Please try again.",
+    "tryAsking": "이렇게 물어보세요:",
+    "thinking": "생각 중...",
+    "error": "죄송합니다, 오류가 발생했습니다. 다시 시도해 주세요.",
     "feedback": {
-      "helpful": "Was this helpful?",
-      "yes": "Yes",
-      "no": "No"
+      "helpful": "도움이 되셨나요?",
+      "yes": "예",
+      "no": "아니오"
     }
   },
   "inquiry": {
-    "title": "Get Free Consultation",
-    "subtitle": "Tell us about your needs and we'll connect you with the right hospital",
+    "title": "무료 상담 신청",
+    "subtitle": "귀하의 요구사항을 알려주시면 적합한 병원을 연결해 드립니다",
+    "heroTagline": "무료 상담",
+    "heroTitle1": "의료 여행을",
+    "heroTitle2": "시작하세요",
     "form": {
-      "name": "Full Name",
-      "email": "Email Address",
-      "phone": "Phone Number",
-      "messenger": "Preferred Messenger",
-      "procedure": "Interested Procedure",
-      "message": "Your Message",
-      "submit": "Send Inquiry",
-      "submitting": "Sending..."
+      "name": "이름",
+      "email": "이메일 주소",
+      "phone": "전화번호",
+      "messenger": "선호 메신저",
+      "procedure": "관심 시술",
+      "message": "문의 내용",
+      "submit": "문의하기",
+      "submitting": "전송 중...",
+      "formTitle": "문의 양식",
+      "formDescription": "아래 양식을 작성해 주시면 24시간 이내에 연락드리겠습니다"
     },
     "success": {
-      "title": "Thank You!",
-      "message": "We've received your inquiry. Our team will contact you within 24 hours."
+      "title": "감사합니다!",
+      "message": "문의가 접수되었습니다. 24시간 이내에 연락드리겠습니다.",
+      "backHome": "홈으로 돌아가기"
     },
     "messengers": {
-      "whatsapp": "WhatsApp",
-      "line": "LINE",
-      "wechat": "WeChat",
-      "telegram": "Telegram",
-      "email": "Email"
+      "whatsapp": "왓츠앱",
+      "line": "라인",
+      "wechat": "위챗",
+      "telegram": "텔레그램",
+      "email": "이메일"
+    },
+    "sidebar": {
+      "quickContact": "빠른 연락",
+      "chatWithUs": "채팅하기",
+      "phone": "전화",
+      "email": "이메일",
+      "whyTitle": "왜 GetCareKorea인가요?",
+      "benefits": {
+        "1": "부담 없는 무료 상담",
+        "2": "JCI 인증 병원만 제휴",
+        "3": "전문 의료 통역사 제공",
+        "4": "최저가 보장",
+        "5": "전 과정 24시간 지원"
+      },
+      "aiTitle": "AI 어시스턴트 이용 가능",
+      "aiDescription": "양식 작성에 도움이 필요하시면 AI가 도와드릴 수 있습니다.",
+      "aiButton": "AI 도움 받기"
+    },
+    "badges": {
+      "jciCertified": "JCI 인증",
+      "response24h": "24시간 응답",
+      "bestPrice": "최저가 보장",
+      "expertCare": "전문 케어"
+    },
+    "procedures": {
+      "plasticSurgery": "성형외과",
+      "dermatology": "피부과",
+      "dental": "치과",
+      "ophthalmology": "안과",
+      "hairTransplant": "모발이식",
+      "healthCheckup": "건강검진",
+      "orthopedics": "정형외과",
+      "fertility": "난임치료",
+      "other": "기타"
     }
   },
   "reviews": {
-    "title": "Patient Reviews",
-    "subtitle": "Real experiences from our patients",
-    "writeReview": "Write a Review",
-    "verified": "Verified Patient",
-    "helpful": "Helpful",
-    "report": "Report",
-    "sortBy": "Sort by",
+    "title": "환자 후기",
+    "subtitle": "실제 환자들의 생생한 경험",
+    "writeReview": "후기 작성",
+    "verified": "인증된 환자",
+    "helpful": "도움됨",
+    "report": "신고",
+    "sortBy": "정렬 기준",
     "filters": {
-      "rating": "Rating",
-      "procedure": "Procedure",
-      "date": "Date"
+      "rating": "평점",
+      "procedure": "시술",
+      "date": "날짜"
     }
   },
   "blog": {
-    "title": "Medical Tourism Guide",
-    "subtitle": "Expert insights and helpful information",
-    "categories": {
-      "guides": "Guides",
-      "tips": "Tips",
-      "stories": "Patient Stories",
-      "news": "News"
+    "title": "의료관광 가이드",
+    "subtitle": "전문가 인사이트와 유용한 정보",
+    "heroTagline": "AI 생성 인사이트",
+    "heroTitle1": "의료관광",
+    "heroTitle2": "블로그 & 가이드",
+    "heroDescription": "한국 의료 여행을 위한 전문가 인사이트, 환자 후기, 종합 가이드.",
+    "stats": {
+      "articles": "게시글",
+      "readers": "독자",
+      "ranked": "순위"
     },
-    "readTime": "{minutes} min read",
-    "publishedOn": "Published on {date}",
-    "relatedPosts": "Related Articles"
+    "searchPlaceholder": "게시글 검색...",
+    "allPosts": "전체 게시글",
+    "categories": {
+      "guides": "가이드",
+      "tips": "팁",
+      "stories": "환자 후기",
+      "news": "뉴스"
+    },
+    "readTime": "{minutes}분 읽기",
+    "publishedOn": "{date} 게시",
+    "relatedPosts": "관련 게시글",
+    "noArticles": "게시글이 없습니다",
+    "noArticlesSearch": "다른 검색어를 입력해보세요",
+    "noArticlesEmpty": "새로운 콘텐츠를 기다려주세요",
+    "loadMore": "더 보기",
+    "loading": "로딩 중...",
+    "retry": "재시도",
+    "newsletter": {
+      "title": "의료관광 인사이트 받아보기",
+      "description": "최신 게시글, 가이드, 특별 할인 정보를 받아보세요.",
+      "placeholder": "이메일 주소",
+      "subscribe": "구독하기"
+    }
   },
   "pricing": {
-    "title": "Transparent Pricing",
-    "subtitle": "Compare costs and save up to 70%",
-    "comparisonTitle": "Korea vs. Other Countries",
+    "title": "투명한 가격 안내",
+    "subtitle": "비용 비교로 최대 70% 절약",
+    "comparisonTitle": "한국 vs. 다른 나라",
     "priceRange": "{min} - {max}",
-    "startingFrom": "Starting from",
-    "includesLabel": "What's Included",
-    "disclaimer": "Prices are estimates and may vary based on individual cases"
+    "startingFrom": "시작가",
+    "includesLabel": "포함 항목",
+    "disclaimer": "가격은 예상 금액이며 개인 상황에 따라 달라질 수 있습니다"
   },
   "footer": {
     "about": {
-      "title": "About GetCareKorea",
-      "description": "Connecting international patients with Korea's finest healthcare facilities and professional medical interpreters since 2024."
+      "title": "GetCareKorea 소개",
+      "description": "2024년부터 해외 환자분들과 한국 최고의 의료 시설 및 전문 의료 통역사를 연결하고 있습니다."
     },
     "quickLinks": {
-      "title": "Quick Links",
-      "hospitals": "Find Hospitals",
-      "interpreters": "Find Interpreters",
-      "procedures": "Browse Procedures",
-      "blog": "Read Our Blog"
+      "title": "바로가기",
+      "hospitals": "병원 찾기",
+      "interpreters": "통역사 찾기",
+      "procedures": "시술 둘러보기",
+      "blog": "블로그 읽기"
     },
     "support": {
-      "title": "Support",
-      "faq": "FAQ",
-      "contact": "Contact Us",
-      "privacy": "Privacy Policy",
-      "terms": "Terms of Service"
+      "title": "고객지원",
+      "faq": "자주 묻는 질문",
+      "contact": "문의하기",
+      "privacy": "개인정보처리방침",
+      "terms": "이용약관"
     },
     "contact": {
-      "title": "Contact Us",
+      "title": "연락처",
       "email": "support@getcarekorea.com",
       "phone": "+82-2-XXX-XXXX",
-      "address": "Seoul, South Korea"
+      "address": "대한민국 서울"
     },
     "newsletter": {
-      "title": "Stay Updated",
-      "description": "Subscribe to receive the latest updates and exclusive offers",
-      "placeholder": "Enter your email",
-      "subscribe": "Subscribe"
+      "title": "최신 소식 받기",
+      "description": "최신 업데이트와 특별 혜택을 받아보세요",
+      "placeholder": "이메일 주소 입력",
+      "subscribe": "구독"
     },
     "copyright": "© {year} GetCareKorea. All rights reserved."
   },
   "errors": {
     "notFound": {
-      "title": "Page Not Found",
-      "description": "The page you're looking for doesn't exist or has been moved.",
-      "backHome": "Back to Home"
+      "title": "페이지를 찾을 수 없습니다",
+      "description": "찾으시는 페이지가 존재하지 않거나 이동되었습니다.",
+      "backHome": "홈으로 돌아가기"
     },
     "serverError": {
-      "title": "Something Went Wrong",
-      "description": "We're experiencing technical difficulties. Please try again later.",
-      "retry": "Try Again"
+      "title": "문제가 발생했습니다",
+      "description": "기술적 문제가 발생했습니다. 나중에 다시 시도해 주세요.",
+      "retry": "다시 시도"
     },
     "unauthorized": {
-      "title": "Access Denied",
-      "description": "You don't have permission to access this page.",
-      "signIn": "Sign In"
+      "title": "접근 거부",
+      "description": "이 페이지에 접근할 권한이 없습니다.",
+      "signIn": "로그인"
     }
   },
   "meta": {
-    "homeTitle": "GetCareKorea - Premium Medical Tourism in Korea",
-    "homeDescription": "Connect with top-rated Korean hospitals and certified medical interpreters. Experience world-class healthcare at affordable prices.",
-    "hospitalsTitle": "Top Hospitals in Korea - GetCareKorea",
-    "hospitalsDescription": "Browse JCI-accredited hospitals and clinics in Korea. Compare prices, read reviews, and book your medical journey.",
-    "interpretersTitle": "Medical Interpreters in Korea - GetCareKorea",
-    "interpretersDescription": "Find certified medical interpreters who speak your language. Professional support for your medical journey in Korea."
+    "homeTitle": "GetCareKorea - 한국 프리미엄 의료관광",
+    "homeDescription": "한국 최고의 병원과 인증된 의료 통역사를 연결합니다. 합리적인 가격으로 세계 최고 수준의 의료 서비스를 경험하세요.",
+    "hospitalsTitle": "한국 최고의 병원 - GetCareKorea",
+    "hospitalsDescription": "한국 JCI 인증 병원과 클리닉을 둘러보세요. 가격 비교, 리뷰 확인, 의료 여행 예약이 가능합니다.",
+    "interpretersTitle": "한국 의료 통역사 - GetCareKorea",
+    "interpretersDescription": "귀하의 언어를 구사하는 인증 의료 통역사를 찾아보세요. 한국에서의 의료 여행을 전문적으로 지원합니다."
   }
 }

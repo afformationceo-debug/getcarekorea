@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import { Link } from '@/lib/i18n/navigation';
 import { ArrowRight, MessageCircle, Sparkles, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 

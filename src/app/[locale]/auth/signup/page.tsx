@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import Link from 'next/link';
+import { Link, useRouter } from '@/lib/i18n/navigation';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, User, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';

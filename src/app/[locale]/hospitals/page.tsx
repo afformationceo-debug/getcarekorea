@@ -1,12 +1,84 @@
 import { Suspense } from 'react';
-import { setRequestLocale } from 'next-intl/server';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { HospitalsPageClient } from './HospitalsPageClient';
-import type { Locale } from '@/lib/i18n/config';
+import { locales, type Locale } from '@/lib/i18n/config';
+import type { Metadata } from 'next';
+import Script from 'next/script';
+
+const baseUrl = 'https://getcarekorea.com';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+// SEO Metadata for hospitals listing page
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'meta' });
+
+  return {
+    title: t('hospitalsTitle'),
+    description: t('hospitalsDescription'),
+    openGraph: {
+      title: t('hospitalsTitle'),
+      description: t('hospitalsDescription'),
+      url: `${baseUrl}/${locale}/hospitals`,
+      siteName: 'GetCareKorea',
+      images: [{ url: `${baseUrl}/og-hospitals.jpg`, width: 1200, height: 630 }],
+      locale: locale,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: t('hospitalsTitle'),
+      description: t('hospitalsDescription'),
+    },
+    alternates: {
+      canonical: `${baseUrl}/${locale}/hospitals`,
+      languages: Object.fromEntries(
+        locales.map((loc) => [loc, `${baseUrl}/${loc}/hospitals`])
+      ),
+    },
+  };
+}
+
+// JSON-LD Schema for hospitals listing
+function generateHospitalsSchema(locale: Locale, hospitalCount: number) {
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: `${baseUrl}/${locale}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Hospitals',
+        item: `${baseUrl}/${locale}/hospitals`,
+      },
+    ],
+  };
+
+  const collectionPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Medical Hospitals in Korea',
+    description: 'Browse JCI-accredited hospitals and clinics in Korea for medical tourism.',
+    url: `${baseUrl}/${locale}/hospitals`,
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: hospitalCount,
+      itemListElement: [],
+    },
+  };
+
+  return [breadcrumbSchema, collectionPageSchema];
 }
 
 export default async function HospitalsPage({ params }: PageProps) {
@@ -56,11 +128,23 @@ export default async function HospitalsPage({ params }: PageProps) {
     };
   });
 
+  const schemaMarkup = generateHospitalsSchema(locale as Locale, hospitals.length);
+
   // Only use real data from database - no mock data
   return (
-    <Suspense fallback={<HospitalsPageSkeleton />}>
-      <HospitalsPageClient hospitals={hospitals} locale={locale as Locale} />
-    </Suspense>
+    <>
+      {/* JSON-LD Schema for SEO */}
+      <Script
+        id="hospitals-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schemaMarkup),
+        }}
+      />
+      <Suspense fallback={<HospitalsPageSkeleton />}>
+        <HospitalsPageClient hospitals={hospitals} locale={locale as Locale} />
+      </Suspense>
+    </>
   );
 }
 

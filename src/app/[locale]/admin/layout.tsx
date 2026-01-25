@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
+import { Link } from '@/lib/i18n/navigation';
 import {
   LayoutDashboard,
   Building2,

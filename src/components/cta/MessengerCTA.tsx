@@ -1,7 +1,8 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
-import { MessageCircle, Send } from 'lucide-react';
+import { useLocale } from 'next-intl';
+import { MessageCircle } from 'lucide-react';
+import { localeCTAConfig, type Locale } from '@/lib/i18n/config';
 
 // =====================================================
 // TYPES
@@ -124,17 +125,18 @@ export default function MessengerCTA({
   fullWidth = false,
   className = '',
 }: MessengerCTAProps) {
-  const locale = useLocale();
+  const locale = useLocale() as Locale;
   const config = MESSENGER_CONFIG[messenger];
+  const localeConfig = localeCTAConfig[locale];
 
   if (!config || !messengerId) {
     return null;
   }
 
-  // Build URL
+  // Build URL with locale-specific default message
   const defaultMessage = authorName
-    ? `Hi ${authorName}, I'm interested in medical tourism services in Korea.`
-    : 'Hi, I\'m interested in medical tourism services in Korea.';
+    ? `${localeConfig.defaultMessage.replace(/\..*$/, '')} - ${authorName}.`
+    : localeConfig.defaultMessage;
 
   const url = config.urlPattern(messengerId, message || defaultMessage);
 
@@ -227,17 +229,20 @@ export function getDefaultMessenger(locale: string): MessengerType {
 
 /**
  * Multi-messenger CTA (shows the appropriate messenger based on locale)
+ * Uses locale-specific default messages from config
  */
 export function LocaleAwareMessengerCTA({
   messengers,
   locale,
+  message,
   ...props
 }: Omit<MessengerCTAProps, 'messenger' | 'messengerId'> & {
   messengers: Partial<Record<MessengerType, string>>;
   locale?: string;
 }) {
-  const currentLocale = locale || useLocale();
+  const currentLocale = (locale || useLocale()) as Locale;
   const defaultMessenger = getDefaultMessenger(currentLocale);
+  const localeConfig = localeCTAConfig[currentLocale];
 
   // Find the best messenger for this locale
   const messenger = messengers[defaultMessenger]
@@ -250,10 +255,14 @@ export function LocaleAwareMessengerCTA({
     return null;
   }
 
+  // Use locale-specific message if not provided
+  const localizedMessage = message || localeConfig.defaultMessage;
+
   return (
     <MessengerCTA
       messenger={messenger}
       messengerId={messengerId}
+      message={localizedMessage}
       {...props}
     />
   );

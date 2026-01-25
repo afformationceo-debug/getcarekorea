@@ -193,6 +193,9 @@
   "inquiry": {
     "title": "Get Free Consultation",
     "subtitle": "Tell us about your needs and we'll connect you with the right hospital",
+    "heroTagline": "Free Consultation",
+    "heroTitle1": "Start Your",
+    "heroTitle2": "Medical Journey",
     "form": {
       "name": "Full Name",
       "email": "Email Address",
@@ -201,11 +204,14 @@
       "procedure": "Interested Procedure",
       "message": "Your Message",
       "submit": "Send Inquiry",
-      "submitting": "Sending..."
+      "submitting": "Sending...",
+      "formTitle": "Inquiry Form",
+      "formDescription": "Fill out the form below and we'll get back to you within 24 hours"
     },
     "success": {
       "title": "Thank You!",
-      "message": "We've received your inquiry. Our team will contact you within 24 hours."
+      "message": "We've received your inquiry. Our team will contact you within 24 hours.",
+      "backHome": "Back to Home"
     },
     "messengers": {
       "whatsapp": "WhatsApp",
@@ -213,6 +219,40 @@
       "wechat": "WeChat",
       "telegram": "Telegram",
       "email": "Email"
+    },
+    "sidebar": {
+      "quickContact": "Quick Contact",
+      "chatWithUs": "Chat with us",
+      "phone": "Phone",
+      "email": "Email",
+      "whyTitle": "Why GetCareKorea?",
+      "benefits": {
+        "1": "Free consultation with no obligation",
+        "2": "JCI-accredited hospitals only",
+        "3": "Professional medical interpreters",
+        "4": "Best price guarantee",
+        "5": "24/7 support throughout your journey"
+      },
+      "aiTitle": "AI Assistant Available",
+      "aiDescription": "Need help filling out the form? Our AI can assist you.",
+      "aiButton": "Get AI Help"
+    },
+    "badges": {
+      "jciCertified": "JCI Certified",
+      "response24h": "24h Response",
+      "bestPrice": "Best Price",
+      "expertCare": "Expert Care"
+    },
+    "procedures": {
+      "plasticSurgery": "Plastic Surgery",
+      "dermatology": "Dermatology",
+      "dental": "Dental",
+      "ophthalmology": "Ophthalmology",
+      "hairTransplant": "Hair Transplant",
+      "healthCheckup": "Health Checkup",
+      "orthopedics": "Orthopedics",
+      "fertility": "Fertility",
+      "other": "Other"
     }
   },
   "reviews": {
@@ -232,6 +272,17 @@
   "blog": {
     "title": "Medical Tourism Guide",
     "subtitle": "Expert insights and helpful information",
+    "heroTagline": "AI-Generated Insights",
+    "heroTitle1": "Medical Tourism",
+    "heroTitle2": "Blog & Guides",
+    "heroDescription": "Expert insights, patient stories, and comprehensive guides for your medical journey to Korea.",
+    "stats": {
+      "articles": "Articles",
+      "readers": "Readers",
+      "ranked": "Ranked"
+    },
+    "searchPlaceholder": "Search articles...",
+    "allPosts": "All Posts",
     "categories": {
       "guides": "Guides",
       "tips": "Tips",
@@ -240,7 +291,19 @@
     },
     "readTime": "{minutes} min read",
     "publishedOn": "Published on {date}",
-    "relatedPosts": "Related Articles"
+    "relatedPosts": "Related Articles",
+    "noArticles": "No articles found",
+    "noArticlesSearch": "Try a different search term",
+    "noArticlesEmpty": "Check back later for new content",
+    "loadMore": "Load More Articles",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "newsletter": {
+      "title": "Stay Updated with Medical Tourism Insights",
+      "description": "Subscribe to our newsletter for the latest articles, guides, and exclusive offers.",
+      "placeholder": "Enter your email",
+      "subscribe": "Subscribe"
+    }
   },
   "pricing": {
     "title": "Transparent Pricing",
