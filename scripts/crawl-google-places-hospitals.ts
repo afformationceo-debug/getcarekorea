@@ -219,6 +219,37 @@ function extractDistrict(address: string): string | undefined {
  * Uses a combination of category translation and romanization for proper names.
  */
 function translateCategoryToEnglish(koreanName: string, category: string): string {
+  // Check if name already contains significant English text (more than just brand names)
+  const englishWords = koreanName.match(/[A-Za-z]{3,}/g) || [];
+  const hasSignificantEnglish = englishWords.length >= 2 ||
+    /Plastic Surgery|Clinic|Hospital|Center|Medical/i.test(koreanName);
+
+  if (hasSignificantEnglish) {
+    // Extract and clean English parts from the name
+    const cleanedName = koreanName
+      .replace(/[가-힣]+/g, ' ')  // Replace Korean with spaces
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Remove duplicate words (like "Plastic Surgery" appearing twice)
+    const words = cleanedName.split(' ');
+    const uniqueWords: string[] = [];
+    for (const word of words) {
+      if (!uniqueWords.some(w => w.toLowerCase() === word.toLowerCase())) {
+        uniqueWords.push(word);
+      }
+    }
+
+    let result = uniqueWords.join(' ');
+
+    // Add "Clinic" if no suffix exists
+    if (!/(Clinic|Hospital|Center|Surgery)$/i.test(result)) {
+      result += ' Clinic';
+    }
+
+    return result;
+  }
+
   // Category type translations
   const categoryTypes: Record<string, string> = {
     '성형외과': 'Plastic Surgery',
