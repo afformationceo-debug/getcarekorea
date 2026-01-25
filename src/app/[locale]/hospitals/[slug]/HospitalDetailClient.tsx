@@ -229,6 +229,8 @@ export function HospitalDetailClient({
   locale,
 }: HospitalDetailClientProps) {
   const t = useTranslations('hospitals');
+  const tNav = useTranslations('navigation');
+  const tCommon = useTranslations('common');
   const [activeTab, setActiveTab] = useState('overview');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -260,11 +262,11 @@ export function HospitalDetailClient({
         <div className="container py-3">
           <nav className="flex items-center gap-2 text-sm text-muted-foreground overflow-hidden">
             <Link href={`/${locale}`} className="hover:text-foreground transition-colors shrink-0">
-              Home
+              {tNav('home')}
             </Link>
             <ChevronRight className="h-4 w-4 shrink-0" />
             <Link href={`/${locale}/hospitals`} className="hover:text-foreground transition-colors shrink-0">
-              Hospitals
+              {tNav('hospitals')}
             </Link>
             <ChevronRight className="h-4 w-4 shrink-0" />
             <span className="font-medium text-foreground truncate">{hospital.name}</span>
@@ -294,7 +296,7 @@ export function HospitalDetailClient({
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-muted">
-                  <span className="text-muted-foreground">No image available</span>
+                  <span className="text-muted-foreground">{t('detail.noImageAvailable')}</span>
                 </div>
               )}
             </motion.div>
@@ -395,19 +397,19 @@ export function HospitalDetailClient({
                       {hospital.is_featured && (
                         <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 border-0 text-xs">
                           <Sparkles className="mr-1 h-3 w-3" />
-                          Featured
+                          {t('badges.featured')}
                         </Badge>
                       )}
                       {hospital.certifications.includes('JCI') && (
                         <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 border-0 text-xs">
                           <Award className="mr-1 h-3 w-3" />
-                          JCI
+                          {t('badges.jci')}
                         </Badge>
                       )}
                       {hospital.is_verified && (
                         <Badge variant="secondary" className="bg-white/20 backdrop-blur-sm text-xs">
                           <BadgeCheck className="mr-1 h-3 w-3" />
-                          Verified
+                          {t('badges.verified')}
                         </Badge>
                       )}
                     </motion.div>
@@ -465,7 +467,7 @@ export function HospitalDetailClient({
                       value={tab}
                       className="relative rounded-full px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
                     >
-                      {tab === 'overview' ? 'Overview' : `Reviews (${hospital.review_count})`}
+                      {tab === 'overview' ? t('detail.overview') : t('detail.reviewsCount', { count: hospital.review_count })}
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -497,23 +499,21 @@ export function HospitalDetailClient({
 }
 
 function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital: Hospital; locale: Locale; relatedBlogPosts?: BlogPost[] }) {
+  const t = useTranslations('hospitals');
+  const tBlog = useTranslations('blog');
   const [showAllImages, setShowAllImages] = useState(false);
   const displayImages = showAllImages ? hospital.gallery : hospital.gallery.slice(0, 6);
 
-  // Format category for display
+  // Format category for display using translations
   const formatCategory = (cat?: string) => {
     if (!cat) return null;
-    const categoryMap: Record<string, string> = {
-      'plastic-surgery': 'Plastic Surgery Clinic',
-      'dermatology': 'Dermatology Clinic',
-      'dental': 'Dental Clinic',
-      'ophthalmology': 'Eye Clinic',
-      'traditional-medicine': 'Korean Medicine Clinic',
-      'university-hospital': 'University Hospital',
-      'hair-transplant': 'Hair Transplant Clinic',
-      'health-checkup': 'Health Checkup Center',
-    };
-    return categoryMap[cat] || cat.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const key = `detail.categoryTypes.${cat}` as const;
+    const translated = t(key as Parameters<typeof t>[0]);
+    // If translation key doesn't exist, fallback to formatted string
+    if (translated === key) {
+      return cat.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+    return translated;
   };
 
   return (
@@ -533,7 +533,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
             <CardHeader className="bg-gradient-to-r from-primary/10 to-violet-500/10">
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
-                AI Summary
+                {t('detail.aiSummary')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
@@ -555,7 +555,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
           <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
             <CardTitle className="flex items-center gap-2">
               <Stethoscope className="h-5 w-5 text-primary" />
-              About {hospital.name}
+              {t('detail.aboutHospital', { name: hospital.name })}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6 space-y-6">
@@ -607,7 +607,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
             <div>
               <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                Quick Facts
+                {t('detail.quickFacts')}
               </h4>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {hospital.category && (
@@ -616,7 +616,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       <Award className="h-5 w-5 text-primary" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-muted-foreground text-xs">Type</p>
+                      <p className="text-muted-foreground text-xs">{t('detail.type')}</p>
                       <p className="font-medium text-sm truncate">{formatCategory(hospital.category)}</p>
                     </div>
                   </div>
@@ -627,7 +627,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       <MapPin className="h-5 w-5 text-emerald-500" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-muted-foreground text-xs">Location</p>
+                      <p className="text-muted-foreground text-xs">{t('detail.location')}</p>
                       <p className="font-medium text-sm truncate">{hospital.district}</p>
                     </div>
                   </div>
@@ -638,7 +638,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-muted-foreground text-xs">Rating</p>
+                      <p className="text-muted-foreground text-xs">{t('detail.rating')}</p>
                       <p className="font-medium text-sm">{hospital.avg_rating.toFixed(1)} ({hospital.review_count})</p>
                     </div>
                   </div>
@@ -649,8 +649,8 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       <BadgeCheck className="h-5 w-5 text-blue-500" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-muted-foreground text-xs">Verified</p>
-                      <p className="font-medium text-sm">Google Data</p>
+                      <p className="text-muted-foreground text-xs">{t('detail.verified')}</p>
+                      <p className="font-medium text-sm">{t('detail.googleVerified')}</p>
                     </div>
                   </div>
                 )}
@@ -661,7 +661,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
             <div className="pt-2">
               <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
                 <Heart className="h-4 w-4 text-rose-500" />
-                Why Patients Choose {hospital.name}
+                {t('detail.whyPatientsChoose', { name: hospital.name })}
               </h4>
               <div className="grid sm:grid-cols-2 gap-3">
                 {hospital.avg_rating >= 4.5 && (
@@ -670,8 +670,8 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       <Star className="h-4 w-4 text-amber-600 fill-amber-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm text-amber-700 dark:text-amber-400">Highly Rated</p>
-                      <p className="text-xs text-muted-foreground">Top-rated clinic with {hospital.avg_rating.toFixed(1)}★ from {hospital.review_count.toLocaleString()} reviews</p>
+                      <p className="font-semibold text-sm text-amber-700 dark:text-amber-400">{t('detail.highlyRated')}</p>
+                      <p className="text-xs text-muted-foreground">{t('detail.highlyRatedDesc', { rating: hospital.avg_rating.toFixed(1), count: hospital.review_count.toLocaleString() })}</p>
                     </div>
                   </div>
                 )}
@@ -681,8 +681,8 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       <Award className="h-4 w-4 text-blue-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm text-blue-700 dark:text-blue-400">JCI Accredited</p>
-                      <p className="text-xs text-muted-foreground">International gold standard for healthcare quality</p>
+                      <p className="font-semibold text-sm text-blue-700 dark:text-blue-400">{t('detail.jciAccredited')}</p>
+                      <p className="text-xs text-muted-foreground">{t('detail.jciAccreditedDesc')}</p>
                     </div>
                   </div>
                 )}
@@ -692,8 +692,8 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       <Stethoscope className="h-4 w-4 text-violet-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm text-violet-700 dark:text-violet-400">Expert Specialists</p>
-                      <p className="text-xs text-muted-foreground">Specialized in {hospital.specialties[0]} and more</p>
+                      <p className="font-semibold text-sm text-violet-700 dark:text-violet-400">{t('detail.expertSpecialists')}</p>
+                      <p className="text-xs text-muted-foreground">{t('detail.expertSpecialistsDesc', { specialty: hospital.specialties[0] })}</p>
                     </div>
                   </div>
                 )}
@@ -703,8 +703,8 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       <Languages className="h-4 w-4 text-emerald-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm text-emerald-700 dark:text-emerald-400">Multilingual Support</p>
-                      <p className="text-xs text-muted-foreground">{hospital.languages.length} languages available</p>
+                      <p className="font-semibold text-sm text-emerald-700 dark:text-emerald-400">{t('detail.multilingualSupport')}</p>
+                      <p className="text-xs text-muted-foreground">{t('detail.multilingualSupportDesc', { count: hospital.languages.length })}</p>
                     </div>
                   </div>
                 )}
@@ -714,8 +714,8 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       <Shield className="h-4 w-4 text-green-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm text-green-700 dark:text-green-400">Safety First</p>
-                      <p className="text-xs text-muted-foreground">Full CCTV monitoring in operation rooms</p>
+                      <p className="font-semibold text-sm text-green-700 dark:text-green-400">{t('detail.safetyFirst')}</p>
+                      <p className="text-xs text-muted-foreground">{t('detail.safetyFirstDesc')}</p>
                     </div>
                   </div>
                 )}
@@ -725,8 +725,8 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       <User className="h-4 w-4 text-pink-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm text-pink-700 dark:text-pink-400">Female Doctor</p>
-                      <p className="text-xs text-muted-foreground">Available upon request for your comfort</p>
+                      <p className="font-semibold text-sm text-pink-700 dark:text-pink-400">{t('detail.femaleDoctor')}</p>
+                      <p className="text-xs text-muted-foreground">{t('detail.femaleDoctorDesc')}</p>
                     </div>
                   </div>
                 )}
@@ -752,27 +752,27 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                     <MessageCircle className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-sky-900 dark:text-sky-100">Planning to Visit {hospital.name}?</h3>
-                    <p className="text-sm text-sky-700 dark:text-sky-300">Let GetCareKorea help you with your medical journey</p>
+                    <h3 className="font-bold text-lg text-sky-900 dark:text-sky-100">{t('detail.planningToVisit', { name: hospital.name })}</h3>
+                    <p className="text-sm text-sky-700 dark:text-sky-300">{t('detail.letUsHelp')}</p>
                   </div>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-2 mt-4">
                   <div className="flex items-center gap-2 text-sm text-sky-800 dark:text-sky-200">
                     <Check className="h-4 w-4 text-sky-600 shrink-0" />
-                    <span><strong>FREE</strong> professional medical interpreter</span>
+                    <span>{t('detail.freeInterpreterService')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-sky-800 dark:text-sky-200">
                     <Check className="h-4 w-4 text-sky-600 shrink-0" />
-                    <span>Direct hospital appointment booking</span>
+                    <span>{t('detail.directBooking')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-sky-800 dark:text-sky-200">
                     <Check className="h-4 w-4 text-sky-600 shrink-0" />
-                    <span>Price comparison & best deals</span>
+                    <span>{t('detail.priceComparison')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-sky-800 dark:text-sky-200">
                     <Check className="h-4 w-4 text-sky-600 shrink-0" />
-                    <span>24/7 support during your stay</span>
+                    <span>{t('detail.support247During')}</span>
                   </div>
                 </div>
               </div>
@@ -786,7 +786,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                 >
                   <Link href={`/${locale}/inquiry?hospital=${hospital.id}`}>
                     <Calendar className="h-5 w-5" />
-                    Get Free Quote
+                    {t('detail.getFreeQuote')}
                   </Link>
                 </Button>
                 <Button
@@ -797,11 +797,11 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                 >
                   <Link href={`/${locale}/inquiry?hospital=${hospital.id}&service=interpreter`}>
                     <Languages className="h-5 w-5" />
-                    Book with Interpreter
+                    {t('detail.bookWithInterpreter')}
                   </Link>
                 </Button>
                 <p className="text-center text-xs text-sky-600 dark:text-sky-400">
-                  No fees • Response within 24h
+                  {t('detail.noFeesResponse')}
                 </p>
               </div>
             </div>
@@ -821,10 +821,10 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Play className="h-5 w-5 text-indigo-500" />
-                  Photo Gallery
+                  {t('detail.photoGallery')}
                 </div>
                 <span className="text-sm font-normal text-muted-foreground">
-                  {hospital.gallery.length} photos
+                  {t('detail.photos', { count: hospital.gallery.length })}
                 </span>
               </CardTitle>
             </CardHeader>
@@ -854,7 +854,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                   className="w-full mt-4"
                   onClick={() => setShowAllImages(!showAllImages)}
                 >
-                  {showAllImages ? 'Show Less' : `View All ${hospital.gallery.length} Photos`}
+                  {showAllImages ? t('detail.showLess') : t('detail.viewAllPhotos', { count: hospital.gallery.length })}
                 </Button>
               )}
             </CardContent>
@@ -872,7 +872,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
           <CardHeader className="bg-gradient-to-r from-violet-500/5 to-violet-500/10">
             <CardTitle className="flex items-center gap-2">
               <Award className="h-5 w-5 text-violet-500" />
-              Specialties
+              {t('detail.specialties')}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -908,7 +908,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
             <CardHeader className="bg-gradient-to-r from-teal-500/5 to-teal-500/10">
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-teal-500" />
-                Location & Directions
+                {t('detail.locationDirections')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
@@ -944,7 +944,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                 >
                   <a href={hospital.google_maps_url} target="_blank" rel="noopener noreferrer">
                     <MapPin className="h-4 w-4" />
-                    Open in Google Maps
+                    {t('detail.openInGoogleMaps')}
                     <ArrowRight className="h-4 w-4 ml-auto" />
                   </a>
                 </Button>
@@ -964,7 +964,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
           <CardHeader className="bg-gradient-to-r from-emerald-500/5 to-emerald-500/10">
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-emerald-500" />
-              Trust & Safety
+              {t('detail.trustSafety')}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -978,7 +978,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                     <BadgeCheck className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
-                    <p className="font-semibold">Certifications</p>
+                    <p className="font-semibold">{t('detail.certifications')}</p>
                     <p className="text-sm text-muted-foreground">
                       {hospital.certifications.join(', ')}
                     </p>
@@ -994,9 +994,9 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                     <Cctv className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-semibold">CCTV Monitoring</p>
+                    <p className="font-semibold">{t('detail.cctvMonitoring')}</p>
                     <p className="text-sm text-muted-foreground">
-                      Full operation room monitoring
+                      {t('detail.cctvMonitoringDesc')}
                     </p>
                   </div>
                 </motion.div>
@@ -1010,8 +1010,8 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                     <User className="h-6 w-6 text-pink-600" />
                   </div>
                   <div>
-                    <p className="font-semibold">Female Doctor Available</p>
-                    <p className="text-sm text-muted-foreground">Upon request</p>
+                    <p className="font-semibold">{t('detail.femaleDoctorAvailable')}</p>
+                    <p className="text-sm text-muted-foreground">{t('detail.uponRequest')}</p>
                   </div>
                 </motion.div>
               )}
@@ -1023,7 +1023,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                   <Languages className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
-                  <p className="font-semibold">Languages</p>
+                  <p className="font-semibold">{t('detail.languages')}</p>
                   <p className="text-sm text-muted-foreground">
                     {hospital.languages.join(', ')}
                   </p>
@@ -1046,10 +1046,10 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="h-6 w-6" />
-                  <h3 className="text-xl font-bold">Need Help Communicating?</h3>
+                  <h3 className="text-xl font-bold">{t('detail.needHelpCommunicating')}</h3>
                 </div>
                 <p className="text-white/90">
-                  We provide FREE interpreter service for your hospital visit. Book your consultation with us and get professional medical interpretation support.
+                  {t('detail.interpreterServiceDesc')}
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 shrink-0">
@@ -1060,7 +1060,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                 >
                   <Link href={`/${locale}/inquiry?hospital=${hospital.id}&service=interpreter`}>
                     <MessageCircle className="h-5 w-5" />
-                    Request Interpreter
+                    {t('detail.requestInterpreter')}
                   </Link>
                 </Button>
                 <Button
@@ -1070,7 +1070,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                 >
                   <Link href={`/${locale}/inquiry?hospital=${hospital.id}`}>
                     <Calendar className="h-5 w-5" />
-                    Book Consultation
+                    {t('detail.bookConsultation')}
                   </Link>
                 </Button>
               </div>
@@ -1091,13 +1091,13 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-5 w-5 text-rose-500" />
-                  Related Articles
+                  {t('detail.relatedArticles')}
                 </div>
                 <Link
                   href={`/${locale}/blog${hospital.category ? `?category=${hospital.category}` : ''}`}
                   className="text-sm font-normal text-primary hover:underline flex items-center gap-1"
                 >
-                  View all articles
+                  {t('detail.viewAllArticles')}
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               </CardTitle>
@@ -1163,7 +1163,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                             </span>
                             <span className="flex items-center gap-1">
                               <ExternalLink className="h-3 w-3" />
-                              Read more
+                              {tBlog('readMore')}
                             </span>
                           </div>
                         </div>
@@ -1181,7 +1181,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                 >
                   <Link href={`/${locale}/blog${hospital.specialties?.[0] ? `?search=${encodeURIComponent(hospital.specialties[0])}` : ''}`}>
                     <BookOpen className="h-4 w-4" />
-                    Explore More Guides
+                    {tBlog('exploreMoreGuides')}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -1318,6 +1318,8 @@ function ProceduresSection({
 }
 
 function ReviewsSection({ hospital }: { hospital: Hospital }) {
+  const t = useTranslations('hospitals');
+  const tReviews = useTranslations('reviews');
   // Get actual Google reviews from hospital data
   const googleReviews = hospital.google_reviews || [];
 
@@ -1367,7 +1369,7 @@ function ReviewsSection({ hospital }: { hospital: Hospital }) {
           <CardHeader className="bg-gradient-to-r from-amber-500/5 to-orange-500/10">
             <CardTitle className="flex items-center gap-2">
               <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
-              Patient Reviews
+              {tReviews('title')}
               {hospital.source === 'google_places' && (
                 <Badge variant="outline" className="ml-2 text-xs gap-1">
                   <svg className="h-3 w-3" viewBox="0 0 24 24">
@@ -1376,7 +1378,7 @@ function ReviewsSection({ hospital }: { hospital: Hospital }) {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  Google Reviews
+                  {t('detail.fromGoogle')}
                 </Badge>
               )}
             </CardTitle>
@@ -1405,7 +1407,7 @@ function ReviewsSection({ hospital }: { hospital: Hospital }) {
                   ))}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Based on <span className="font-semibold text-foreground">{hospital.review_count.toLocaleString()}</span> reviews
+                  {t('detail.basedOnReviews', { count: hospital.review_count.toLocaleString() })}
                 </p>
                 {hospital.google_maps_url && (
                   <a
@@ -1414,7 +1416,7 @@ function ReviewsSection({ hospital }: { hospital: Hospital }) {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 mt-2 text-xs text-primary hover:underline"
                   >
-                    See all on Google Maps
+                    {t('detail.seeAllOnGoogleMaps')}
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
@@ -1589,7 +1591,7 @@ function ReviewsSection({ hospital }: { hospital: Hospital }) {
                     {/* Owner Response */}
                     {review.response && (
                       <div className="mt-4 pl-4 border-l-2 border-primary/30 bg-primary/5 rounded-r-lg p-3">
-                        <p className="text-xs font-semibold text-primary mb-1">Response from owner</p>
+                        <p className="text-xs font-semibold text-primary mb-1">{t('detail.response')}</p>
                         <p className="text-sm text-muted-foreground">{review.response}</p>
                       </div>
                     )}
@@ -1797,11 +1799,11 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
           <div className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Check className="h-3 w-3 text-green-500" />
-              Free Service
+              {t('freeService')}
             </div>
             <div className="flex items-center gap-1">
               <Check className="h-3 w-3 text-green-500" />
-              24h Response
+              {t('response24h')}
             </div>
           </div>
 
@@ -1809,7 +1811,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
           <div className="mt-4 pt-4 border-t">
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
               <Shield className="h-4 w-4 text-blue-500" />
-              <span>Verified by GetCareKorea</span>
+              <span>{t('verifiedByGetCareKorea')}</span>
             </div>
           </div>
         </CardContent>

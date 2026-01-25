@@ -27,17 +27,16 @@ export default function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps)
       {/* Google Analytics - Global Site Tag (gtag.js) */}
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
       />
-      <Script id="google-analytics" strategy="afterInteractive">
+      <Script id="google-analytics" strategy="beforeInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           gtag('config', '${measurementId}', {
             page_path: window.location.pathname,
-            send_page_view: true,
-            cookie_flags: 'SameSite=None;Secure'
+            send_page_view: true
           });
         `}
       </Script>
