@@ -52,7 +52,7 @@ export function CTASection() {
               className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/20 px-5 py-2 text-sm font-medium backdrop-blur-sm"
             >
               <Sparkles className="h-4 w-4" />
-              Start Your Journey Today
+              {t('badge')}
             </motion.div>
 
             {/* Headline */}
@@ -92,7 +92,7 @@ export function CTASection() {
                 asChild
               >
                 <Link href="/inquiry">
-                  Get Free Consultation
+                  {t('cta.primary')}
                   <ArrowRight className="h-5 w-5" />
                 </Link>
               </Button>
@@ -104,7 +104,7 @@ export function CTASection() {
               >
                 <Link href="/hospitals">
                   <MessageCircle className="h-5 w-5" />
-                  Chat with AI
+                  {t('cta.secondary')}
                 </Link>
               </Button>
             </motion.div>
@@ -122,7 +122,7 @@ export function CTASection() {
                 className="flex items-center gap-2 transition-colors hover:text-white"
               >
                 <Phone className="h-4 w-4" />
-                +82-2-XXX-XXXX
+                {t('contact.phone')}
               </a>
               <div className="hidden h-4 w-px bg-white/30 sm:block" />
               <a
@@ -130,7 +130,7 @@ export function CTASection() {
                 className="flex items-center gap-2 transition-colors hover:text-white"
               >
                 <Mail className="h-4 w-4" />
-                support@getcarekorea.com
+                {t('contact.email')}
               </a>
               <div className="hidden h-4 w-px bg-white/30 sm:block" />
               <span className="flex items-center gap-2">
@@ -138,7 +138,7 @@ export function CTASection() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
                 </span>
-                24/7 Support Available
+                {t('contact.support')}
               </span>
             </motion.div>
           </div>

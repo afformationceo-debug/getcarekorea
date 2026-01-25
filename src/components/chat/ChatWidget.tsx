@@ -328,7 +328,7 @@ export function ChatWidget({
             </Button>
           </form>
           <p className="mt-2 text-center text-[10px] text-muted-foreground">
-            Powered by Claude AI
+            {t('poweredBy')}
           </p>
         </div>
       </div>
@@ -501,7 +501,7 @@ export function ChatWidget({
                 {/* Suggestions (show when no messages or after welcome) */}
                 {messages.length <= 1 && (
                   <div className="space-y-2 pt-4">
-                    <p className="text-xs text-muted-foreground">Try asking:</p>
+                    <p className="text-xs text-muted-foreground">{t('tryAsking')}</p>
                     <div className="flex flex-wrap gap-2">
                       {suggestions.slice(0, 3).map((suggestion, i) => (
                         <button

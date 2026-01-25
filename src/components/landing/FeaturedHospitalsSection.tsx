@@ -65,7 +65,7 @@ export function FeaturedHospitalsSection() {
         >
           <div>
             <span className="mb-4 inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-              Featured Partners
+              {t('badge')}
             </span>
             <h2 className="mb-4 text-3xl font-bold tracking-tight lg:text-5xl">
               {t('title')}
@@ -76,7 +76,7 @@ export function FeaturedHospitalsSection() {
           </div>
           <Button size="lg" variant="outline" className="gap-2 rounded-full" asChild>
             <Link href="/hospitals">
-              View All Hospitals
+              {t('viewAll')}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>

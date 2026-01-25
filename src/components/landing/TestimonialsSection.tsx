@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { Star, Quote } from 'lucide-react';
 import Image from 'next/image';
 
@@ -52,6 +53,7 @@ const testimonials = [
 ];
 
 export function TestimonialsSection() {
+  const tLanding = useTranslations('landing.testimonials');
   return (
     <section className="relative overflow-hidden bg-muted/30 py-20 lg:py-28">
       {/* Background decoration */}
@@ -69,13 +71,13 @@ export function TestimonialsSection() {
           className="mb-12 text-center lg:mb-16"
         >
           <span className="mb-4 inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            Testimonials
+            {tLanding('badge')}
           </span>
           <h2 className="mb-4 text-3xl font-bold tracking-tight lg:text-5xl">
-            Loved by Patients Worldwide
+            {tLanding('title')}
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-            Join thousands of satisfied patients who transformed their lives through GetCareKorea
+            {tLanding('subtitle')}
           </p>
         </motion.div>
 
@@ -87,10 +89,10 @@ export function TestimonialsSection() {
           className="mb-12 flex flex-wrap justify-center gap-8 lg:gap-16"
         >
           {[
-            { value: '10,000+', label: 'Happy Patients' },
-            { value: '4.9/5', label: 'Average Rating' },
-            { value: '50+', label: 'Countries' },
-            { value: '98%', label: 'Satisfaction Rate' },
+            { value: '10,000+', label: tLanding('stats.patients') },
+            { value: '4.9/5', label: tLanding('stats.rating') },
+            { value: '50+', label: tLanding('stats.countries') },
+            { value: '98%', label: tLanding('stats.satisfaction') },
           ].map((stat, index) => (
             <motion.div
               key={stat.label}

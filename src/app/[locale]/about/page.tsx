@@ -28,75 +28,63 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import type { Locale } from '@/lib/i18n/config';
 
-const stats = [
-  { icon: Users, value: '50,000+', label: 'Happy Patients' },
-  { icon: Building2, value: '200+', label: 'Partner Hospitals' },
-  { icon: Languages, value: '7', label: 'Languages' },
-  { icon: Globe, value: '50+', label: 'Countries Served' },
+const getStats = (t: any) => [
+  { icon: Users, value: '50,000+', label: t('hero.stats.patients') },
+  { icon: Building2, value: '200+', label: t('hero.stats.hospitals') },
+  { icon: Languages, value: '7', label: t('hero.stats.languages') },
+  { icon: Globe, value: '50+', label: t('hero.stats.countries') },
 ];
 
-const values = [
+const valuesData = [
   {
+    key: 'trust',
     icon: Shield,
-    title: 'Trust & Safety',
-    description: 'We only partner with JCI-accredited hospitals and verified medical professionals.',
     color: 'from-blue-500 to-cyan-500',
   },
   {
+    key: 'patientFirst',
     icon: Heart,
-    title: 'Patient-First',
-    description: 'Your health and comfort are our top priorities throughout your medical journey.',
     color: 'from-pink-500 to-rose-500',
   },
   {
+    key: 'excellence',
     icon: Award,
-    title: 'Excellence',
-    description: 'We connect you with Korea\'s top medical professionals and cutting-edge facilities.',
     color: 'from-amber-500 to-orange-500',
   },
   {
+    key: 'accessibility',
     icon: Globe,
-    title: 'Accessibility',
-    description: 'Breaking language barriers with multi-lingual support in 7 languages.',
     color: 'from-violet-500 to-purple-500',
   },
 ];
 
-const team = [
+const teamData = [
   {
-    name: 'Dr. Sarah Kim',
-    role: 'Medical Director',
+    key: 'member1',
     image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400',
-    bio: 'Former Chief of International Medicine at Samsung Medical Center',
   },
   {
-    name: 'James Chen',
-    role: 'CEO & Founder',
+    key: 'member2',
     image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
-    bio: '15+ years in healthcare technology and medical tourism',
   },
   {
-    name: 'Dr. Min-Jun Park',
-    role: 'Chief Medical Advisor',
+    key: 'member3',
     image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400',
-    bio: 'Board-certified plastic surgeon with 20+ years experience',
   },
   {
-    name: 'Emily Wang',
-    role: 'Head of Patient Experience',
+    key: 'member4',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-    bio: 'Dedicated to ensuring seamless medical tourism experiences',
   },
 ];
 
-const milestones = [
-  { year: '2018', title: 'Company Founded', description: 'Started with a mission to make Korean healthcare accessible globally' },
-  { year: '2019', title: 'First 1,000 Patients', description: 'Reached our first major milestone in patient care' },
-  { year: '2020', title: 'AI Integration', description: 'Launched AI-powered consultation and matching system' },
-  { year: '2021', title: '100+ Hospital Partners', description: 'Expanded network to over 100 partner hospitals' },
-  { year: '2022', title: 'Multi-language Support', description: 'Added support for 7 languages' },
-  { year: '2023', title: '50,000+ Patients', description: 'Helped over 50,000 international patients' },
-  { year: '2024', title: 'AI-Powered Platform', description: 'Next-generation platform with advanced AI features' },
+const milestonesData = [
+  { key: 'milestone1', year: '2018' },
+  { key: 'milestone2', year: '2019' },
+  { key: 'milestone3', year: '2020' },
+  { key: 'milestone4', year: '2021' },
+  { key: 'milestone5', year: '2022' },
+  { key: 'milestone6', year: '2023' },
+  { key: 'milestone7', year: '2024' },
 ];
 
 const containerVariants = {
@@ -119,6 +107,7 @@ const itemVariants = {
 export default function AboutPage() {
   const t = useTranslations('about');
   const locale = useLocale() as Locale;
+  const stats = getStats(t);
 
   return (
     <div className="min-h-screen bg-background">
@@ -154,18 +143,18 @@ export default function AboutPage() {
               <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}>
                 <Sparkles className="h-4 w-4 text-cyan-400" />
               </motion.div>
-              <span className="text-sm font-medium text-white/90">Our Story</span>
+              <span className="text-sm font-medium text-white/90">{t('hero.badge')}</span>
             </motion.div>
 
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-white lg:text-6xl">
-              <span className="block">Transforming</span>
+              <span className="block">{t('hero.title1')}</span>
               <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
-                Medical Tourism
+                {t('hero.title2')}
               </span>
             </h1>
 
             <p className="mx-auto mb-10 max-w-2xl text-lg text-white/70 lg:text-xl">
-              We're on a mission to make world-class Korean healthcare accessible to everyone, everywhere.
+              {t('hero.subtitle')}
             </p>
 
             {/* Stats */}
@@ -211,11 +200,9 @@ export default function AboutPage() {
                   <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600">
                     <Target className="h-7 w-7 text-white" />
                   </div>
-                  <h2 className="mb-4 text-2xl font-bold">Our Mission</h2>
+                  <h2 className="mb-4 text-2xl font-bold">{t('mission.title')}</h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    To democratize access to Korea's world-class healthcare by providing seamless,
-                    transparent, and personalized medical tourism experiences. We believe everyone
-                    deserves access to the best medical care, regardless of where they live.
+                    {t('mission.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -231,12 +218,9 @@ export default function AboutPage() {
                   <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600">
                     <Lightbulb className="h-7 w-7 text-white" />
                   </div>
-                  <h2 className="mb-4 text-2xl font-bold">Our Vision</h2>
+                  <h2 className="mb-4 text-2xl font-bold">{t('vision.title')}</h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    To become the world's most trusted platform for medical tourism, powered by
-                    AI technology that understands and anticipates patient needs. We envision a
-                    future where seeking medical care abroad is as simple and stress-free as
-                    booking a vacation.
+                    {t('vision.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -254,10 +238,10 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="mb-12 text-center"
           >
-            <Badge className="mb-4 bg-violet-500">Our Values</Badge>
-            <h2 className="mb-4 text-3xl font-bold lg:text-4xl">What Drives Us</h2>
+            <Badge className="mb-4 bg-violet-500">{t('values.badge')}</Badge>
+            <h2 className="mb-4 text-3xl font-bold lg:text-4xl">{t('values.title')}</h2>
             <p className="mx-auto max-w-2xl text-muted-foreground">
-              Our core values guide everything we do, from patient care to partner relationships.
+              {t('values.subtitle')}
             </p>
           </motion.div>
 
@@ -268,8 +252,8 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
           >
-            {values.map((value) => (
-              <motion.div key={value.title} variants={itemVariants}>
+            {valuesData.map((value) => (
+              <motion.div key={value.key} variants={itemVariants}>
                 <Card className="h-full overflow-hidden border-0 shadow-lg transition-all hover:shadow-xl">
                   <CardContent className="p-6 text-center">
                     <motion.div
@@ -278,8 +262,8 @@ export default function AboutPage() {
                     >
                       <value.icon className="h-8 w-8 text-white" />
                     </motion.div>
-                    <h3 className="mb-2 text-lg font-bold">{value.title}</h3>
-                    <p className="text-sm text-muted-foreground">{value.description}</p>
+                    <h3 className="mb-2 text-lg font-bold">{t(`values.items.${value.key}.title`)}</h3>
+                    <p className="text-sm text-muted-foreground">{t(`values.items.${value.key}.description`)}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -296,16 +280,16 @@ export default function AboutPage() {
           viewport={{ once: true }}
           className="mb-12 text-center"
         >
-          <Badge className="mb-4 bg-violet-500">Our Journey</Badge>
-          <h2 className="mb-4 text-3xl font-bold lg:text-4xl">Milestones</h2>
+          <Badge className="mb-4 bg-violet-500">{t('timeline.badge')}</Badge>
+          <h2 className="mb-4 text-3xl font-bold lg:text-4xl">{t('timeline.title')}</h2>
         </motion.div>
 
         <div className="relative mx-auto max-w-4xl">
           <div className="absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-gradient-to-b from-violet-500 to-purple-500" />
 
-          {milestones.map((milestone, index) => (
+          {milestonesData.map((milestone, index) => (
             <motion.div
-              key={milestone.year}
+              key={milestone.key}
               initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -317,8 +301,8 @@ export default function AboutPage() {
                     <Badge className="mb-2 bg-gradient-to-r from-violet-500 to-purple-500">
                       {milestone.year}
                     </Badge>
-                    <h3 className="mb-1 font-bold">{milestone.title}</h3>
-                    <p className="text-sm text-muted-foreground">{milestone.description}</p>
+                    <h3 className="mb-1 font-bold">{t(`timeline.milestones.${milestone.key}.title`)}</h3>
+                    <p className="text-sm text-muted-foreground">{t(`timeline.milestones.${milestone.key}.description`)}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -342,10 +326,10 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="mb-12 text-center"
           >
-            <Badge className="mb-4 bg-violet-500">Our Team</Badge>
-            <h2 className="mb-4 text-3xl font-bold lg:text-4xl">Meet the Leadership</h2>
+            <Badge className="mb-4 bg-violet-500">{t('team.badge')}</Badge>
+            <h2 className="mb-4 text-3xl font-bold lg:text-4xl">{t('team.title')}</h2>
             <p className="mx-auto max-w-2xl text-muted-foreground">
-              A dedicated team of healthcare professionals and technology experts working to transform medical tourism.
+              {t('team.subtitle')}
             </p>
           </motion.div>
 
@@ -356,24 +340,24 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
           >
-            {team.map((member) => (
-              <motion.div key={member.name} variants={itemVariants}>
+            {teamData.map((member) => (
+              <motion.div key={member.key} variants={itemVariants}>
                 <Card className="overflow-hidden border-0 shadow-lg transition-all hover:shadow-xl">
                   <div className="relative h-64 overflow-hidden">
                     <Image
                       src={member.image}
-                      alt={member.name}
+                      alt={t(`team.members.${member.key}.name`)}
                       fill
                       className="object-cover transition-transform duration-500 hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                      <h3 className="font-bold">{member.name}</h3>
-                      <p className="text-sm text-white/80">{member.role}</p>
+                      <h3 className="font-bold">{t(`team.members.${member.key}.name`)}</h3>
+                      <p className="text-sm text-white/80">{t(`team.members.${member.key}.role`)}</p>
                     </div>
                   </div>
                   <CardContent className="p-4">
-                    <p className="text-sm text-muted-foreground">{member.bio}</p>
+                    <p className="text-sm text-muted-foreground">{t(`team.members.${member.key}.bio`)}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -402,10 +386,10 @@ export default function AboutPage() {
                 <Rocket className="h-10 w-10 text-white" />
               </motion.div>
               <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
-                Ready to Start Your Journey?
+                {t('cta.title')}
               </h2>
               <p className="mx-auto mb-8 max-w-2xl text-white/70">
-                Join thousands of international patients who have trusted GetCareKorea for their medical tourism needs.
+                {t('cta.description')}
               </p>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Button
@@ -415,7 +399,7 @@ export default function AboutPage() {
                 >
                   <Link href={`/${locale}/inquiry`}>
                     <Sparkles className="mr-2 h-4 w-4" />
-                    Get Free Consultation
+                    {t('cta.primary')}
                   </Link>
                 </Button>
                 <Button
@@ -425,7 +409,7 @@ export default function AboutPage() {
                   asChild
                 >
                   <Link href={`/${locale}/hospitals`}>
-                    Explore Hospitals
+                    {t('cta.secondary')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>

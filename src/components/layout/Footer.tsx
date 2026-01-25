@@ -178,13 +178,13 @@ export function Footer() {
           <p>{t('copyright', { year: currentYear })}</p>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:text-foreground">
-              Privacy
+              {t('bottom.privacy')}
             </Link>
             <Link href="/terms" className="hover:text-foreground">
-              Terms
+              {t('bottom.terms')}
             </Link>
             <Link href="/cookies" className="hover:text-foreground">
-              Cookies
+              {t('bottom.cookies')}
             </Link>
           </div>
         </div>

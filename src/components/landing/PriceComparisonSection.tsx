@@ -4,45 +4,45 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { TrendingDown, DollarSign, BadgePercent, Info } from 'lucide-react';
 
-const procedures = [
+const proceduresData = [
   {
-    name: 'Rhinoplasty',
+    key: 'rhinoplasty',
     korea: { min: 2500, max: 5000 },
     usa: { min: 8000, max: 15000 },
     emoji: '👃',
   },
   {
-    name: 'Double Eyelid Surgery',
+    key: 'doubleEyelid',
     korea: { min: 1500, max: 3000 },
     usa: { min: 4000, max: 8000 },
     emoji: '👁️',
   },
   {
-    name: 'Dental Implant (per tooth)',
+    key: 'dentalImplant',
     korea: { min: 1200, max: 2000 },
     usa: { min: 3000, max: 6000 },
     emoji: '🦷',
   },
   {
-    name: 'LASIK (both eyes)',
+    key: 'lasik',
     korea: { min: 1500, max: 2500 },
     usa: { min: 4000, max: 6000 },
     emoji: '👓',
   },
   {
-    name: 'Facelift',
+    key: 'facelift',
     korea: { min: 5000, max: 10000 },
     usa: { min: 15000, max: 30000 },
     emoji: '✨',
   },
   {
-    name: 'Hair Transplant (2000 grafts)',
+    key: 'hairTransplant',
     korea: { min: 3000, max: 5000 },
     usa: { min: 8000, max: 15000 },
     emoji: '💇',
   },
   {
-    name: 'Comprehensive Health Checkup',
+    key: 'healthCheckup',
     korea: { min: 500, max: 1500 },
     usa: { min: 2000, max: 5000 },
     emoji: '🏥',
@@ -61,6 +61,7 @@ function formatPrice(min: number, max: number) {
 
 export function PriceComparisonSection() {
   const t = useTranslations('pricing');
+  const tLanding = useTranslations('landing.pricing');
 
   return (
     <section className="relative py-20 lg:py-28">
@@ -79,7 +80,7 @@ export function PriceComparisonSection() {
         >
           <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-1.5 text-sm font-medium text-green-700 dark:bg-green-950 dark:text-green-400">
             <TrendingDown className="h-4 w-4" />
-            Save Up To 70%
+            {tLanding('badge')}
           </span>
           <h2 className="mb-4 text-3xl font-bold tracking-tight lg:text-5xl">
             {t('title')}
@@ -99,27 +100,27 @@ export function PriceComparisonSection() {
           >
             {/* Header */}
             <div className="grid grid-cols-4 gap-4 border-b bg-muted/50 p-4 md:p-6">
-              <div className="col-span-1 font-semibold">Procedure</div>
+              <div className="col-span-1 font-semibold">{tLanding('tableHeader.procedure')}</div>
               <div className="text-center">
                 <div className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-1.5 text-sm font-semibold text-white">
-                  🇰🇷 Korea
+                  🇰🇷 {tLanding('tableHeader.korea')}
                 </div>
               </div>
               <div className="text-center text-muted-foreground">
                 <div className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-1.5 text-sm font-semibold">
-                  🇺🇸 USA
+                  🇺🇸 {tLanding('tableHeader.usa')}
                 </div>
               </div>
-              <div className="text-center font-semibold text-green-600">Savings</div>
+              <div className="text-center font-semibold text-green-600">{tLanding('tableHeader.savings')}</div>
             </div>
 
             {/* Body */}
             <div className="divide-y">
-              {procedures.map((procedure, index) => {
+              {proceduresData.map((procedure, index) => {
                 const savings = calculateSavings(procedure.korea, procedure.usa);
                 return (
                   <motion.div
-                    key={procedure.name}
+                    key={procedure.key}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
@@ -129,7 +130,7 @@ export function PriceComparisonSection() {
                     {/* Procedure */}
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{procedure.emoji}</span>
-                      <span className="font-medium text-sm md:text-base">{procedure.name}</span>
+                      <span className="font-medium text-sm md:text-base">{tLanding(`procedures.${procedure.key}`)}</span>
                     </div>
 
                     {/* Korea Price */}
@@ -194,13 +195,13 @@ export function PriceComparisonSection() {
                   <DollarSign className="h-6 w-6" />
                 </div>
                 <div className="text-left">
-                  <p className="text-lg font-bold">Best Price Guarantee</p>
-                  <p className="text-sm text-white/80">We match any lower price + 10% off</p>
+                  <p className="text-lg font-bold">{tLanding('guarantee.title')}</p>
+                  <p className="text-sm text-white/80">{tLanding('guarantee.subtitle')}</p>
                 </div>
               </div>
               <div className="hidden h-12 w-px bg-white/20 md:block" />
               <p className="text-sm md:text-base">
-                Found a better price elsewhere? We&apos;ll beat it by <span className="font-bold">10%</span>!
+                {tLanding('guarantee.description')}
               </p>
             </div>
           </motion.div>

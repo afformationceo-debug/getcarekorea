@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   MessageCircle,
   CalendarCheck,
@@ -10,45 +11,25 @@ import {
   ArrowRight,
 } from 'lucide-react';
 
-const steps = [
-  {
-    number: '01',
-    icon: MessageCircle,
-    title: 'AI Consultation',
-    description: 'Chat with our AI assistant to understand your needs and get personalized recommendations',
-    color: 'from-blue-500 to-cyan-500',
-  },
-  {
-    number: '02',
-    icon: CalendarCheck,
-    title: 'Book & Plan',
-    description: 'Select your hospital, schedule appointments, and arrange interpreter services',
-    color: 'from-purple-500 to-pink-500',
-  },
-  {
-    number: '03',
-    icon: Plane,
-    title: 'Arrive in Korea',
-    description: 'Enjoy complimentary airport pickup and settle into your accommodation',
-    color: 'from-amber-500 to-orange-500',
-  },
-  {
-    number: '04',
-    icon: Stethoscope,
-    title: 'Treatment',
-    description: 'Receive world-class medical care with your personal interpreter by your side',
-    color: 'from-green-500 to-emerald-500',
-  },
-  {
-    number: '05',
-    icon: HeartHandshake,
-    title: 'Recovery & Support',
-    description: '24/7 post-procedure care, follow-up appointments, and safe return home',
-    color: 'from-rose-500 to-red-500',
-  },
+const stepIcons = [MessageCircle, CalendarCheck, Plane, Stethoscope, HeartHandshake];
+const stepColors = [
+  'from-blue-500 to-cyan-500',
+  'from-purple-500 to-pink-500',
+  'from-amber-500 to-orange-500',
+  'from-green-500 to-emerald-500',
+  'from-rose-500 to-red-500',
 ];
 
 export function HowItWorksSection() {
+  const t = useTranslations('landing.howItWorks');
+
+  const steps = [
+    { number: '01', icon: stepIcons[0], title: t('steps.consultation.title'), description: t('steps.consultation.description'), color: stepColors[0] },
+    { number: '02', icon: stepIcons[1], title: t('steps.book.title'), description: t('steps.book.description'), color: stepColors[1] },
+    { number: '03', icon: stepIcons[2], title: t('steps.arrive.title'), description: t('steps.arrive.description'), color: stepColors[2] },
+    { number: '04', icon: stepIcons[3], title: t('steps.treatment.title'), description: t('steps.treatment.description'), color: stepColors[3] },
+    { number: '05', icon: stepIcons[4], title: t('steps.recovery.title'), description: t('steps.recovery.description'), color: stepColors[4] },
+  ];
   return (
     <section className="relative py-20 lg:py-28">
       {/* Background decoration */}
@@ -65,13 +46,13 @@ export function HowItWorksSection() {
           className="mb-16 text-center"
         >
           <span className="mb-4 inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            Simple Process
+            {t('badge')}
           </span>
           <h2 className="mb-4 text-3xl font-bold tracking-tight lg:text-5xl">
-            Your Journey to Korea
+            {t('title')}
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-            From initial consultation to successful recovery - we&apos;re with you every step of the way
+            {t('subtitle')}
           </p>
         </motion.div>
 
@@ -96,7 +77,7 @@ export function HowItWorksSection() {
                 >
                   {/* Step number */}
                   <div className="absolute -top-3 left-4 rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
-                    Step {step.number}
+                    {t('step')} {step.number}
                   </div>
 
                   {/* Icon */}

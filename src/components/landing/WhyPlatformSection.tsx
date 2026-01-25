@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   Check,
   X,
@@ -14,92 +15,38 @@ import {
   Hotel,
 } from 'lucide-react';
 
-const comparisonData = [
-  {
-    feature: 'Professional Medical Interpreter',
-    platform: true,
-    direct: false,
-    highlight: true,
-  },
-  {
-    feature: 'Best Price Guarantee',
-    platform: true,
-    direct: false,
-    highlight: true,
-  },
-  {
-    feature: '24/7 Multilingual Support',
-    platform: true,
-    direct: false,
-  },
-  {
-    feature: 'Airport Pickup Service',
-    platform: true,
-    direct: false,
-  },
-  {
-    feature: 'Accommodation Arrangement',
-    platform: true,
-    direct: false,
-  },
-  {
-    feature: 'Post-Procedure Follow-up',
-    platform: true,
-    direct: false,
-  },
-  {
-    feature: 'Verified Hospital Reviews',
-    platform: true,
-    direct: false,
-  },
-  {
-    feature: 'Communication Barrier',
-    platform: false,
-    direct: true,
-    negative: true,
-  },
-];
-
-const benefits = [
-  {
-    icon: Languages,
-    title: 'Free Interpreter',
-    description: 'Professional medical interpreter at no extra cost',
-    color: 'text-blue-500 bg-blue-100 dark:bg-blue-950',
-  },
-  {
-    icon: Shield,
-    title: '100% Verified',
-    description: 'All hospitals are JCI accredited and verified',
-    color: 'text-green-500 bg-green-100 dark:bg-green-950',
-  },
-  {
-    icon: Wallet,
-    title: 'Best Price',
-    description: 'Price match guarantee + additional 10% off',
-    color: 'text-amber-500 bg-amber-100 dark:bg-amber-950',
-  },
-  {
-    icon: Headphones,
-    title: '24/7 Support',
-    description: 'Round-the-clock assistance in your language',
-    color: 'text-purple-500 bg-purple-100 dark:bg-purple-950',
-  },
-  {
-    icon: Car,
-    title: 'Airport Pickup',
-    description: 'Complimentary pickup and drop-off service',
-    color: 'text-cyan-500 bg-cyan-100 dark:bg-cyan-950',
-  },
-  {
-    icon: Hotel,
-    title: 'Accommodation',
-    description: 'Curated recovery-friendly hotel recommendations',
-    color: 'text-rose-500 bg-rose-100 dark:bg-rose-950',
-  },
+const benefitIcons = [Languages, Shield, Wallet, Headphones, Car, Hotel];
+const benefitColors = [
+  'text-blue-500 bg-blue-100 dark:bg-blue-950',
+  'text-green-500 bg-green-100 dark:bg-green-950',
+  'text-amber-500 bg-amber-100 dark:bg-amber-950',
+  'text-purple-500 bg-purple-100 dark:bg-purple-950',
+  'text-cyan-500 bg-cyan-100 dark:bg-cyan-950',
+  'text-rose-500 bg-rose-100 dark:bg-rose-950',
 ];
 
 export function WhyPlatformSection() {
+  const t = useTranslations('landing.whyUs');
+
+  const comparisonData = [
+    { feature: t('comparison.interpreter'), platform: true, direct: false, highlight: true },
+    { feature: t('comparison.bestPrice'), platform: true, direct: false, highlight: true },
+    { feature: t('comparison.support247'), platform: true, direct: false },
+    { feature: t('comparison.airportPickup'), platform: true, direct: false },
+    { feature: t('comparison.accommodation'), platform: true, direct: false },
+    { feature: t('comparison.followUp'), platform: true, direct: false },
+    { feature: t('comparison.verifiedReviews'), platform: true, direct: false },
+    { feature: t('comparison.communicationBarrier'), platform: false, direct: true, negative: true },
+  ];
+
+  const benefits = [
+    { icon: Languages, title: t('benefits.freeInterpreter.title'), description: t('benefits.freeInterpreter.description'), color: benefitColors[0] },
+    { icon: Shield, title: t('benefits.verified.title'), description: t('benefits.verified.description'), color: benefitColors[1] },
+    { icon: Wallet, title: t('benefits.bestPrice.title'), description: t('benefits.bestPrice.description'), color: benefitColors[2] },
+    { icon: Headphones, title: t('benefits.support.title'), description: t('benefits.support.description'), color: benefitColors[3] },
+    { icon: Car, title: t('benefits.airportPickup.title'), description: t('benefits.airportPickup.description'), color: benefitColors[4] },
+    { icon: Hotel, title: t('benefits.accommodation.title'), description: t('benefits.accommodation.description'), color: benefitColors[5] },
+  ];
   return (
     <section className="relative overflow-hidden bg-muted/30 py-20 lg:py-28">
       {/* Background decoration */}
@@ -114,13 +61,13 @@ export function WhyPlatformSection() {
           className="mb-16 text-center"
         >
           <span className="mb-4 inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            Why Choose Us
+            {t('badge')}
           </span>
           <h2 className="mb-4 text-3xl font-bold tracking-tight lg:text-5xl">
-            Platform vs Direct Booking
+            {t('title')}
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-            See why thousands of patients choose GetCareKorea over booking directly with hospitals
+            {t('subtitle')}
           </p>
         </motion.div>
 
@@ -134,14 +81,14 @@ export function WhyPlatformSection() {
           >
             {/* Table Header */}
             <div className="grid grid-cols-3 border-b bg-muted/50 p-4">
-              <div className="font-semibold">Feature</div>
+              <div className="font-semibold">{t('tableHeader.feature')}</div>
               <div className="text-center">
                 <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-sm font-semibold text-white">
                   GetCareKorea
                 </span>
               </div>
               <div className="text-center text-muted-foreground">
-                <span className="text-sm font-medium">Direct</span>
+                <span className="text-sm font-medium">{t('tableHeader.direct')}</span>
               </div>
             </div>
 

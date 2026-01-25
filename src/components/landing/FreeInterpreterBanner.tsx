@@ -1,11 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/navigation';
 import { Languages, Sparkles, ArrowRight, Gift, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function FreeInterpreterBanner() {
+  const t = useTranslations('landing.freeInterpreter');
   return (
     <section className="relative py-12 overflow-hidden">
       <div className="container">
@@ -58,7 +60,7 @@ export function FreeInterpreterBanner() {
                   className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-sm"
                 >
                   <Gift className="h-4 w-4" />
-                  Limited Time Event
+                  {t('badge')}
                   <motion.span
                     animate={{ opacity: [1, 0.5, 1] }}
                     transition={{ duration: 1, repeat: Infinity }}
@@ -67,25 +69,25 @@ export function FreeInterpreterBanner() {
                 </motion.div>
 
                 <h2 className="mb-3 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
-                  Free Interpreter Service
+                  {t('title')}
                 </h2>
                 <p className="mb-2 text-lg text-white/90 md:text-xl">
-                  Get a professional medical interpreter at{' '}
-                  <span className="font-bold text-yellow-300">NO EXTRA COST</span>
+                  {t('subtitle')}{' '}
+                  <span className="font-bold text-yellow-300">{t('noExtraCost')}</span>
                 </p>
                 <p className="text-sm text-white/70">
-                  Book any procedure through GetCareKorea and receive complimentary interpretation
+                  {t('description')}
                 </p>
 
                 {/* Features */}
                 <div className="mt-6 flex flex-wrap justify-center gap-4 lg:justify-start">
                   {[
-                    { icon: Languages, text: '7 Languages' },
-                    { icon: Clock, text: 'Full-day Coverage' },
-                    { icon: Sparkles, text: 'Medical Certified' },
-                  ].map((feature) => (
+                    { icon: Languages, text: t('features.languages') },
+                    { icon: Clock, text: t('features.coverage') },
+                    { icon: Sparkles, text: t('features.certified') },
+                  ].map((feature, index) => (
                     <div
-                      key={feature.text}
+                      key={index}
                       className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-sm"
                     >
                       <feature.icon className="h-4 w-4" />
@@ -110,11 +112,11 @@ export function FreeInterpreterBanner() {
                   asChild
                 >
                   <Link href="/interpreters">
-                    Claim Free Interpreter
+                    {t('cta')}
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
-                <p className="text-xs text-white/60">*For bookings made through our platform</p>
+                <p className="text-xs text-white/60">*{t('disclaimer')}</p>
               </motion.div>
             </div>
           </div>
