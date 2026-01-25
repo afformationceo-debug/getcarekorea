@@ -1,14 +1,24 @@
 /**
  * Single Language Content Generator
  *
- * 키워드의 타겟 언어로만 콘텐츠 생성
- * - 키워드 = 타겟 언어/국가
- * - 불필요한 자동 번역 제거
- * - 성능 4.5배 향상, 비용 68% 절감
+ * ⚠️ CRITICAL: 통역사 페르소나 기반 후기형 콘텐츠 생성
+ * ========================================================
+ *
+ * 핵심 원칙 (절대 변경 금지):
+ * 1. 통역사 관점의 후기/에세이 스타일
+ * 2. 해당 국가 현지인 감성 100% 반영
+ * 3. 설득 플로우: 공감 → 문제인식 → 해결책 → 증거 → CTA
+ * 4. 진짜 문의가 오게끔 하는 게 목표
+ *
+ * ⚠️ DO NOT change to generic informational blog style.
+ * ⚠️ DO NOT use v6 prompt (정보성 블로그 스타일)
+ * ⚠️ ALWAYS use v7 prompt (통역사 페르소나)
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import { buildSystemPromptV6, LOCALE_CONFIGS } from './prompts/system-prompt-v6';
+// ⚠️ CRITICAL: v7 프롬프트 사용 (통역사 페르소나)
+// 절대 v6로 변경하지 말 것 - v6는 정보성 블로그 스타일임
+import { buildInterpreterSystemPrompt, LOCALE_CULTURAL_CONTEXT } from './prompts/system-prompt-v7-interpreter';
 import { getAuthorForKeyword } from './persona';
 import { buildEnhancedRAGContext, formatRAGContextForPrompt, type RAGContext } from './rag-helper';
 import type { AuthorPersona } from './persona';
@@ -149,17 +159,20 @@ export async function generateSingleLanguageContent(
       estimatedCost += 0.0001;
     }
 
-    // 3. Build system prompt (v5 with locale-specific features)
+    // 3. Build system prompt
+    // ⚠️ CRITICAL: v7 통역사 페르소나 프롬프트 사용
+    // 절대 v6 (정보성 블로그) 프롬프트로 변경하지 말 것
     let instructions = additionalInstructions || '';
 
     if (includeImages) {
       instructions += `\n\nInclude ${imageCount} PHOTOREALISTIC images throughout the content. No illustrations or infographics.`;
     }
 
-    // Get locale config for messenger and CTA
-    const localeConfig = LOCALE_CONFIGS[locale] || LOCALE_CONFIGS['en'];
+    // Get locale cultural context for messaging
+    const cultureContext = LOCALE_CULTURAL_CONTEXT[locale] || LOCALE_CULTURAL_CONTEXT['en'];
 
-    const systemPrompt = buildSystemPromptV6({
+    // ⚠️ IMPORTANT: 통역사 페르소나 프롬프트 (v7)
+    const systemPrompt = buildInterpreterSystemPrompt({
       author,
       locale,
       ragContext: ragPrompt,
@@ -167,49 +180,53 @@ export async function generateSingleLanguageContent(
     });
 
     // 4. Generate content with Claude
-    console.log(`   🤖 Generating content with Claude...`);
+    console.log(`   🤖 Generating content with Claude (통역사 페르소나)...`);
 
-    const userPrompt = `Write a premium quality blog post about: "${keyword}"
+    // ⚠️ CRITICAL: 이 userPrompt는 통역사 후기 스타일을 강조함
+    // 일반 정보성 블로그 스타일로 변경하지 말 것
+    const userPrompt = `키워드: "${keyword}"
 
-## CONTENT REQUIREMENTS
+## 당신의 임무
 
-**Target:** ${locale} speakers considering medical tourism to Korea
-**Category:** ${category}
-**Tone:** Expert friend sharing insider knowledge (${author.years_of_experience} years experience)
+당신은 ${author.years_of_experience}년차 의료 통역사입니다.
+이 키워드에 대해 **후기/에세이 스타일**로 글을 써주세요.
 
-## MUST INCLUDE (SEO/AEO Optimization):
+## 핵심 요구사항 (반드시 지켜주세요)
 
-1. **TL;DR Summary Box** at top with:
-   - Exact cost range in USD
-   - Recommended stay duration
-   - Best candidate profile
-   - Key advantage
+### 1. 글쓰기 스타일
+- ❌ "~에 대해 알아보겠습니다" 같은 정보성 블로그 어투 금지
+- ✅ "내가 통역했던 환자분 이야기를 해줄게" 같은 개인적 톤
+- ✅ 실제 케이스 스토리 1-2개 반드시 포함 (익명)
+- ✅ ${cultureContext.nativeName} 원어민이 쓴 것 같은 자연스러운 표현
 
-2. **Featured Snippet Answer** - Direct answer in first 40-60 words
+### 2. 독자 타겟: ${cultureContext.name} 사용자
+그들의 고민: ${cultureContext.painPoints.slice(0, 2).join(', ')}
+그들이 중요하게 여기는 것: ${cultureContext.values.slice(0, 2).join(', ')}
+커뮤니케이션 스타일: ${cultureContext.communicationStyle}
 
-3. **Rich Formatting:**
-   - <strong> tags on key terms
-   - Highlight boxes for expert tips
-   - Warning boxes for important cautions
-   - Comparison table (Korea vs US/Europe)
+### 3. 설득 플로우 (이 순서대로)
+1. 훅 - 독자 고민에 공감하는 질문/스토리로 시작
+2. 자기소개 - 통역사로서의 경험
+3. 실제 케이스 스토리
+4. 왜 한국인가 (통역사 관점)
+5. 구체적 정보 (가격, 기간, 과정)
+6. FAQ (통역사 톤으로)
+7. CTA - "${cultureContext.messengerCTA}"
 
-4. **FAQ Section** - 5-7 questions targeting "People Also Ask"
-   - Each answer: direct answer first, then explanation
+### 4. 이미지
+- ${imageCount}개의 스톡포토 스타일 이미지
+- 카메라 스펙 명시 (Sony A7R IV, 35mm f/1.4)
+- "NO AI artifacts, NO illustration" 필수
 
-5. **Step-by-Step Guide** - Clear patient journey
+### 5. 목표
+글을 읽은 사람이 "이 통역사에게 연락해봐야겠다"고 느끼게 만들기
 
-6. **Images** - ${imageCount} STOCK PHOTO quality images
-   - Camera specs in prompts (Sony A7R IV, 35mm f/1.4)
-   - "NO AI artifacts, NO illustration" in every prompt
-   - Natural lighting, documentary style
+## 출력 형식
+- JSON만 출력 (마크다운이나 설명 없이)
+- { 로 시작해서 } 로 끝
+- system prompt의 JSON 구조 정확히 따르기
 
-## CRITICAL OUTPUT FORMAT:
-- Return ONLY valid JSON (no markdown, no explanation)
-- "content" field = complete HTML with rich formatting
-- Start with { and end with }
-- Follow exact JSON structure from system prompt
-
-Write content that would rank #1 on Google and get featured in snippets.`;
+이제 ${cultureContext.nativeName}로 통역사 후기 스타일의 글을 작성해주세요.`;
 
 
     const response = await anthropic.messages.create({

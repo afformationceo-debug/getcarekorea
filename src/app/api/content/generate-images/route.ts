@@ -30,9 +30,9 @@ interface GenerateImagesRequest {
   images: ImageMetadata[];
   keyword: string;
   locale: string;
-  // Imagen 4 options
+  // Imagen 4 options (note: only jpg/png supported, NOT webp)
   aspectRatio?: '1:1' | '16:9' | '9:16' | '4:3' | '3:4';
-  outputFormat?: 'webp' | 'jpg' | 'png';
+  outputFormat?: 'jpg' | 'png';
   outputQuality?: number;
 }
 
@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
       images,
       keyword,
       locale,
-      // Imagen 4 options
+      // Imagen 4 options (note: only jpg/png supported)
       aspectRatio = '16:9',
-      outputFormat = 'webp',
+      outputFormat = 'png',  // Changed from webp - Imagen 4 only supports jpg/png
       outputQuality = 90,
     } = body;
 

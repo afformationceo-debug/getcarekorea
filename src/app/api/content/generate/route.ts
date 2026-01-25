@@ -137,12 +137,13 @@ export async function POST(request: NextRequest) {
         }));
 
         // Generate images with Imagen 4
+        // ⚠️ Imagen 4 only supports jpg/png (NOT webp)
         const imageResult = await generateImagen4Images({
           images: imageMetadata,
           keyword,
           locale,
           aspectRatio: '16:9',      // Widescreen for blog posts
-          outputFormat: 'webp',     // Best compression
+          outputFormat: 'png',      // Imagen 4 only supports jpg/png
           outputQuality: 90,        // High quality
         });
 
