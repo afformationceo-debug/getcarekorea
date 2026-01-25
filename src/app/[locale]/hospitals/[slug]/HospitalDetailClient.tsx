@@ -39,6 +39,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import type { Locale } from '@/lib/i18n/config';
 
+interface GoogleReview {
+  author: string;
+  rating: number;
+  content: string;
+  date?: string;
+  response?: string;
+}
+
 interface Hospital {
   id: string;
   slug: string;
@@ -67,6 +75,7 @@ interface Hospital {
   // Google Places specific data
   google_maps_url?: string;
   google_place_id?: string;
+  google_reviews?: GoogleReview[];  // Actual reviews from Google
   opening_hours?: string[];
   latitude?: number;
   longitude?: number;
@@ -123,18 +132,12 @@ interface BlogPost {
 
 interface HospitalDetailClientProps {
   hospital: Hospital;
-  doctors: Doctor[];
-  procedures: Procedure[];
-  reviews: Review[];
   relatedBlogPosts?: BlogPost[];
   locale: Locale;
 }
 
 export function HospitalDetailClient({
   hospital,
-  doctors,
-  procedures,
-  reviews,
   relatedBlogPosts = [],
   locale,
 }: HospitalDetailClientProps) {
@@ -358,13 +361,13 @@ export function HospitalDetailClient({
             >
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="w-full justify-start gap-2 bg-transparent p-0 h-auto flex-wrap">
-                  {['overview', 'doctors', 'procedures', 'reviews'].map((tab) => (
+                  {['overview', 'reviews'].map((tab) => (
                     <TabsTrigger
                       key={tab}
                       value={tab}
                       className="relative rounded-full px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
                     >
-                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                      {tab === 'overview' ? 'Overview' : `Reviews (${hospital.review_count})`}
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -374,16 +377,8 @@ export function HospitalDetailClient({
                     <OverviewSection hospital={hospital} locale={locale} relatedBlogPosts={relatedBlogPosts} />
                   </TabsContent>
 
-                  <TabsContent value="doctors" className="mt-8">
-                    <DoctorsSection doctors={doctors} />
-                  </TabsContent>
-
-                  <TabsContent value="procedures" className="mt-8">
-                    <ProceduresSection procedures={procedures} hospitalId={hospital.id} locale={locale} />
-                  </TabsContent>
-
                   <TabsContent value="reviews" className="mt-8">
-                    <ReviewsSection reviews={reviews} hospital={hospital} />
+                    <ReviewsSection hospital={hospital} />
                   </TabsContent>
                 </AnimatePresence>
               </Tabs>
@@ -959,8 +954,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
               <div className="flex flex-col sm:flex-row gap-3 shrink-0">
                 <Button
                   size="lg"
-                  variant="secondary"
-                  className="gap-2 rounded-full bg-white text-primary hover:bg-white/90"
+                  className="gap-2 rounded-full bg-white text-violet-700 hover:bg-white/90 font-semibold shadow-lg"
                   asChild
                 >
                   <Link href={`/${locale}/inquiry?hospital=${hospital.id}&service=interpreter`}>
@@ -970,8 +964,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                 </Button>
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="gap-2 rounded-full border-white/30 text-white hover:bg-white/10"
+                  className="gap-2 rounded-full bg-white/20 text-white hover:bg-white/30 border-2 border-white/50 font-semibold"
                   asChild
                 >
                   <Link href={`/${locale}/inquiry?hospital=${hospital.id}`}>
@@ -1021,21 +1014,32 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       <div className="group relative overflow-hidden rounded-xl border border-border/50 bg-card hover:shadow-lg transition-all">
                         {/* Image */}
                         <div className="relative h-32 overflow-hidden bg-muted">
-                          {post.featured_image ? (
+                          {post.featured_image && !post.featured_image.includes('undefined') ? (
                             <Image
                               src={post.featured_image}
                               alt={post.title}
                               fill
                               className="object-cover transition-transform group-hover:scale-110"
+                              onError={(e) => {
+                                // Hide image on error and show fallback
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
                             />
-                          ) : (
-                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30">
-                              <BookOpen className="h-8 w-8 text-rose-400" />
+                          ) : null}
+                          {/* Fallback gradient background - always shown as layer behind image */}
+                          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-rose-100 via-pink-50 to-violet-100 dark:from-rose-900/40 dark:via-pink-900/30 dark:to-violet-900/40">
+                            <div className="flex flex-col items-center gap-2">
+                              <div className="h-12 w-12 rounded-full bg-white/80 dark:bg-gray-800/80 flex items-center justify-center">
+                                <BookOpen className="h-6 w-6 text-rose-500" />
+                              </div>
+                              <span className="text-xs font-medium text-rose-600 dark:text-rose-400">Medical Guide</span>
                             </div>
+                          </div>
+                          {post.featured_image && !post.featured_image.includes('undefined') && (
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                           {post.category && (
-                            <Badge className="absolute left-2 top-2 bg-white/90 text-gray-900 text-xs">
+                            <Badge className="absolute left-2 top-2 bg-white/90 text-gray-900 text-xs z-20">
                               {post.category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                             </Badge>
                           )}
@@ -1212,7 +1216,10 @@ function ProceduresSection({
   );
 }
 
-function ReviewsSection({ reviews, hospital }: { reviews: Review[]; hospital: Hospital }) {
+function ReviewsSection({ hospital }: { hospital: Hospital }) {
+  // Get actual Google reviews from hospital data
+  const googleReviews = hospital.google_reviews || [];
+
   // Generate estimated rating distribution based on average rating and review count
   const generateRatingDistribution = () => {
     const avg = hospital.avg_rating || 4.5;
@@ -1417,17 +1424,25 @@ function ReviewsSection({ reviews, hospital }: { reviews: Review[]; hospital: Ho
         </motion.div>
       )}
 
-      {/* Sample Reviews (from mock data or future Google integration) */}
-      {reviews.length > 0 && (
+      {/* Real Google Reviews */}
+      {googleReviews.length > 0 && (
         <>
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-lg">Recent Reviews</h3>
-            <span className="text-sm text-muted-foreground">Sample patient experiences</span>
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <svg className="h-5 w-5" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Google Reviews
+            </h3>
+            <span className="text-sm text-muted-foreground">{googleReviews.length} reviews shown</span>
           </div>
           <div className="space-y-4">
-            {reviews.slice(0, 3).map((review, index) => (
+            {googleReviews.map((review, index) => (
               <motion.div
-                key={review.id}
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index }}
@@ -1436,20 +1451,24 @@ function ReviewsSection({ reviews, hospital }: { reviews: Review[]; hospital: Ho
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary to-violet-600 text-white font-bold text-lg">
-                          {review.author[0].toUpperCase()}
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-lg">
+                          {review.author[0]?.toUpperCase() || 'G'}
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-semibold">{review.author}</p>
-                            {review.verified && (
-                              <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
-                                <Check className="mr-1 h-3 w-3" />
-                                Verified Patient
-                              </Badge>
-                            )}
+                            <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                              <svg className="mr-1 h-3 w-3" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                              </svg>
+                              Google Review
+                            </Badge>
                           </div>
-                          <p className="text-xs text-muted-foreground">{review.date}</p>
+                          {review.date && (
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(review.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex gap-0.5">
@@ -1465,19 +1484,12 @@ function ReviewsSection({ reviews, hospital }: { reviews: Review[]; hospital: Ho
                         ))}
                       </div>
                     </div>
-                    {review.procedure && (
-                      <Badge variant="secondary" className="mb-3 bg-primary/10 text-primary">
-                        {review.procedure}
-                      </Badge>
-                    )}
                     <p className="text-muted-foreground leading-relaxed">{review.content}</p>
-                    {review.images && review.images.length > 0 && (
-                      <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
-                        {review.images.map((img, i) => (
-                          <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0">
-                            <Image src={img} alt="" fill className="object-cover hover:scale-110 transition-transform" />
-                          </div>
-                        ))}
+                    {/* Owner Response */}
+                    {review.response && (
+                      <div className="mt-4 pl-4 border-l-2 border-primary/30 bg-primary/5 rounded-r-lg p-3">
+                        <p className="text-xs font-semibold text-primary mb-1">Response from owner</p>
+                        <p className="text-sm text-muted-foreground">{review.response}</p>
                       </div>
                     )}
                   </CardContent>

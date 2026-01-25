@@ -52,6 +52,14 @@ const SEOUL_DISTRICTS = [
 // TYPES
 // =====================================================
 
+interface GooglePlaceReview {
+  name: string;
+  text: string;
+  stars: number;
+  publishedAtDate?: string;
+  responseFromOwnerText?: string;
+}
+
 interface GooglePlaceResult {
   title: string;
   address: string;
@@ -67,6 +75,15 @@ interface GooglePlaceResult {
   openingHours?: string[];
   categories?: string[];
   description?: string;
+  reviews?: GooglePlaceReview[];
+}
+
+interface HospitalReview {
+  author: string;
+  rating: number;
+  content: string;
+  date?: string;
+  response?: string;
 }
 
 interface HospitalData {
@@ -87,6 +104,7 @@ interface HospitalData {
   review_count?: number;
   google_maps_url: string;
   google_photos?: string[];
+  google_reviews?: HospitalReview[];  // Store actual Google reviews
   opening_hours?: string[];
   specialties: string[];
   category: string;
@@ -126,7 +144,8 @@ async function runApifyCrawler(searchQuery: string, maxResults: number = 100): P
         includeWebResults: false,
         includeImages: true,
         includeOpeningHours: true,
-        includeReviews: false,  // 리뷰는 따로 수집
+        includeReviews: true,  // Include Google reviews
+        maxReviews: 10,  // Get up to 10 reviews per place
         maxImages: 10,  // Increased from 5 to get more gallery images
       }),
     }
@@ -195,26 +214,137 @@ function extractDistrict(address: string): string | undefined {
   return undefined;
 }
 
-function translateCategoryToEnglish(koreanName: string): string {
-  const translations: Record<string, string> = {
-    '성형외과': 'Plastic Surgery Clinic',
-    '피부과': 'Dermatology Clinic',
-    '치과': 'Dental Clinic',
-    '안과': 'Eye Clinic',
-    '한의원': 'Korean Medicine Clinic',
+/**
+ * Translates Korean hospital names to English.
+ * Uses a combination of category translation and romanization for proper names.
+ */
+function translateCategoryToEnglish(koreanName: string, category: string): string {
+  // Category type translations
+  const categoryTypes: Record<string, string> = {
+    '성형외과': 'Plastic Surgery',
+    '피부과': 'Dermatology',
+    '치과': 'Dental',
+    '안과': 'Eye',
+    '한의원': 'Korean Medicine',
     '대학병원': 'University Hospital',
-    '모발이식': 'Hair Transplant Clinic',
-    '건강검진센터': 'Health Checkup Center',
-    '의원': 'Clinic',
+    '모발이식': 'Hair Transplant',
+    '건강검진센터': 'Health Checkup',
+    '의원': '',
     '병원': 'Hospital',
+    '클리닉': 'Clinic',
   };
 
-  for (const [ko, en] of Object.entries(translations)) {
-    if (koreanName.includes(ko)) {
-      return koreanName.replace(ko, en);
+  // Common Korean name components to romanize/translate
+  const nameComponents: Record<string, string> = {
+    // Place names
+    '강남': 'Gangnam',
+    '압구정': 'Apgujeong',
+    '청담': 'Cheongdam',
+    '신사': 'Sinsa',
+    '서울': 'Seoul',
+    '홍대': 'Hongdae',
+    '명동': 'Myeongdong',
+    '이태원': 'Itaewon',
+    '잠실': 'Jamsil',
+    '여의도': 'Yeouido',
+    '신촌': 'Sinchon',
+    '종로': 'Jongno',
+    '동대문': 'Dongdaemun',
+    '삼성': 'Samsung',
+    '역삼': 'Yeoksam',
+    '선릉': 'Seolleung',
+    '논현': 'Nonhyeon',
+    '학동': 'Hakdong',
+    '도곡': 'Dogok',
+    '대치': 'Daechi',
+    '일원': 'Irwon',
+    '수서': 'Suseo',
+    '잠원': 'Jamwon',
+    '반포': 'Banpo',
+    '방배': 'Bangbae',
+    '서초': 'Seocho',
+    // Common clinic name words
+    '어린': 'Young',
+    '공주': 'Princess',
+    '뷰티': 'Beauty',
+    '미': 'Mi',
+    '아름': 'Areum',
+    '예쁜': 'Pretty',
+    '예뻐지는': 'Beauty',
+    '아이': 'Eye',
+    '아이디': 'ID',
+    '원장': 'Doctor',
+    '박사': 'Dr',
+    '더': 'The',
+    '탑': 'Top',
+    '베스트': 'Best',
+    '프리미엄': 'Premium',
+    '스타': 'Star',
+    '라인': 'Line',
+    '케어': 'Care',
+    '힐링': 'Healing',
+    '메디': 'Medi',
+    '에스': 'S',
+    '플러스': 'Plus',
+    '센터': 'Center',
+    '스킨': 'Skin',
+    '글로벌': 'Global',
+    '코리아': 'Korea',
+    '인터내셔널': 'International',
+    '네이처': 'Nature',
+    '리프트': 'Lift',
+    '코': 'Nose',
+    '눈': 'Eye',
+    '입술': 'Lips',
+    '안면': 'Facial',
+    '윤곽': 'Contour',
+  };
+
+  let englishName = koreanName;
+
+  // First, replace category types
+  for (const [ko, en] of Object.entries(categoryTypes)) {
+    if (englishName.includes(ko)) {
+      englishName = englishName.replace(ko, en ? ` ${en}` : '');
     }
   }
-  return koreanName;
+
+  // Then, romanize/translate common name components
+  for (const [ko, en] of Object.entries(nameComponents)) {
+    if (englishName.includes(ko)) {
+      englishName = englishName.replace(new RegExp(ko, 'g'), en);
+    }
+  }
+
+  // Clean up: remove any remaining Korean characters and clean spacing
+  // Keep the Korean characters only if they couldn't be translated
+  const hasKorean = /[가-힣]/.test(englishName);
+
+  if (hasKorean) {
+    // If there are still Korean characters, generate a generic English name
+    const categoryDisplayName = getCategoryDisplayName(category);
+
+    // Try to extract any English/romanized parts
+    const englishParts = englishName.match(/[A-Za-z]+/g);
+    if (englishParts && englishParts.length > 0) {
+      // Use extracted English parts + category
+      const cleanParts = englishParts.filter(p => p.length > 1).join(' ');
+      return `${cleanParts} ${categoryDisplayName} Clinic`.replace(/\s+/g, ' ').trim();
+    }
+
+    // Fallback to category-based name with location
+    return `Seoul ${categoryDisplayName} Clinic`;
+  }
+
+  // Clean up multiple spaces and trim
+  englishName = englishName.replace(/\s+/g, ' ').trim();
+
+  // Add "Clinic" suffix if not present
+  if (!/(Clinic|Hospital|Center)$/i.test(englishName)) {
+    englishName += ' Clinic';
+  }
+
+  return englishName;
 }
 
 function processPlaceData(place: GooglePlaceResult, category: string): HospitalData {
@@ -225,11 +355,20 @@ function processPlaceData(place: GooglePlaceResult, category: string): HospitalD
   // Generate better English description
   const descriptionEn = generateEnglishDescription(place, category, district);
 
+  // Process Google reviews
+  const googleReviews: HospitalReview[] = (place.reviews || []).map(review => ({
+    author: review.name || 'Anonymous',
+    rating: review.stars || 5,
+    content: review.text || '',
+    date: review.publishedAtDate,
+    response: review.responseFromOwnerText,
+  })).filter(r => r.content.length > 0);  // Only keep reviews with content
+
   return {
     google_place_id: place.placeId,
     slug,
     name_ko: place.title,
-    name_en: translateCategoryToEnglish(place.title),
+    name_en: translateCategoryToEnglish(place.title, category),
     description_ko: place.description || `${place.title}은(는) 서울에 위치한 전문 의료시설입니다. 최신 시설과 전문의가 환자 중심의 진료를 제공합니다.`,
     description_en: descriptionEn,
     address: place.address,
@@ -243,6 +382,7 @@ function processPlaceData(place: GooglePlaceResult, category: string): HospitalD
     review_count: place.reviewsCount,
     google_maps_url: place.url,
     google_photos: place.imageUrls?.slice(0, 15), // Increased to 15 photos
+    google_reviews: googleReviews,  // Include actual Google reviews
     opening_hours: place.openingHours,
     specialties: [categoryNameEn],
     category,
@@ -273,7 +413,7 @@ function getCategoryDisplayName(category: string): string {
 
 function generateEnglishDescription(place: GooglePlaceResult, category: string, district?: string): string {
   const categoryNameEn = getCategoryDisplayName(category);
-  const clinicName = translateCategoryToEnglish(place.title);
+  const clinicName = translateCategoryToEnglish(place.title, category);
   const locationStr = district ? `${district}, Seoul` : 'Seoul';
 
   let description = `${clinicName} is a specialized ${categoryNameEn.toLowerCase()} clinic located in ${locationStr}, South Korea.`;

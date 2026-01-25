@@ -57,9 +57,6 @@ export default async function HospitalDetailPage({ params }: PageProps) {
     return (
       <HospitalDetailClient
         hospital={hospital}
-        doctors={getMockDoctors()}
-        procedures={getMockProcedures()}
-        reviews={getMockReviews()}
         locale={locale as Locale}
       />
     );
@@ -213,14 +210,13 @@ export default async function HospitalDetailPage({ params }: PageProps) {
     meta_description: hospitalData[`meta_description_${localeSuffix}`] || hospitalData.meta_description_en,
     // Crawl info
     crawled_at: hospitalData.crawled_at,
+    // Google reviews
+    google_reviews: hospitalData.google_reviews || [],
   };
 
   return (
     <HospitalDetailClient
       hospital={hospital}
-      doctors={getMockDoctors()}
-      procedures={finalProcedures}
-      reviews={getMockReviews()}
       relatedBlogPosts={finalBlogPosts}
       locale={locale as Locale}
     />
