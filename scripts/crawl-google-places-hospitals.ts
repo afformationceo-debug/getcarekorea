@@ -382,7 +382,7 @@ function processPlaceData(place: GooglePlaceResult, category: string): HospitalD
     review_count: place.reviewsCount,
     google_maps_url: place.url,
     google_photos: place.imageUrls?.slice(0, 15), // Increased to 15 photos
-    google_reviews: googleReviews,  // Include actual Google reviews
+    // google_reviews: googleReviews,  // TODO: Add google_reviews column to DB first
     opening_hours: place.openingHours,
     specialties: [categoryNameEn],
     category,
