@@ -219,35 +219,59 @@ function extractDistrict(address: string): string | undefined {
  * Uses a combination of category translation and romanization for proper names.
  */
 function translateCategoryToEnglish(koreanName: string, category: string): string {
-  // Check if name already contains significant English text (more than just brand names)
-  const englishWords = koreanName.match(/[A-Za-z]{3,}/g) || [];
-  const hasSignificantEnglish = englishWords.length >= 2 ||
-    /Plastic Surgery|Clinic|Hospital|Center|Medical/i.test(koreanName);
+  // Step 1: Remove all non-English characters (Korean, Japanese, Chinese, special symbols)
+  let cleanedName = koreanName
+    .replace(/[가-힣ㄱ-ㅎㅏ-ㅣ]/g, ' ')  // Korean
+    .replace(/[\u3040-\u309F\u30A0-\u30FF]/g, ' ')  // Japanese hiragana/katakana
+    .replace(/[\u4E00-\u9FFF]/g, ' ')  // Chinese characters
+    .replace(/[\u0400-\u04FF]/g, ' ')  // Cyrillic (Russian)
+    .replace(/[\u0E00-\u0E7F]/g, ' ')  // Thai
+    .replace(/[\u1100-\u11FF\uAC00-\uD7AF]/g, ' ')  // Korean extended
+    .replace(/[ㅣ|｜\|]/g, ' ')  // Vertical bars
+    .replace(/[^\w\s&-]/g, ' ')  // Keep only alphanumeric, spaces, &, -
+    .replace(/\s+/g, ' ')
+    .trim();
 
-  if (hasSignificantEnglish) {
-    // Extract and clean English parts from the name
-    const cleanedName = koreanName
-      .replace(/[가-힣]+/g, ' ')  // Replace Korean with spaces
-      .replace(/\s+/g, ' ')
-      .trim();
+  // Step 2: Check if we have meaningful English text
+  const englishWords = cleanedName.match(/[A-Za-z]{2,}/g) || [];
 
-    // Remove duplicate words (like "Plastic Surgery" appearing twice)
-    const words = cleanedName.split(' ');
+  if (englishWords.length >= 1) {
+    // Remove duplicate phrases (like "Plastic Surgery" appearing twice)
+    // First, normalize common phrases
+    cleanedName = cleanedName
+      .replace(/Plastic Surgery Plastic Surgery/gi, 'Plastic Surgery')
+      .replace(/Dermatology Dermatology/gi, 'Dermatology')
+      .replace(/Dental Dental/gi, 'Dental')
+      .replace(/Eye Eye/gi, 'Eye')
+      .replace(/Clinic Clinic/gi, 'Clinic')
+      .replace(/Hospital Hospital/gi, 'Hospital');
+
+    // Remove duplicate single words
+    const words = cleanedName.split(' ').filter(w => w.length > 0);
     const uniqueWords: string[] = [];
+    const seenLower = new Set<string>();
+
     for (const word of words) {
-      if (!uniqueWords.some(w => w.toLowerCase() === word.toLowerCase())) {
+      const lower = word.toLowerCase();
+      if (!seenLower.has(lower)) {
+        seenLower.add(lower);
         uniqueWords.push(word);
       }
     }
 
-    let result = uniqueWords.join(' ');
+    let result = uniqueWords.join(' ').trim();
 
-    // Add "Clinic" if no suffix exists
-    if (!/(Clinic|Hospital|Center|Surgery)$/i.test(result)) {
+    // Clean up leading/trailing special characters
+    result = result.replace(/^[-&\s]+|[-&\s]+$/g, '').trim();
+
+    // Add "Clinic" if no suffix exists and result is not empty
+    if (result && !/(Clinic|Hospital|Center|Surgery)$/i.test(result)) {
       result += ' Clinic';
     }
 
-    return result;
+    if (result && result.length > 3) {
+      return result;
+    }
   }
 
   // Category type translations
@@ -267,7 +291,7 @@ function translateCategoryToEnglish(koreanName: string, category: string): strin
 
   // Common Korean name components to romanize/translate
   const nameComponents: Record<string, string> = {
-    // Place names
+    // Place names - Districts
     '강남': 'Gangnam',
     '압구정': 'Apgujeong',
     '청담': 'Cheongdam',
@@ -294,6 +318,13 @@ function translateCategoryToEnglish(koreanName: string, category: string): strin
     '반포': 'Banpo',
     '방배': 'Bangbae',
     '서초': 'Seocho',
+    '송파': 'Songpa',
+    '마포': 'Mapo',
+    '용산': 'Yongsan',
+    '영등포': 'Yeongdeungpo',
+    '성북': 'Seongbuk',
+    '광진': 'Gwangjin',
+    '관악': 'Gwanak',
     // Common clinic name words
     '어린': 'Young',
     '공주': 'Princess',
@@ -329,6 +360,74 @@ function translateCategoryToEnglish(koreanName: string, category: string): strin
     '입술': 'Lips',
     '안면': 'Facial',
     '윤곽': 'Contour',
+    // Additional common words
+    '연세': 'Yonsei',
+    '세브란스': 'Severance',
+    '삼성서울': 'Samsung Seoul',
+    '서울대': 'Seoul National',
+    '고려대': 'Korea University',
+    '아산': 'Asan',
+    '차': 'CHA',
+    '분당': 'Bundang',
+    '바노바기': 'Banobagi',
+    '그랜드': 'Grand',
+    '리원': 'Rewon',
+    '에이치': 'H',
+    '제이': 'J',
+    '비': 'B',
+    '원': 'One',
+    '투': 'Two',
+    '쓰리': 'Three',
+    '모아': 'Moa',
+    '미소': 'Miso',
+    '하나': 'Hana',
+    '나라': 'Nara',
+    '서울성모': 'Seoul St. Mary',
+    '가톨릭대': 'Catholic University',
+    '한양대': 'Hanyang University',
+    '경희대': 'Kyunghee University',
+    '중앙대': 'Chung-Ang University',
+    '건국대': 'Konkuk University',
+    '이화여대': 'Ewha Womans University',
+    '순천향대': 'Soonchunhyang University',
+    '인제대': 'Inje University',
+    '한림대': 'Hallym University',
+    '보라매': 'Boramae',
+    '분당서울대': 'Seoul National University Bundang',
+    '일산백': 'Ilsan Paik',
+    '강동경희대': 'Gangdong Kyunghee',
+    '강남세브란스': 'Gangnam Severance',
+    '삼성창원': 'Samsung Changwon',
+    '시티': 'City',
+    '퍼스트': 'First',
+    '로얄': 'Royal',
+    '럭셔리': 'Luxury',
+    '하이': 'High',
+    '뉴': 'New',
+    '오리지널': 'Original',
+    '클래식': 'Classic',
+    '모던': 'Modern',
+    '에스테틱': 'Aesthetic',
+    '메디컬': 'Medical',
+    '헬스': 'Health',
+    '웰니스': 'Wellness',
+    '라이프': 'Life',
+    '뷰': 'View',
+    '스마일': 'Smile',
+    '해피': 'Happy',
+    '굿': 'Good',
+    '골드': 'Gold',
+    '실버': 'Silver',
+    '다이아': 'Diamond',
+    '크리스탈': 'Crystal',
+    '젤': 'Gel',
+    '앤': 'And',
+    '엔': 'N',
+    '앤드': 'And',
+    '포': 'For',
+    '유': 'You',
+    '위드': 'With',
+    '바이': 'By',
   };
 
   let englishName = koreanName;
@@ -379,9 +478,14 @@ function translateCategoryToEnglish(koreanName: string, category: string): strin
 }
 
 function processPlaceData(place: GooglePlaceResult, category: string): HospitalData {
-  const slug = generateSlug(place.title) + '-' + place.placeId.substring(0, 8);
   const district = extractDistrict(place.address);
   const categoryNameEn = getCategoryDisplayName(category);
+
+  // Generate English name first, then use it for slug
+  const nameEn = translateCategoryToEnglish(place.title, category);
+
+  // Generate slug from English name (more SEO-friendly)
+  const slug = generateSlugFromEnglish(nameEn, place.placeId);
 
   // Generate better English description
   const descriptionEn = generateEnglishDescription(place, category, district);
@@ -395,11 +499,11 @@ function processPlaceData(place: GooglePlaceResult, category: string): HospitalD
     response: review.responseFromOwnerText,
   })).filter(r => r.content.length > 0);  // Only keep reviews with content
 
-  return {
+  const hospitalData: HospitalData = {
     google_place_id: place.placeId,
     slug,
     name_ko: place.title,
-    name_en: translateCategoryToEnglish(place.title, category),
+    name_en: nameEn,
     description_ko: place.description || `${place.title}은(는) 서울에 위치한 전문 의료시설입니다. 최신 시설과 전문의가 환자 중심의 진료를 제공합니다.`,
     description_en: descriptionEn,
     address: place.address,
@@ -413,12 +517,11 @@ function processPlaceData(place: GooglePlaceResult, category: string): HospitalD
     review_count: place.reviewsCount,
     google_maps_url: place.url,
     google_photos: place.imageUrls?.slice(0, 15), // Increased to 15 photos
-    // google_reviews: googleReviews,  // TODO: Add google_reviews column to DB first
     opening_hours: place.openingHours,
     specialties: [categoryNameEn],
     category,
     source: 'google_places',
-    status: 'draft',  // 수동 검토 필요
+    status: 'published',  // Auto-publish for traffic
     crawled_at: new Date().toISOString(),
     // Default values (can be updated later)
     languages: ['Korean', 'English'],
@@ -426,6 +529,28 @@ function processPlaceData(place: GooglePlaceResult, category: string): HospitalD
     has_cctv: false,
     has_female_doctor: false,
   };
+
+  // Only add google_reviews if we have them (column may not exist yet)
+  if (googleReviews.length > 0) {
+    hospitalData.google_reviews = googleReviews;
+  }
+
+  return hospitalData;
+}
+
+// Generate SEO-friendly slug from English name
+function generateSlugFromEnglish(englishName: string, placeId: string): string {
+  const baseSlug = englishName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')  // Keep only alphanumeric and spaces
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 60);
+
+  // Add short place ID for uniqueness
+  const shortId = placeId.substring(0, 8);
+  return baseSlug ? `${baseSlug}-${shortId}` : `hospital-${shortId}`;
 }
 
 function getCategoryDisplayName(category: string): string {
@@ -628,6 +753,137 @@ async function crawlSingleCategory(query: string, category: string, maxResults: 
 }
 
 // =====================================================
+// DELETE ALL GOOGLE PLACES HOSPITALS
+// =====================================================
+
+async function deleteGooglePlacesHospitals() {
+  console.log('\n🗑️ Deleting all Google Places hospitals...');
+  console.log('='.repeat(60));
+
+  try {
+    // First, count how many will be deleted
+    const { count } = await supabase
+      .from('hospitals')
+      .select('*', { count: 'exact', head: true })
+      .eq('source', 'google_places');
+
+    console.log(`   Found ${count} hospitals from Google Places`);
+
+    if (!count || count === 0) {
+      console.log('   No hospitals to delete.');
+      return 0;
+    }
+
+    // Delete all google_places hospitals
+    const { error } = await supabase
+      .from('hospitals')
+      .delete()
+      .eq('source', 'google_places');
+
+    if (error) {
+      console.error('   ❌ Delete failed:', error.message);
+      return 0;
+    }
+
+    console.log(`   ✅ Deleted ${count} hospitals`);
+    return count;
+  } catch (error) {
+    console.error('   ❌ Error:', error);
+    return 0;
+  }
+}
+
+// =====================================================
+// CRAWL 100 TOP HOSPITALS (by review count)
+// =====================================================
+
+async function crawl100TopHospitals() {
+  console.log('\n🏥 Crawling Top 100 Hospitals by Review Count');
+  console.log('='.repeat(60));
+
+  if (!APIFY_API_TOKEN) {
+    console.error('❌ APIFY_API_TOKEN is not set in environment variables');
+    return;
+  }
+
+  // Priority categories with target counts (total ~100)
+  const crawlPlan = [
+    { query: '성형외과 강남', category: 'plastic-surgery', count: 25 },
+    { query: '성형외과 압구정', category: 'plastic-surgery', count: 15 },
+    { query: '성형외과 청담', category: 'plastic-surgery', count: 10 },
+    { query: '피부과 강남', category: 'dermatology', count: 15 },
+    { query: '치과 서울', category: 'dental', count: 10 },
+    { query: '대학병원 서울', category: 'university-hospital', count: 10 },
+    { query: '안과 서울', category: 'ophthalmology', count: 5 },
+    { query: '모발이식 서울', category: 'hair-transplant', count: 5 },
+    { query: '건강검진센터 서울', category: 'health-checkup', count: 5 },
+  ];
+
+  const allHospitals: HospitalData[] = [];
+  const seenPlaceIds = new Set<string>();
+
+  for (const plan of crawlPlan) {
+    console.log(`\n📂 Crawling: ${plan.query} (target: ${plan.count})`);
+    console.log('-'.repeat(40));
+
+    try {
+      const places = await runApifyCrawler(plan.query, plan.count + 10); // Get extra to filter
+
+      // Filter and sort by review count (most popular first)
+      const sortedPlaces = places
+        .filter((p: GooglePlaceResult) => !seenPlaceIds.has(p.placeId))
+        .sort((a: GooglePlaceResult, b: GooglePlaceResult) => (b.reviewsCount || 0) - (a.reviewsCount || 0))
+        .slice(0, plan.count);
+
+      console.log(`   Found ${places.length} places, using top ${sortedPlaces.length} by review count`);
+
+      for (const place of sortedPlaces) {
+        seenPlaceIds.add(place.placeId);
+        const hospitalData = processPlaceData(place, plan.category);
+        allHospitals.push(hospitalData);
+        console.log(`   ✅ ${hospitalData.name_en} (${place.reviewsCount || 0} reviews)`);
+      }
+
+      // Rate limiting
+      console.log(`   ⏳ Waiting 5 seconds...`);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+    } catch (error) {
+      console.error(`   ❌ Error crawling ${plan.query}:`, error);
+    }
+  }
+
+  // Sort all by review count and take top 100
+  const top100 = allHospitals
+    .sort((a, b) => (b.review_count || 0) - (a.review_count || 0))
+    .slice(0, 100);
+
+  console.log(`\n📊 Total unique hospitals collected: ${allHospitals.length}`);
+  console.log(`   Saving top 100 by review count...`);
+
+  // Save to database
+  let saved = 0;
+  let errors = 0;
+
+  for (const hospital of top100) {
+    const result = await saveHospitalToDatabase(hospital);
+    if (result.success) {
+      saved++;
+      console.log(`   ${saved}. ${hospital.name_en} → ${hospital.slug}`);
+    } else {
+      errors++;
+    }
+  }
+
+  console.log('\n' + '='.repeat(60));
+  console.log('📊 FINAL SUMMARY');
+  console.log('='.repeat(60));
+  console.log(`   Hospitals saved: ${saved}`);
+  console.log(`   Errors: ${errors}`);
+  console.log('\n✅ Done! Top 100 hospitals are now in the database.');
+}
+
+// =====================================================
 // RUN
 // =====================================================
 
@@ -639,17 +895,30 @@ if (args[0] === '--test') {
 } else if (args[0] === '--all') {
   // Crawl all categories
   crawlAllCategories();
+} else if (args[0] === '--delete') {
+  // Delete all google_places hospitals
+  deleteGooglePlacesHospitals();
+} else if (args[0] === '--top100') {
+  // Delete existing and crawl top 100
+  (async () => {
+    await deleteGooglePlacesHospitals();
+    console.log('\n⏳ Waiting 3 seconds before crawling...\n');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    await crawl100TopHospitals();
+  })();
 } else {
   console.log(`
 🏥 Google Places Hospital Crawler
 
 Usage:
-  npx tsx scripts/crawl-google-places-hospitals.ts --test    # Test with 10 plastic surgery clinics
-  npx tsx scripts/crawl-google-places-hospitals.ts --all     # Crawl all categories
+  npx tsx scripts/crawl-google-places-hospitals.ts --test     # Test with 10 plastic surgery clinics
+  npx tsx scripts/crawl-google-places-hospitals.ts --all      # Crawl all categories (50 each)
+  npx tsx scripts/crawl-google-places-hospitals.ts --delete   # Delete all Google Places hospitals
+  npx tsx scripts/crawl-google-places-hospitals.ts --top100   # Delete + Crawl top 100 by reviews
 
 Requirements:
   - APIFY_API_TOKEN environment variable
-  - Apify account with crawler-google-places actor access
+  - Supabase credentials in .env.local
 
 Categories to crawl:
   - 성형외과 (Plastic Surgery)
