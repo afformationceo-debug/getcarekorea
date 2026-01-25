@@ -350,7 +350,7 @@ export function HospitalDetailClient({
       </section>
 
       {/* Main Content */}
-      <div className="container py-8">
+      <div className="container py-8 pb-28 lg:pb-8">
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2">
@@ -391,6 +391,9 @@ export function HospitalDetailClient({
           </div>
         </div>
       </div>
+
+      {/* Mobile Fixed Bottom CTA Bar */}
+      <MobileBottomCTA hospital={hospital} locale={locale} />
     </div>
   );
 }
@@ -1534,6 +1537,53 @@ function ReviewsSection({ hospital }: { hospital: Hospital }) {
   );
 }
 
+// Mobile Fixed Bottom CTA Bar - Only visible on mobile
+function MobileBottomCTA({ hospital, locale }: { hospital: Hospital; locale: Locale }) {
+  const getCTAText = () => {
+    const ctaMap: Record<string, { cta1: string; cta2: string }> = {
+      'en': { cta1: 'Free Quote', cta2: 'Book with Interpreter' },
+      'ja': { cta1: '無料見積', cta2: '通訳付き予約' },
+      'zh_cn': { cta1: '免费报价', cta2: '带翻译预约' },
+      'zh_tw': { cta1: '免費報價', cta2: '帶翻譯預約' },
+      'th': { cta1: 'ขอใบเสนอราคา', cta2: 'จองพร้อมล่าม' },
+      'ru': { cta1: 'Бесплатный расчет', cta2: 'С переводчиком' },
+      'mn': { cta1: 'Үнэ авах', cta2: 'Орчуулагчтай' },
+    };
+    const normalizedLocale = locale.replace('-', '_').toLowerCase();
+    return ctaMap[normalizedLocale] || ctaMap['en'];
+  };
+
+  const cta = getCTAText();
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
+      <div className="bg-background/95 backdrop-blur-md border-t shadow-2xl px-4 py-3 safe-area-bottom">
+        <div className="flex gap-2 max-w-lg mx-auto">
+          <Button
+            className="flex-1 gap-1.5 rounded-xl bg-gradient-to-r from-primary to-violet-600 hover:opacity-90 py-5 text-sm font-semibold shadow-lg"
+            asChild
+          >
+            <Link href={`/${locale}/inquiry?hospital=${hospital.id}`}>
+              <MessageCircle className="h-4 w-4" />
+              {cta.cta1}
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 gap-1.5 rounded-xl py-5 text-sm font-semibold border-2 hover:bg-primary/5"
+            asChild
+          >
+            <Link href={`/${locale}/inquiry?hospital=${hospital.id}&service=interpreter`}>
+              <Languages className="h-4 w-4" />
+              {cta.cta2}
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Locale }) {
   // Get locale-specific CTA text
   const getCTAText = () => {
@@ -1602,7 +1652,8 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
       className="space-y-4"
     >
       {/* Main CTA Card - Interpreter Focus */}
-      <Card className="sticky top-24 overflow-hidden border-0 shadow-2xl">
+      {/* Desktop: sticky sidebar, Mobile: static (shown at bottom via separate mobile CTA) */}
+      <Card className="hidden lg:block lg:sticky lg:top-24 overflow-hidden border-0 shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-violet-500/5 to-purple-500/5" />
         <CardContent className="relative p-6">
           <div className="text-center mb-6">

@@ -43,6 +43,10 @@ export const metadata: Metadata = {
   authors: [{ name: 'GetCareKorea' }],
   creator: 'GetCareKorea',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  // Google Search Console verification
+  verification: {
+    google: 'xnxvZm6x95tOTzGh6h01M3VfvUEKTnhPK-Wsbe_CevE',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
