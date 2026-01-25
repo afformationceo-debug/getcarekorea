@@ -65,6 +65,58 @@ export default async function HospitalDetailPage({ params }: PageProps) {
     );
   }
 
+  // Get related blog posts based on hospital category/specialties
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: relatedBlogData } = await (supabase.from('blog_posts') as any)
+    .select('id, slug, title_en, excerpt_en, category, cover_image_url, published_at, view_count')
+    .eq('status', 'published')
+    .not('published_at', 'is', null)
+    .order('published_at', { ascending: false })
+    .limit(6);
+
+  // Filter and transform blog posts to match hospital category/specialties
+  const relatedBlogPosts = (relatedBlogData || [])
+    .filter((post: Record<string, unknown>) => {
+      // Match by category or specialty keywords
+      const postCategory = (post.category as string)?.toLowerCase() || '';
+      const hospitalCategory = hospitalData.category?.toLowerCase() || '';
+      const hospitalSpecialties = (hospitalData.specialties || []).map((s: string) => s.toLowerCase());
+
+      // Check if categories match or specialties are mentioned
+      if (postCategory.includes(hospitalCategory) || hospitalCategory.includes(postCategory)) {
+        return true;
+      }
+
+      return hospitalSpecialties.some((spec: string) =>
+        postCategory.includes(spec) || spec.includes(postCategory)
+      );
+    })
+    .slice(0, 3)
+    .map((post: Record<string, unknown>) => ({
+      id: post.id as string,
+      slug: post.slug as string,
+      title: (post[`title_${localeSuffix}`] || post.title_en) as string,
+      excerpt: (post[`excerpt_${localeSuffix}`] || post.excerpt_en) as string | null,
+      category: post.category as string,
+      featured_image: post.cover_image_url as string | null,
+      published_at: post.published_at as string | null,
+      view_count: (post.view_count || 0) as number,
+    }));
+
+  // If not enough related posts, just get the latest ones
+  const finalBlogPosts = relatedBlogPosts.length >= 2
+    ? relatedBlogPosts
+    : (relatedBlogData || []).slice(0, 3).map((post: Record<string, unknown>) => ({
+        id: post.id as string,
+        slug: post.slug as string,
+        title: (post[`title_${localeSuffix}`] || post.title_en) as string,
+        excerpt: (post[`excerpt_${localeSuffix}`] || post.excerpt_en) as string | null,
+        category: post.category as string,
+        featured_image: post.cover_image_url as string | null,
+        published_at: post.published_at as string | null,
+        view_count: (post.view_count || 0) as number,
+      }));
+
   // Get related procedures
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: procedureLinks } = await (supabase.from('hospital_procedures') as any)
@@ -169,6 +221,7 @@ export default async function HospitalDetailPage({ params }: PageProps) {
       doctors={getMockDoctors()}
       procedures={finalProcedures}
       reviews={getMockReviews()}
+      relatedBlogPosts={finalBlogPosts}
       locale={locale as Locale}
     />
   );
