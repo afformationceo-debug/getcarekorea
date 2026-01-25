@@ -93,6 +93,11 @@ interface HospitalData {
   source: string;
   status: string;
   crawled_at: string;
+  // Default language fields (auto-generated)
+  languages?: string[];
+  certifications?: string[];
+  has_cctv?: boolean;
+  has_female_doctor?: boolean;
 }
 
 // =====================================================
@@ -122,7 +127,7 @@ async function runApifyCrawler(searchQuery: string, maxResults: number = 100): P
         includeImages: true,
         includeOpeningHours: true,
         includeReviews: false,  // 리뷰는 따로 수집
-        maxImages: 5,
+        maxImages: 10,  // Increased from 5 to get more gallery images
       }),
     }
   );
@@ -214,19 +219,22 @@ function translateCategoryToEnglish(koreanName: string): string {
 
 function processPlaceData(place: GooglePlaceResult, category: string): HospitalData {
   const slug = generateSlug(place.title) + '-' + place.placeId.substring(0, 8);
+  const district = extractDistrict(place.address);
+  const categoryNameEn = getCategoryDisplayName(category);
+
+  // Generate better English description
+  const descriptionEn = generateEnglishDescription(place, category, district);
 
   return {
     google_place_id: place.placeId,
     slug,
     name_ko: place.title,
     name_en: translateCategoryToEnglish(place.title),
-    description_ko: place.description || `${place.title}은(는) 서울에 위치한 의료시설입니다.`,
-    description_en: place.description
-      ? translateCategoryToEnglish(place.description)
-      : `${translateCategoryToEnglish(place.title)} is a medical facility located in Seoul.`,
+    description_ko: place.description || `${place.title}은(는) 서울에 위치한 전문 의료시설입니다. 최신 시설과 전문의가 환자 중심의 진료를 제공합니다.`,
+    description_en: descriptionEn,
     address: place.address,
     city: 'Seoul',
-    district: extractDistrict(place.address),
+    district,
     phone: place.phone,
     website: place.website,
     latitude: place.latitude,
@@ -234,14 +242,53 @@ function processPlaceData(place: GooglePlaceResult, category: string): HospitalD
     avg_rating: place.rating,
     review_count: place.reviewsCount,
     google_maps_url: place.url,
-    google_photos: place.imageUrls?.slice(0, 10),
+    google_photos: place.imageUrls?.slice(0, 15), // Increased to 15 photos
     opening_hours: place.openingHours,
-    specialties: [category],
+    specialties: [categoryNameEn],
     category,
     source: 'google_places',
     status: 'draft',  // 수동 검토 필요
     crawled_at: new Date().toISOString(),
+    // Default values (can be updated later)
+    languages: ['Korean', 'English'],
+    certifications: [],
+    has_cctv: false,
+    has_female_doctor: false,
   };
+}
+
+function getCategoryDisplayName(category: string): string {
+  const categoryMap: Record<string, string> = {
+    'plastic-surgery': 'Plastic Surgery',
+    'dermatology': 'Dermatology',
+    'dental': 'Dental',
+    'ophthalmology': 'Ophthalmology',
+    'traditional-medicine': 'Traditional Korean Medicine',
+    'university-hospital': 'General Medicine',
+    'hair-transplant': 'Hair Transplant',
+    'health-checkup': 'Health Checkup',
+  };
+  return categoryMap[category] || category;
+}
+
+function generateEnglishDescription(place: GooglePlaceResult, category: string, district?: string): string {
+  const categoryNameEn = getCategoryDisplayName(category);
+  const clinicName = translateCategoryToEnglish(place.title);
+  const locationStr = district ? `${district}, Seoul` : 'Seoul';
+
+  let description = `${clinicName} is a specialized ${categoryNameEn.toLowerCase()} clinic located in ${locationStr}, South Korea.`;
+
+  if (place.rating && place.rating >= 4.0) {
+    description += ` With a ${place.rating.toFixed(1)}-star rating from ${place.reviewsCount?.toLocaleString() || 'many'} patient reviews, it has established itself as a trusted medical facility.`;
+  }
+
+  description += ` The clinic offers comprehensive ${categoryNameEn.toLowerCase()} services with experienced medical professionals.`;
+
+  if (place.website) {
+    description += ` International patients are welcome, and the clinic provides consultation services for overseas visitors.`;
+  }
+
+  return description;
 }
 
 // =====================================================

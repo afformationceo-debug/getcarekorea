@@ -25,9 +25,24 @@ const nextConfig: NextConfig = {
         hostname: 'lh3.googleusercontent.com',
       },
       {
+        // Google Places Photos (additional patterns)
+        protocol: 'https',
+        hostname: 'lh5.googleusercontent.com',
+      },
+      {
+        // Google Street View
+        protocol: 'https',
+        hostname: 'streetviewpixels-pa.googleapis.com',
+      },
+      {
         // Google Maps Static
         protocol: 'https',
         hostname: 'maps.googleapis.com',
+      },
+      {
+        // Google Maps place photos
+        protocol: 'https',
+        hostname: 'maps.gstatic.com',
       },
     ],
     // Optimize image loading
