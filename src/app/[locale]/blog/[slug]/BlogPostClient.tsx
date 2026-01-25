@@ -1033,7 +1033,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
             )}
 
             {/* Article content with in-content CTA */}
-            <div className="prose prose-lg dark:prose-invert max-w-none">
+            <div className="blog-content max-w-none">
               {renderContentWithCTA()}
             </div>
 

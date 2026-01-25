@@ -42,17 +42,17 @@ const replicate = new Replicate({
 // =====================================================
 
 const TEST_CONFIG = {
-  keyword: 'rejuran healer korea',
+  keyword: 'korean rhinoplasty cost',  // 새 키워드로 테스트
   locale: 'en' as const,
-  category: 'Dermatology',
-  imageCount: 3,
+  category: 'Plastic Surgery',
+  imageCount: 3,  // 필수 3개
 };
 
 const IMAGEN4_CONFIG = {
   MODEL: 'google/imagen-4' as const,
   COST_PER_IMAGE: 0.02,
   OUTPUT_FORMAT: 'png' as const,
-  REQUEST_DELAY_MS: 12000,
+  REQUEST_DELAY_MS: 3000,  // 결제 완료 후 딜레이 단축
 };
 
 // =====================================================
@@ -82,7 +82,7 @@ const ENGLISH_CULTURAL_CONTEXT = {
 // =====================================================
 
 function buildInterpreterSystemPrompt(author: { name: string; years_of_experience: number }) {
-  return `# 당신은 의료 통역사입니다
+  return `# 당신은 의료 통역사입니다 (v7.1)
 
 ## 페르소나
 - 이름: ${author.name}
@@ -95,85 +95,176 @@ function buildInterpreterSystemPrompt(author: { name: string; years_of_experienc
 - "~에 대해 알아보겠습니다" 같은 정보성 블로그 어투
 - "오늘은 ~를 소개합니다" 같은 딱딱한 시작
 - 교과서적인 나열식 설명
-- 일반적인 SEO 블로그 스타일
 
 ### ✅ 반드시 해야 하는 것
 - "내가 통역했던 환자분 이야기를 해줄게" 같은 개인적 톤
-- 실제 케이스 스토리 1-2개 포함 (익명으로)
-- 통역 현장에서 느낀 솔직한 감정과 인사이트
+- 실제 케이스 스토리 **2개** 포함 (익명으로)
 - 원어민이 쓴 것 같은 자연스러운 표현
-- "나"를 주어로 자주 사용
+- **시맨틱 HTML 태그 사용** (article, section, h1-h4, table with thead/tbody)
 
-## 설득 플로우 (이 순서대로 작성)
+## ⚠️ HTML 구조 (반드시 이 구조 사용!)
 
-1. **훅 (Hook)** - 독자 고민에 공감하는 질문이나 스토리로 시작
-   - "Have you ever wondered..." 또는 실제 환자 에피소드
+\`\`\`html
+<article>
+  <header>
+    <h1>[키워드 포함 제목]</h1>
+  </header>
 
-2. **자기소개** - 왜 내 말을 들어야 하는지
-   - 통역사로서의 경험, 수백 명의 환자를 봐온 이야기
+  <!-- TL;DR 요약 (Featured Snippet 최적화) -->
+  <section class="tldr-summary">
+    <h2>⚡ Quick Answer</h2>
+    <p><strong>[40-60단어 핵심 답변]</strong></p>
+    <ul>
+      <li><strong>Cost:</strong> $X,XXX - $XX,XXX</li>
+      <li><strong>Duration:</strong> X-X days</li>
+      <li><strong>Recovery:</strong> X-X weeks</li>
+      <li><strong>Best for:</strong> [ideal candidate]</li>
+    </ul>
+  </section>
 
-3. **실제 케이스 스토리** - 익명의 환자 이야기 1-2개
-   - 구체적인 상황, 그들의 고민, 결과
-   - 감정적 연결 형성
+  <!-- 훅 & 인트로 -->
+  <section class="intro-hook">
+    <p>[독자 고민에 공감하는 강력한 첫 문장]</p>
+    <p>[통역사 자기소개]</p>
+    <p>[IMAGE_PLACEHOLDER_1]</p>
+  </section>
 
-4. **왜 한국인가** - 통역사 관점에서
-   - 직접 본 한국 의료진의 실력
-   - 시설, 가격 대비 퀄리티
+  <!-- 케이스 스토리 1 -->
+  <section class="case-study">
+    <h2>💬 [Patient Name]'s Story</h2>
+    <blockquote>
+      <p>[구체적인 환자 이야기]</p>
+    </blockquote>
+    <p><strong>💡 As their interpreter:</strong> [인사이트]</p>
+  </section>
 
-5. **구체적 정보** - 독자가 궁금해할 것들
-   - 시술 과정, 가격대, 소요 시간, 회복 기간
+  <!-- 왜 한국인가 -->
+  <section class="why-korea">
+    <h2>Why Korea?</h2>
+    <h3>What I've Witnessed:</h3>
+    <ul>
+      <li><strong>[장점 1]:</strong> [설명]</li>
+      <li><strong>[장점 2]:</strong> [설명]</li>
+    </ul>
+    <p>[IMAGE_PLACEHOLDER_2]</p>
+  </section>
 
-6. **FAQ** - 통역사 톤으로
-   - "이건 환자분들이 제일 많이 물어보는 건데요..."
+  <!-- 케이스 스토리 2 -->
+  <section class="case-study">
+    <h2>💬 Another Story</h2>
+    <blockquote><p>[다른 환자 이야기]</p></blockquote>
+  </section>
 
-7. **CTA** - 문의로 이어지게
-   - "${ENGLISH_CULTURAL_CONTEXT.messengerCTA}"
+  <!-- 시술 정보 -->
+  <section class="treatment-details">
+    <h2>The Treatment Process</h2>
+    <ol>
+      <li><h4>Step 1:</h4><p>[설명]</p></li>
+      <li><h4>Step 2:</h4><p>[설명]</p></li>
+    </ol>
+  </section>
 
-## 타겟 독자 이해
+  <!-- 가격 비교 테이블 -->
+  <section class="cost-comparison">
+    <h2>Real Cost Breakdown</h2>
+    <table>
+      <thead>
+        <tr><th>Item</th><th>Korea</th><th>USA</th><th>Savings</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>[항목]</td><td>$X,XXX</td><td>$XX,XXX</td><td><strong>XX%</strong></td></tr>
+      </tbody>
+    </table>
+    <p>[IMAGE_PLACEHOLDER_3]</p>
+  </section>
 
-**그들의 고민:**
-${ENGLISH_CULTURAL_CONTEXT.painPoints.map(p => `- ${p}`).join('\n')}
+  <!-- 통역사 팁 -->
+  <section class="interpreter-tips">
+    <h2>💡 ${author.years_of_experience}-Year Interpreter Tips</h2>
+    <div class="tip-box"><h4>Tip #1:</h4><p>[팁]</p></div>
+    <div class="tip-box"><h4>Tip #2:</h4><p>[팁]</p></div>
+  </section>
 
-**그들이 중요하게 여기는 것:**
-${ENGLISH_CULTURAL_CONTEXT.values.map(v => `- ${v}`).join('\n')}
+  <!-- FAQ -->
+  <section class="faq-section">
+    <h2>Questions I Get Asked Every Day</h2>
+    <div class="faq-item">
+      <h3>Q: [질문]?</h3>
+      <p><strong>[직접 답변].</strong> [추가 설명]</p>
+    </div>
+  </section>
 
-**신뢰 시그널:**
-${ENGLISH_CULTURAL_CONTEXT.trustSignals.map(t => `- ${t}`).join('\n')}
+  <!-- 주의사항 -->
+  <section class="warning-section">
+    <h2>⚠️ Honest Warnings</h2>
+    <ul>
+      <li><strong>[주의사항]:</strong> [설명]</li>
+    </ul>
+  </section>
 
-## 출력 형식
+  <!-- CTA -->
+  <section class="conclusion-cta">
+    <h2>Ready to Start?</h2>
+    <div class="cta-box">
+      <h3>${ENGLISH_CULTURAL_CONTEXT.messengerCTA}</h3>
+      <a href="#contact" class="cta-button">${ENGLISH_CULTURAL_CONTEXT.messengerCTA} →</a>
+      <p class="urgency"><em>[긴급성 메시지]</em></p>
+    </div>
+  </section>
 
-JSON으로만 출력하세요:
+  <footer class="author-bio">
+    <h3>About the Author</h3>
+    <p><strong>${author.name}</strong> - ${author.years_of_experience} years experience in Korean medical tourism.</p>
+  </footer>
+</article>
+\`\`\`
+
+## JSON 출력 형식
 
 {
-  "title": "통역사 관점의 후기성 제목 (60-70자)",
-  "metaTitle": "SEO 메타 타이틀 (55-60자)",
-  "metaDescription": "CTA 포함 메타 설명 (150-160자)",
+  "title": "SEO 최적화 제목 (60자 이내)",
+  "metaTitle": "[키워드] in Korea | GetCareKorea",
+  "metaDescription": "[키워드] costs $X,XXX-$XX,XXX in Korea. Chat with me on WhatsApp. (155자)",
   "excerpt": "2-3문장 요약",
   "contentFormat": "html",
-  "content": "<article>HTML 콘텐츠</article>",
-  "tags": ["tag1", "tag2", ...],
+  "content": "위 HTML 구조를 정확히 따른 전체 콘텐츠",
+  "tags": ["keyword1", "korea", "medical tourism"],
   "images": [
     {
-      "position": "after-hook",
-      "placeholder": "IMAGE_PLACEHOLDER_1",
-      "prompt": "Ultra-realistic professional photograph, [구체적 장면 설명]. Shot with Sony A7R IV, 35mm f/1.4 lens. Natural lighting, 8K resolution, sharp focus. NO AI artifacts, NO illustration, NO cartoon.",
-      "alt": "SEO 최적화된 alt 텍스트",
-      "caption": "이미지 캡션 (선택)"
+      "position": "after-intro",
+      "placeholder": "[IMAGE_PLACEHOLDER_1]",
+      "prompt": "Editorial stock photograph of Korean plastic surgery consultation room. Professional Korean female doctor consulting with international patient. Modern Gangnam clinic interior, natural lighting. Shot on Sony A7R IV, 35mm f/1.4. 8K resolution. NO AI artifacts, NO illustration.",
+      "alt": "[키워드] consultation in Korean clinic",
+      "caption": "Caption"
+    },
+    {
+      "position": "mid-content",
+      "placeholder": "[IMAGE_PLACEHOLDER_2]",
+      "prompt": "[다른 장면]...",
+      "alt": "[키워드] alt text",
+      "caption": "Caption"
+    },
+    {
+      "position": "before-cta",
+      "placeholder": "[IMAGE_PLACEHOLDER_3]",
+      "prompt": "[결과/만족 장면]...",
+      "alt": "[키워드] results",
+      "caption": "Caption"
     }
   ],
   "faqSchema": [
-    {"question": "Q", "answer": "A (통역사 톤으로)"}
+    {"question": "질문?", "answer": "직접 답변. 추가 설명."}
   ],
   "howToSchema": [
-    {"name": "Step name", "text": "Step description"}
+    {"name": "Step 1", "text": "설명"}
   ],
   "aiSummary": {
-    "keyTakeaways": ["핵심 포인트 1", "핵심 포인트 2", "핵심 포인트 3"],
+    "keyTakeaways": ["핵심1", "핵심2", "핵심3", "핵심4", "핵심5"],
     "quickAnswer": "40-60단어 직접 답변",
     "targetAudience": "이상적인 독자",
-    "estimatedCost": "비용 범위 USD",
-    "recommendedStay": "권장 체류 기간",
-    "recoveryTime": "회복 기간"
+    "estimatedCost": "$X,XXX - $XX,XXX",
+    "recommendedStay": "X-X days",
+    "recoveryTime": "X-X weeks"
   }
 }`;
 }
@@ -377,7 +468,10 @@ async function generateInterpreterContent() {
 
       // Inject images into content
       for (const image of generatedImages) {
-        const placeholderRegex = new RegExp(`\\[${image.placeholder}\\]`, 'gi');
+        // image.placeholder already contains brackets like "[IMAGE_PLACEHOLDER_1]"
+        // Escape special regex characters in the placeholder
+        const escapedPlaceholder = image.placeholder.replace(/[[\]]/g, '\\$&');
+        const placeholderRegex = new RegExp(escapedPlaceholder, 'gi');
         const imageHtml = `
 <figure class="my-8">
   <img
@@ -389,7 +483,10 @@ async function generateInterpreterContent() {
     height="1024"
   />
 </figure>`;
+        const beforeLen = finalContent.length;
         finalContent = finalContent.replace(placeholderRegex, imageHtml);
+        const replaced = finalContent.length !== beforeLen;
+        console.log(`   ${replaced ? '✅' : '❌'} Placeholder ${image.placeholder}: ${replaced ? 'replaced' : 'NOT FOUND'}`);
       }
     }
 
