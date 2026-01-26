@@ -236,10 +236,10 @@
     }
   },
   "chat": {
-    "title": "AI Medical Consultant",
-    "subtitle": "Get instant answers about medical tourism in Korea",
-    "placeholder": "Ask me anything about medical tourism in Korea...",
-    "welcomeMessage": "Hello! I'm your AI medical tourism consultant. I can help you find the right hospital, procedure, or interpreter. What would you like to know?",
+    "title": "1:1 Free WhatsApp Consultation",
+    "subtitle": "Chat with our medical experts on WhatsApp - Get instant replies!",
+    "placeholder": "Message us on WhatsApp for instant help...",
+    "welcomeMessage": "Hello! Chat with us on WhatsApp for 1:1 free consultation. Our medical experts are ready to help you 24/7!",
     "suggestions": [
       "What are the best plastic surgery clinics in Gangnam?",
       "How much does rhinoplasty cost in Korea?",
@@ -819,8 +819,8 @@
     "poweredBy": "Powered by Claude AI"
   },
   "messenger": {
-    "chatOn": "Chat on",
-    "chatNow": "Chat Now",
-    "instantResponse": "⚡ Instant response • Available 24/7"
+    "chatOn": "1:1 Free Consultation on",
+    "chatNow": "Start Free Consultation",
+    "instantResponse": "⚡ Get instant reply • Free 24/7 expert support"
   }
 }

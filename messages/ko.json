@@ -819,8 +819,8 @@
     "poweredBy": "Claude AI 기반"
   },
   "messenger": {
-    "chatOn": "지금 상담하기",
-    "chatNow": "채팅하기",
-    "instantResponse": "⚡ 즉시 응답 • 24시간 상담 가능"
+    "chatOn": "1:1 무료 상담",
+    "chatNow": "무료 상담 시작하기",
+    "instantResponse": "⚡ 즉시 응답 • 24시간 전문가 지원"
   }
 }

@@ -819,8 +819,8 @@
     "poweredBy": "由 Claude AI 提供"
   },
   "messenger": {
-    "chatOn": "立即咨询",
-    "chatNow": "马上聊",
-    "instantResponse": "⚡ 即时回复 • 24小时服务"
+    "chatOn": "微信1对1免费咨询",
+    "chatNow": "开始免费咨询",
+    "instantResponse": "⚡ 即时回复 • 24小时专家支持"
   }
 }
