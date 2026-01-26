@@ -1189,7 +1189,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
               {post.relatedPosts.map((relatedPost) => (
                 <Link
                   key={relatedPost.id}
-                  href={`/${locale}/blog/${relatedPost.slug}`}
+                  href={`/blog/${relatedPost.slug}`}
                 >
                   <Card className="h-full hover:shadow-lg transition-shadow overflow-hidden">
                     <div className="relative aspect-video">
