@@ -127,25 +127,13 @@ export function ChatWidget({
           if (done) break;
 
           const chunk = decoder.decode(value);
-          const lines = chunk.split('\n');
+          assistantContent += chunk;
 
-          for (const line of lines) {
-            if (line.startsWith('0:')) {
-              try {
-                const data = JSON.parse(line.slice(2));
-                if (data.type === 'text' && data.value) {
-                  assistantContent += data.value;
-                  setMessages((prev) =>
-                    prev.map((m) =>
-                      m.id === assistantMessage.id ? { ...m, content: assistantContent } : m
-                    )
-                  );
-                }
-              } catch (e) {
-                // Ignore parse errors
-              }
-            }
-          }
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMessage.id ? { ...m, content: assistantContent } : m
+            )
+          );
         }
       }
     } catch (error) {
