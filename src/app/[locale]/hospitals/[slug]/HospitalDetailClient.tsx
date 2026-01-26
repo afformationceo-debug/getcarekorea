@@ -313,7 +313,8 @@ export function HospitalDetailClient({
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length)}
-                className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-colors hover:bg-black/70 cursor-pointer"
+                aria-label="Previous image"
               >
                 <ChevronLeft className="h-6 w-6" />
               </motion.button>
@@ -321,20 +322,22 @@ export function HospitalDetailClient({
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setCurrentImageIndex((prev) => (prev + 1) % allImages.length)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-colors hover:bg-black/70 cursor-pointer"
+                aria-label="Next image"
               >
                 <ChevronRight className="h-6 w-6" />
               </motion.button>
 
               {/* Image dots */}
-              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2">
+              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex gap-2">
                 {allImages.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`h-2 rounded-full transition-all ${
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
                       index === currentImageIndex ? 'w-8 bg-white' : 'w-2 bg-white/50'
                     }`}
+                    aria-label={`Go to image ${index + 1}`}
                   />
                 ))}
               </div>
@@ -472,15 +475,13 @@ export function HospitalDetailClient({
                   ))}
                 </TabsList>
 
-                <AnimatePresence mode="wait">
-                  <TabsContent value="overview" className="mt-8">
-                    <OverviewSection hospital={hospital} locale={locale} relatedBlogPosts={relatedBlogPosts} />
-                  </TabsContent>
+                <TabsContent value="overview" className="mt-8">
+                  <OverviewSection hospital={hospital} locale={locale} relatedBlogPosts={relatedBlogPosts} />
+                </TabsContent>
 
-                  <TabsContent value="reviews" className="mt-8">
-                    <ReviewsSection hospital={hospital} />
-                  </TabsContent>
-                </AnimatePresence>
+                <TabsContent value="reviews" className="mt-8">
+                  <ReviewsSection hospital={hospital} />
+                </TabsContent>
               </Tabs>
             </motion.div>
           </div>
