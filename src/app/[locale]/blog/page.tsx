@@ -353,7 +353,7 @@ export default function BlogPage() {
             >
               {posts.map((post) => (
                 <motion.div key={post.id} variants={itemVariants}>
-                  <Link href={`/${locale}/blog/${post.slug}`}>
+                  <Link href={`/blog/${post.slug}`}>
                     <motion.div
                       whileHover={{ y: -8 }}
                       className="group h-full overflow-hidden rounded-2xl border border-border/50 bg-card shadow-lg transition-all hover:border-violet-500/30 hover:shadow-xl"
