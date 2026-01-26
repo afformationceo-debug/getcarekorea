@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 const hospitals = [
   {
     id: '1',
+    slug: 'grand-plastic-surgery',
     name: 'Grand Plastic Surgery',
     image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=600&fit=crop',
     rating: 4.9,
@@ -23,6 +24,7 @@ const hospitals = [
   },
   {
     id: '2',
+    slug: 'seoul-wellness-clinic',
     name: 'Seoul Wellness Clinic',
     image: 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=800&h=600&fit=crop',
     rating: 4.8,
@@ -35,6 +37,7 @@ const hospitals = [
   },
   {
     id: '3',
+    slug: 'smile-dental-korea',
     name: 'Smile Dental Korea',
     image: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=800&h=600&fit=crop',
     rating: 4.9,
@@ -93,7 +96,7 @@ export function FeaturedHospitalsSection() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <Link href={`/hospitals/${hospital.id}`} className="group block h-full">
+              <Link href={`/hospitals/${hospital.slug}`} className="group block h-full">
                 <motion.div
                   whileHover={{ y: -8 }}
                   className="h-full overflow-hidden rounded-2xl border bg-background shadow-lg transition-shadow hover:shadow-xl"

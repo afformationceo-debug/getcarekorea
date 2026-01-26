@@ -504,7 +504,7 @@ function HospitalCard3D({ hospital, locale }: { hospital: Hospital; locale: Loca
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <Link href={`/${locale}/hospitals/${hospital.slug}`} className="group block h-full">
+    <Link href={`/hospitals/${hospital.slug}`} className="group block h-full">
       <motion.div
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
@@ -660,7 +660,7 @@ function HospitalListCard({ hospital, locale }: { hospital: Hospital; locale: Lo
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <Link href={`/${locale}/hospitals/${hospital.slug}`} className="group block">
+    <Link href={`/hospitals/${hospital.slug}`} className="group block">
       <motion.div
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
@@ -1039,7 +1039,7 @@ function GroupedHospitalsView({
             {visibleHospitals.map((hospital) => (
               <Link
                 key={hospital.id}
-                href={`/${locale}/hospitals/${hospital.slug}`}
+                href={`/hospitals/${hospital.slug}`}
                 className="group"
               >
                 <motion.div
