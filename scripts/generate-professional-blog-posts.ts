@@ -202,13 +202,111 @@ Focus on providing genuine value, accurate information, and building trust. Use 
 }
 
 /**
- * Generate images with Imagen4 (placeholder - requires Google Cloud setup)
+ * Generate images with Google Generative AI (Imagen 3)
+ * Note: Using Imagen 3 as Imagen 4 requires Vertex AI setup
  */
 async function generateImages(prompts: string[]): Promise<string[]> {
-  console.log(`   🎨 Generating ${prompts.length} images with Imagen4...`);
+  console.log(`   🎨 Generating ${prompts.length} images with Google AI...`);
 
-  // TODO: Integrate actual Imagen4 API
-  // For now, return placeholder Unsplash images
+  const googleApiKey = process.env.GOOGLE_AI_API_KEY;
+
+  if (!googleApiKey) {
+    console.warn('   ⚠️  GOOGLE_AI_API_KEY not found, using placeholder images');
+    return getPlaceholderImages(prompts.length);
+  }
+
+  const generatedImages: string[] = [];
+
+  for (let i = 0; i < prompts.length; i++) {
+    const prompt = prompts[i];
+    console.log(`   🖼️  Generating image ${i + 1}/${prompts.length}...`);
+
+    try {
+      // Use Google's Imagen API
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': googleApiKey,
+        },
+        body: JSON.stringify({
+          prompt: {
+            text: `Professional medical photography: ${prompt}. High quality, clean, modern hospital setting, natural lighting, photorealistic.`
+          },
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: '16:9',
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        console.warn(`   ⚠️  Image ${i + 1} generation failed (${response.status}), using placeholder`);
+        generatedImages.push(getPlaceholderImages(1)[0]);
+        continue;
+      }
+
+      const data = await response.json();
+
+      // Extract image from response
+      if (data.predictions && data.predictions[0]?.bytesBase64Encoded) {
+        // Upload to Supabase storage
+        const imageUrl = await uploadImageToSupabase(
+          data.predictions[0].bytesBase64Encoded,
+          `blog-image-${Date.now()}-${i}.png`
+        );
+        generatedImages.push(imageUrl);
+        console.log(`   ✅ Image ${i + 1} generated successfully`);
+      } else {
+        console.warn(`   ⚠️  Image ${i + 1} response invalid, using placeholder`);
+        generatedImages.push(getPlaceholderImages(1)[0]);
+      }
+
+      // Rate limiting
+      if (i < prompts.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    } catch (error) {
+      console.error(`   ❌ Image ${i + 1} generation error:`, error);
+      generatedImages.push(getPlaceholderImages(1)[0]);
+    }
+  }
+
+  return generatedImages;
+}
+
+/**
+ * Upload base64 image to Supabase storage
+ */
+async function uploadImageToSupabase(base64Data: string, filename: string): Promise<string> {
+  try {
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const { data, error } = await supabase.storage
+      .from('blog-images')
+      .upload(filename, buffer, {
+        contentType: 'image/png',
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('blog-images')
+      .getPublicUrl(data.path);
+
+    return publicUrl;
+  } catch (error) {
+    console.error('Supabase upload error:', error);
+    return getPlaceholderImages(1)[0];
+  }
+}
+
+/**
+ * Get placeholder images as fallback
+ */
+function getPlaceholderImages(count: number): string[] {
   const placeholders = [
     'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1200', // Hospital
     'https://images.unsplash.com/photo-1551601651-bc60f254d532?w=1200', // Medical consultation
@@ -217,7 +315,7 @@ async function generateImages(prompts: string[]): Promise<string[]> {
     'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=1200', // Medical equipment
   ];
 
-  return prompts.map((_, i) => placeholders[i % placeholders.length]);
+  return Array.from({ length: count }, (_, i) => placeholders[i % placeholders.length]);
 }
 
 /**
@@ -283,6 +381,35 @@ Respond in JSON:
 }
 
 /**
+ * Insert images into markdown content
+ */
+function insertImagesIntoContent(content: string, images: string[]): string {
+  // Skip first image (it's the cover/hero image)
+  const sectionImages = images.slice(1);
+
+  if (sectionImages.length === 0) return content;
+
+  // Split content by H2 headings
+  const sections = content.split(/^(## .+)$/gm);
+
+  let imageIndex = 0;
+  const result: string[] = [];
+
+  for (let i = 0; i < sections.length; i++) {
+    result.push(sections[i]);
+
+    // After each H2 heading section, insert an image
+    if (sections[i].match(/^## /) && i + 1 < sections.length && imageIndex < sectionImages.length) {
+      const imageUrl = sectionImages[imageIndex];
+      result.push(`\n\n![](${imageUrl})\n\n`);
+      imageIndex++;
+    }
+  }
+
+  return result.join('');
+}
+
+/**
  * Save blog post to database
  */
 async function saveBlogPost(
@@ -297,6 +424,9 @@ async function saveBlogPost(
     .replace(/^-+|-+$/g, '')
     + `-${Date.now()}`;
 
+  // Insert images into content
+  const contentWithImages = insertImagesIntoContent(content.content, images);
+
   const postData = {
     slug,
     category: content.category,
@@ -306,7 +436,7 @@ async function saveBlogPost(
     target_country: LOCALE_CONFIG[targetLocale].country,
     title_en: content.title,
     excerpt_en: content.excerpt,
-    content_en: content.content,
+    content_en: contentWithImages, // Use content with images
     meta_description: content.meta_description,
     cover_image_url: images[0],
     status: 'published',
@@ -316,7 +446,10 @@ async function saveBlogPost(
 
   // Translate to target locale
   if (targetLocale !== 'en') {
-    const translation = await translateContent(content, targetLocale);
+    const translation = await translateContent({
+      ...content,
+      content: contentWithImages, // Translate content with images
+    }, targetLocale);
     Object.assign(postData, translation);
   }
 
@@ -328,6 +461,7 @@ async function saveBlogPost(
   }
 
   console.log(`   ✅ Saved: ${slug}`);
+  console.log(`   📸 Inserted ${images.length - 1} images into content`);
 }
 
 /**

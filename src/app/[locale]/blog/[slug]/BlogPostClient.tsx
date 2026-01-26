@@ -767,6 +767,17 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
                 </code>
               );
             },
+            img: ({ src, alt }) => (
+              <div className="my-8">
+                <Image
+                  src={(src as string) || DEFAULT_IMAGE}
+                  alt={alt || 'Blog image'}
+                  width={1200}
+                  height={675}
+                  className="rounded-xl w-full h-auto shadow-lg"
+                />
+              </div>
+            ),
           }}
         >
           {post.content}
@@ -844,6 +855,17 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
                 </code>
               );
             },
+            img: ({ src, alt }) => (
+              <div className="my-8">
+                <Image
+                  src={(src as string) || DEFAULT_IMAGE}
+                  alt={alt || 'Blog image'}
+                  width={1200}
+                  height={675}
+                  className="rounded-xl w-full h-auto shadow-lg"
+                />
+              </div>
+            ),
           }}
         >
           {firstHalf}
@@ -938,6 +960,17 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
                 </code>
               );
             },
+            img: ({ src, alt }) => (
+              <div className="my-8">
+                <Image
+                  src={(src as string) || DEFAULT_IMAGE}
+                  alt={alt || 'Blog image'}
+                  width={1200}
+                  height={675}
+                  className="rounded-xl w-full h-auto shadow-lg"
+                />
+              </div>
+            ),
           }}
         >
           {secondHalf}
