@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { HeroChatWidget } from '@/components/chat/ChatWidget';
+import { ChatWidget } from '@/components/chat/ChatWidget';
 import { MessengerCTA } from '@/components/cta/MessengerCTA';
 
 export function HeroSection() {
@@ -184,7 +184,7 @@ export function HeroSection() {
 
             {/* Chat widget */}
             <div className="relative">
-              <HeroChatWidget className="shadow-2xl shadow-primary/10" />
+              <ChatWidget variant="embedded" className="shadow-2xl shadow-primary/10" />
 
               {/* Floating badges around chat */}
               <motion.div
