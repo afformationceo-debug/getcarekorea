@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useChat } from 'ai/react';
 import {
   MessageCircle,
   X,
@@ -24,6 +23,12 @@ import { cn } from '@/lib/utils';
 import type { Locale } from '@/lib/i18n/config';
 import { MessageContent } from './MessageContent';
 
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 interface ChatWidgetProps {
   defaultOpen?: boolean;
   variant?: 'floating' | 'embedded';
@@ -39,27 +44,28 @@ export function ChatWidget({
   const locale = useLocale() as Locale;
   const [isOpen, setIsOpen] = useState(defaultOpen || variant === 'embedded');
   const [isExpanded, setIsExpanded] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [messageFeedback, setMessageFeedback] = useState<Record<string, 'positive' | 'negative'>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Use the AI SDK's useChat hook
-  const { messages, input, setInput, handleSubmit, isLoading, error } = useChat({
-    api: '/api/chat',
-    body: {
-      locale,
-    },
-    initialMessages: [
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content: t('welcomeMessage'),
-      },
-    ],
-  });
-
   // Suggestions based on locale
   const suggestions = t.raw('suggestions') as string[];
+
+  // Initialize with welcome message
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      setMessages([
+        {
+          id: 'welcome',
+          role: 'assistant',
+          content: t('welcomeMessage'),
+        },
+      ]);
+    }
+  }, [isOpen, messages.length, t]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -74,6 +80,88 @@ export function ChatWidget({
       inputRef.current.focus();
     }
   }, [isOpen]);
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      content: input.trim(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+          locale,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Chat request failed');
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantContent = '';
+
+      const assistantMessage: Message = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: '',
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('0:')) {
+              try {
+                const data = JSON.parse(line.slice(2));
+                if (data.type === 'text' && data.value) {
+                  assistantContent += data.value;
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantMessage.id ? { ...m, content: assistantContent } : m
+                    )
+                  );
+                }
+              } catch (e) {
+                // Ignore parse errors
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Chat error:', error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `error-${Date.now()}`,
+          role: 'assistant',
+          content: t('error'),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleFeedback = async (messageId: string, feedback: 'positive' | 'negative') => {
     setMessageFeedback((prev) => ({ ...prev, [messageId]: feedback }));
@@ -97,8 +185,7 @@ export function ChatWidget({
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
-    handleSubmit(e);
+    handleSend();
   };
 
   // Embedded variant - always visible, no toggle
@@ -176,35 +263,36 @@ export function ChatWidget({
                   {message.role === 'assistant' ? (
                     <>
                       <MessageContent content={message.content} />
-                      {/* Feedback buttons */}
-                      <div className="mt-3 flex gap-2 border-t pt-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={cn(
-                            'h-7 gap-1.5',
-                            messageFeedback[message.id] === 'positive' &&
-                              'text-green-600 bg-green-50 hover:bg-green-100'
-                          )}
-                          onClick={() => handleFeedback(message.id, 'positive')}
-                        >
-                          <ThumbsUp className="h-3 w-3" />
-                          <span className="text-xs">{t('helpful')}</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={cn(
-                            'h-7 gap-1.5',
-                            messageFeedback[message.id] === 'negative' &&
-                              'text-red-600 bg-red-50 hover:bg-red-100'
-                          )}
-                          onClick={() => handleFeedback(message.id, 'negative')}
-                        >
-                          <ThumbsDown className="h-3 w-3" />
-                          <span className="text-xs">{t('notHelpful')}</span>
-                        </Button>
-                      </div>
+                      {message.content && (
+                        <div className="mt-3 flex gap-2 border-t pt-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                              'h-7 gap-1.5',
+                              messageFeedback[message.id] === 'positive' &&
+                                'text-green-600 bg-green-50 hover:bg-green-100'
+                            )}
+                            onClick={() => handleFeedback(message.id, 'positive')}
+                          >
+                            <ThumbsUp className="h-3 w-3" />
+                            <span className="text-xs">{t('helpful')}</span>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                              'h-7 gap-1.5',
+                              messageFeedback[message.id] === 'negative' &&
+                                'text-red-600 bg-red-50 hover:bg-red-100'
+                            )}
+                            onClick={() => handleFeedback(message.id, 'negative')}
+                          >
+                            <ThumbsDown className="h-3 w-3" />
+                            <span className="text-xs">{t('notHelpful')}</span>
+                          </Button>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <p className="whitespace-pre-wrap">{message.content}</p>
@@ -227,17 +315,6 @@ export function ChatWidget({
                 <div className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm text-muted-foreground">{t('typing')}</span>
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <div className="flex gap-3">
-                <div className="rounded-full bg-destructive/10 p-2 h-8 w-8 flex-shrink-0">
-                  <Bot className="h-4 w-4 text-destructive" />
-                </div>
-                <div className="rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                  {t('error')}
                 </div>
               </div>
             )}
@@ -383,35 +460,36 @@ export function ChatWidget({
                       {message.role === 'assistant' ? (
                         <>
                           <MessageContent content={message.content} />
-                          {/* Feedback buttons */}
-                          <div className="mt-3 flex gap-2 border-t pt-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className={cn(
-                                'h-7 gap-1.5',
-                                messageFeedback[message.id] === 'positive' &&
-                                  'text-green-600 bg-green-50 hover:bg-green-100'
-                              )}
-                              onClick={() => handleFeedback(message.id, 'positive')}
-                            >
-                              <ThumbsUp className="h-3 w-3" />
-                              <span className="text-xs">{t('helpful')}</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className={cn(
-                                'h-7 gap-1.5',
-                                messageFeedback[message.id] === 'negative' &&
-                                  'text-red-600 bg-red-50 hover:bg-red-100'
-                              )}
-                              onClick={() => handleFeedback(message.id, 'negative')}
-                            >
-                              <ThumbsDown className="h-3 w-3" />
-                              <span className="text-xs">{t('notHelpful')}</span>
-                            </Button>
-                          </div>
+                          {message.content && (
+                            <div className="mt-3 flex gap-2 border-t pt-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className={cn(
+                                  'h-7 gap-1.5',
+                                  messageFeedback[message.id] === 'positive' &&
+                                    'text-green-600 bg-green-50 hover:bg-green-100'
+                                )}
+                                onClick={() => handleFeedback(message.id, 'positive')}
+                              >
+                                <ThumbsUp className="h-3 w-3" />
+                                <span className="text-xs">{t('helpful')}</span>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className={cn(
+                                  'h-7 gap-1.5',
+                                  messageFeedback[message.id] === 'negative' &&
+                                    'text-red-600 bg-red-50 hover:bg-red-100'
+                                )}
+                                onClick={() => handleFeedback(message.id, 'negative')}
+                              >
+                                <ThumbsDown className="h-3 w-3" />
+                                <span className="text-xs">{t('notHelpful')}</span>
+                              </Button>
+                            </div>
+                          )}
                         </>
                       ) : (
                         <p className="whitespace-pre-wrap">{message.content}</p>
@@ -434,17 +512,6 @@ export function ChatWidget({
                     <div className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span className="text-sm text-muted-foreground">{t('typing')}</span>
-                    </div>
-                  </div>
-                )}
-
-                {error && (
-                  <div className="flex gap-3">
-                    <div className="rounded-full bg-destructive/10 p-2 h-8 w-8 flex-shrink-0">
-                      <Bot className="h-4 w-4 text-destructive" />
-                    </div>
-                    <div className="rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                      {t('error')}
                     </div>
                   </div>
                 )}
