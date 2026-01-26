@@ -1,4 +1,4 @@
-import { streamText, tool, stepCountIs, convertToModelMessages, UIMessage } from 'ai';
+import { streamText, tool, convertToCoreMessages, CoreMessage } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
@@ -302,7 +302,7 @@ const searchInterpretersTool = tool({
 
 export async function POST(req: Request) {
   try {
-    const { messages, locale = 'en' }: { messages: UIMessage[]; locale?: string } = await req.json();
+    const { messages, locale = 'en' }: { messages: CoreMessage[]; locale?: string } = await req.json();
 
     // Check for API key
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -322,17 +322,17 @@ export async function POST(req: Request) {
     const result = streamText({
       model: anthropic('claude-sonnet-4-20250514'),
       system: systemPromptWithContext,
-      messages: await convertToModelMessages(messages),
+      messages: convertToCoreMessages(messages),
       tools: {
         searchHospitals: searchHospitalsTool,
         getProcedureInfo: getProcedureInfoTool,
         createInquiry: createInquiryTool,
         searchInterpreters: searchInterpretersTool,
       },
-      stopWhen: stepCountIs(5),
+      maxSteps: 5,
     });
 
-    return result.toUIMessageStreamResponse();
+    return result.toDataStreamResponse();
   } catch (error) {
     console.error('Chat API error:', error);
     return new Response(
