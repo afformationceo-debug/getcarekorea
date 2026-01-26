@@ -5,6 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocale } from 'next-intl';
 import { Link } from '@/lib/i18n/navigation';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import {
   ArrowLeft,
   Clock,
@@ -503,31 +507,28 @@ function calculateReadingTime(content: string): number {
   return Math.ceil(words / wordsPerMinute);
 }
 
-// Extract headings for table of contents
+// Extract headings for table of contents (from markdown format)
 function extractHeadings(content: string): Array<{ id: string; text: string; level: number }> {
-  const headingRegex = /<h([2-3])[^>]*id="([^"]*)"[^>]*>([^<]*)<\/h\1>/g;
   const headings: Array<{ id: string; text: string; level: number }> = [];
-  let match;
+  const lines = content.split('\n');
 
-  while ((match = headingRegex.exec(content)) !== null) {
-    headings.push({
-      id: match[2],
-      text: match[3],
-      level: parseInt(match[1]),
-    });
-  }
+  for (const line of lines) {
+    // Match markdown headings: ## Heading or ### Heading
+    const match = line.match(/^(#{2,3})\s+(.+)$/);
+    if (match) {
+      const level = match[1].length;
+      const text = match[2].trim().replace(/[📋🎯✨💡📊🏥💰❓👨‍⚕️🌟]/g, '').trim(); // Remove emojis
+      const id = text.toLowerCase()
+        .replace(/[^a-z0-9\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+/g, '-')
+        .replace(/^-+|-+$/g, '');
 
-  // Also try to extract headings without IDs
-  const simpleHeadingRegex = /<h([2-3])[^>]*>([^<]+)<\/h\1>/g;
-  while ((match = simpleHeadingRegex.exec(content)) !== null) {
-    const text = match[2];
-    const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    if (!headings.some(h => h.text === text)) {
-      headings.push({
-        id,
-        text,
-        level: parseInt(match[1]),
-      });
+      if (text && level >= 2 && level <= 3) {
+        headings.push({
+          id,
+          text,
+          level,
+        });
+      }
     }
   }
 
@@ -685,21 +686,168 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
   const renderContentWithCTA = () => {
     if (!post.content) return null;
 
-    // Split content roughly in half (after a paragraph)
-    const paragraphs = post.content.split('</p>');
-    const midpoint = Math.floor(paragraphs.length / 2);
+    // Split markdown content roughly in half (by number of lines)
+    const lines = post.content.split('\n');
+    const midpoint = Math.floor(lines.length / 2);
 
-    if (paragraphs.length < 4) {
-      // If content is too short, just render it
-      return <div dangerouslySetInnerHTML={{ __html: post.content }} />;
+    // Find a good break point (after a heading or paragraph)
+    let breakPoint = midpoint;
+    for (let i = midpoint; i < Math.min(midpoint + 20, lines.length); i++) {
+      if (lines[i].match(/^#{2,3}\s/) || lines[i].trim() === '') {
+        breakPoint = i;
+        break;
+      }
     }
 
-    const firstHalf = paragraphs.slice(0, midpoint).join('</p>') + '</p>';
-    const secondHalf = paragraphs.slice(midpoint).join('</p>');
+    if (lines.length < 20) {
+      // If content is too short, just render it
+      return (
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw, rehypeSanitize]}
+          components={{
+            h2: ({ children, ...props }) => {
+              const text = String(children).replace(/[📋🎯✨💡📊🏥💰❓👨‍⚕️🌟]/g, '').trim();
+              const id = text.toLowerCase()
+                .replace(/[^a-z0-9\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+              return <h2 id={id} className="text-2xl font-bold mt-8 mb-4 scroll-mt-24" {...props}>{children}</h2>;
+            },
+            h3: ({ children, ...props }) => {
+              const text = String(children).replace(/[📋🎯✨💡📊🏥💰❓👨‍⚕️🌟]/g, '').trim();
+              const id = text.toLowerCase()
+                .replace(/[^a-z0-9\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+              return <h3 id={id} className="text-xl font-semibold mt-6 mb-3 scroll-mt-24" {...props}>{children}</h3>;
+            },
+            h4: ({ children, ...props }) => <h4 className="text-lg font-semibold mt-4 mb-2" {...props}>{children}</h4>,
+            p: ({ children, ...props }) => <p className="mb-4 leading-relaxed" {...props}>{children}</p>,
+            ul: ({ children, ...props }) => <ul className="list-disc list-inside mb-4 space-y-2" {...props}>{children}</ul>,
+            ol: ({ children, ...props }) => <ol className="list-decimal list-inside mb-4 space-y-2" {...props}>{children}</ol>,
+            li: ({ children, ...props }) => <li className="ml-4" {...props}>{children}</li>,
+            blockquote: ({ children, ...props }) => (
+              <blockquote className="border-l-4 border-primary pl-4 py-2 my-4 bg-primary/5 rounded-r" {...props}>
+                {children}
+              </blockquote>
+            ),
+            table: ({ children, ...props }) => (
+              <div className="overflow-x-auto my-6">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" {...props}>
+                  {children}
+                </table>
+              </div>
+            ),
+            thead: ({ children, ...props }) => <thead className="bg-gray-50 dark:bg-gray-800" {...props}>{children}</thead>,
+            tbody: ({ children, ...props }) => <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700" {...props}>{children}</tbody>,
+            th: ({ children, ...props }) => (
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" {...props}>
+                {children}
+              </th>
+            ),
+            td: ({ children, ...props }) => (
+              <td className="px-6 py-4 whitespace-nowrap text-sm" {...props}>
+                {children}
+              </td>
+            ),
+            strong: ({ children, ...props }) => <strong className="font-bold text-foreground" {...props}>{children}</strong>,
+            a: ({ children, href, ...props }) => (
+              <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props}>
+                {children}
+              </a>
+            ),
+            hr: () => <hr className="my-8 border-t border-gray-200 dark:border-gray-700" />,
+            code: ({ children, className, ...props }) => {
+              const isInline = !className;
+              if (isInline) {
+                return <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm" {...props}>{children}</code>;
+              }
+              return (
+                <code className="block bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto text-sm" {...props}>
+                  {children}
+                </code>
+              );
+            },
+          }}
+        >
+          {post.content}
+        </ReactMarkdown>
+      );
+    }
+
+    const firstHalf = lines.slice(0, breakPoint).join('\n');
+    const secondHalf = lines.slice(breakPoint).join('\n');
 
     return (
       <>
-        <div dangerouslySetInnerHTML={{ __html: firstHalf }} />
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw, rehypeSanitize]}
+          components={{
+            h2: ({ children, ...props }) => {
+              const text = String(children).replace(/[📋🎯✨💡📊🏥💰❓👨‍⚕️🌟]/g, '').trim();
+              const id = text.toLowerCase()
+                .replace(/[^a-z0-9\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+              return <h2 id={id} className="text-2xl font-bold mt-8 mb-4 scroll-mt-24" {...props}>{children}</h2>;
+            },
+            h3: ({ children, ...props }) => {
+              const text = String(children).replace(/[📋🎯✨💡📊🏥💰❓👨‍⚕️🌟]/g, '').trim();
+              const id = text.toLowerCase()
+                .replace(/[^a-z0-9\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+              return <h3 id={id} className="text-xl font-semibold mt-6 mb-3 scroll-mt-24" {...props}>{children}</h3>;
+            },
+            h4: ({ children, ...props }) => <h4 className="text-lg font-semibold mt-4 mb-2" {...props}>{children}</h4>,
+            p: ({ children, ...props }) => <p className="mb-4 leading-relaxed" {...props}>{children}</p>,
+            ul: ({ children, ...props }) => <ul className="list-disc list-inside mb-4 space-y-2" {...props}>{children}</ul>,
+            ol: ({ children, ...props }) => <ol className="list-decimal list-inside mb-4 space-y-2" {...props}>{children}</ol>,
+            li: ({ children, ...props }) => <li className="ml-4" {...props}>{children}</li>,
+            blockquote: ({ children, ...props }) => (
+              <blockquote className="border-l-4 border-primary pl-4 py-2 my-4 bg-primary/5 rounded-r" {...props}>
+                {children}
+              </blockquote>
+            ),
+            table: ({ children, ...props }) => (
+              <div className="overflow-x-auto my-6">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" {...props}>
+                  {children}
+                </table>
+              </div>
+            ),
+            thead: ({ children, ...props }) => <thead className="bg-gray-50 dark:bg-gray-800" {...props}>{children}</thead>,
+            tbody: ({ children, ...props }) => <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700" {...props}>{children}</tbody>,
+            th: ({ children, ...props }) => (
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" {...props}>
+                {children}
+              </th>
+            ),
+            td: ({ children, ...props }) => (
+              <td className="px-6 py-4 whitespace-nowrap text-sm" {...props}>
+                {children}
+              </td>
+            ),
+            strong: ({ children, ...props }) => <strong className="font-bold text-foreground" {...props}>{children}</strong>,
+            a: ({ children, href, ...props }) => (
+              <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props}>
+                {children}
+              </a>
+            ),
+            hr: () => <hr className="my-8 border-t border-gray-200 dark:border-gray-700" />,
+            code: ({ children, className, ...props }) => {
+              const isInline = !className;
+              if (isInline) {
+                return <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm" {...props}>{children}</code>;
+              }
+              return (
+                <code className="block bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto text-sm" {...props}>
+                  {children}
+                </code>
+              );
+            },
+          }}
+        >
+          {firstHalf}
+        </ReactMarkdown>
 
         {/* In-content CTA */}
         <motion.div
@@ -725,7 +873,75 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
           </div>
         </motion.div>
 
-        <div dangerouslySetInnerHTML={{ __html: secondHalf }} />
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw, rehypeSanitize]}
+          components={{
+            h2: ({ children, ...props }) => {
+              const text = String(children).replace(/[📋🎯✨💡📊🏥💰❓👨‍⚕️🌟]/g, '').trim();
+              const id = text.toLowerCase()
+                .replace(/[^a-z0-9\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+              return <h2 id={id} className="text-2xl font-bold mt-8 mb-4 scroll-mt-24" {...props}>{children}</h2>;
+            },
+            h3: ({ children, ...props }) => {
+              const text = String(children).replace(/[📋🎯✨💡📊🏥💰❓👨‍⚕️🌟]/g, '').trim();
+              const id = text.toLowerCase()
+                .replace(/[^a-z0-9\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+              return <h3 id={id} className="text-xl font-semibold mt-6 mb-3 scroll-mt-24" {...props}>{children}</h3>;
+            },
+            h4: ({ children, ...props }) => <h4 className="text-lg font-semibold mt-4 mb-2" {...props}>{children}</h4>,
+            p: ({ children, ...props }) => <p className="mb-4 leading-relaxed" {...props}>{children}</p>,
+            ul: ({ children, ...props }) => <ul className="list-disc list-inside mb-4 space-y-2" {...props}>{children}</ul>,
+            ol: ({ children, ...props }) => <ol className="list-decimal list-inside mb-4 space-y-2" {...props}>{children}</ol>,
+            li: ({ children, ...props }) => <li className="ml-4" {...props}>{children}</li>,
+            blockquote: ({ children, ...props }) => (
+              <blockquote className="border-l-4 border-primary pl-4 py-2 my-4 bg-primary/5 rounded-r" {...props}>
+                {children}
+              </blockquote>
+            ),
+            table: ({ children, ...props }) => (
+              <div className="overflow-x-auto my-6">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700" {...props}>
+                  {children}
+                </table>
+              </div>
+            ),
+            thead: ({ children, ...props }) => <thead className="bg-gray-50 dark:bg-gray-800" {...props}>{children}</thead>,
+            tbody: ({ children, ...props }) => <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700" {...props}>{children}</tbody>,
+            th: ({ children, ...props }) => (
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" {...props}>
+                {children}
+              </th>
+            ),
+            td: ({ children, ...props }) => (
+              <td className="px-6 py-4 whitespace-nowrap text-sm" {...props}>
+                {children}
+              </td>
+            ),
+            strong: ({ children, ...props }) => <strong className="font-bold text-foreground" {...props}>{children}</strong>,
+            a: ({ children, href, ...props }) => (
+              <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props}>
+                {children}
+              </a>
+            ),
+            hr: () => <hr className="my-8 border-t border-gray-200 dark:border-gray-700" />,
+            code: ({ children, className, ...props }) => {
+              const isInline = !className;
+              if (isInline) {
+                return <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm" {...props}>{children}</code>;
+              }
+              return (
+                <code className="block bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto text-sm" {...props}>
+                  {children}
+                </code>
+              );
+            },
+          }}
+        >
+          {secondHalf}
+        </ReactMarkdown>
       </>
     );
   };
