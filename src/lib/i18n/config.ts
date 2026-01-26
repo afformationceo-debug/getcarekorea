@@ -52,7 +52,7 @@ export const localeCTAConfig: Record<Locale, CTAConfigExtended> = {
     displayName: 'WhatsApp',
     icon: 'whatsapp',
     urlPrefix: 'https://wa.me/',
-    contactId: '821012345678', // TODO: Update with actual number
+    contactId: '821086081915', // TODO: Update with actual number
     defaultMessage: 'Hi, I\'m interested in medical tourism services in Korea.',
   },
   ko: {
@@ -100,7 +100,7 @@ export const localeCTAConfig: Record<Locale, CTAConfigExtended> = {
     displayName: 'WhatsApp',
     icon: 'whatsapp',
     urlPrefix: 'https://wa.me/',
-    contactId: '821012345678', // TODO: Update with actual number
+    contactId: '821086081915', // TODO: Update with actual number
     defaultMessage: 'Сайн байна уу, би Солонгосын эмнэлгийн аялал жуулчлалын үйлчилгээг сонирхож байна.',
   },
   ru: {
@@ -108,7 +108,7 @@ export const localeCTAConfig: Record<Locale, CTAConfigExtended> = {
     displayName: 'WhatsApp',
     icon: 'whatsapp',
     urlPrefix: 'https://wa.me/',
-    contactId: '821012345678', // TODO: Update with actual number
+    contactId: '821086081915', // TODO: Update with actual number
     defaultMessage: 'Здравствуйте, я интересуюсь услугами медицинского туризма в Корее.',
     alternativePlatform: 'telegram',
   },

@@ -155,16 +155,16 @@ function getDefaultAuthorBio(locale: string): string {
   return DEFAULT_AUTHOR.bio_en;
 }
 
-// Messenger configuration by locale
+// Messenger configuration by locale - All using WhatsApp
 const MESSENGER_CONFIG: Record<string, { messenger: string; icon: string; link: string; label: string }> = {
-  'en': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821012345678', label: 'Get Free Consultation via WhatsApp' },
-  'ru': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821012345678', label: 'Бесплатная консультация через WhatsApp' },
-  'mn': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821012345678', label: 'WhatsApp-аар үнэгүй зөвлөгөө авах' },
-  'zh-TW': { messenger: 'line', icon: '💬', link: 'https://line.me/ti/p/@getcarekorea', label: 'LINE免費諮詢' },
-  'zh-CN': { messenger: 'line', icon: '💬', link: 'https://line.me/ti/p/@getcarekorea', label: 'LINE免费咨询' },
-  'ja': { messenger: 'line', icon: '💬', link: 'https://line.me/ti/p/@getcarekorea', label: 'LINEで無料相談' },
-  'th': { messenger: 'line', icon: '💬', link: 'https://line.me/ti/p/@getcarekorea', label: 'ปรึกษาฟรีผ่าน LINE' },
-  'ko': { messenger: 'kakao', icon: '💬', link: 'https://pf.kakao.com/_getcarekorea', label: '카카오톡 무료상담' },
+  'en': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'Get Free Consultation via WhatsApp' },
+  'ru': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'Бесплатная консультация через WhatsApp' },
+  'mn': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'WhatsApp-аар үнэгүй зөвлөгөө авах' },
+  'zh-TW': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'WhatsApp免費諮詢' },
+  'zh-CN': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'WhatsApp免费咨询' },
+  'ja': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'WhatsAppで無料相談' },
+  'th': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'ปรึกษาฟรีผ่าน WhatsApp' },
+  'ko': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'WhatsApp 무료상담' },
 };
 
 // Get localized author name
