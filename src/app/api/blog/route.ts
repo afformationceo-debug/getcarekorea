@@ -89,6 +89,10 @@ export async function GET(request: NextRequest) {
       .eq('status', 'published')
       .not('published_at', 'is', null);
 
+    // CRITICAL: Filter by target_locale to show only locale-specific posts
+    // This ensures US keywords show only in EN, Taiwan keywords only in zh-TW, etc.
+    query = query.eq('target_locale', locale);
+
     // Apply filters
     if (category) {
       query = query.eq('category', category);
