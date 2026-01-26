@@ -817,5 +817,10 @@
   },
   "chatWidget": {
     "poweredBy": "Работает на Claude AI"
+  },
+  "messenger": {
+    "chatOn": "Чат в",
+    "chatNow": "Написать",
+    "instantResponse": "⚡ Мгновенный ответ • Доступно 24/7"
   }
 }

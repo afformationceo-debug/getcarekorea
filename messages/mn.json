@@ -817,5 +817,10 @@
   },
   "chatWidget": {
     "poweredBy": "Claude AI-аар ажилладаг"
+  },
+  "messenger": {
+    "chatOn": "Чатаар холбогдох",
+    "chatNow": "Чатлах",
+    "instantResponse": "⚡ Шуурхай хариулт • 24/7 үйлчилгээ"
   }
 }

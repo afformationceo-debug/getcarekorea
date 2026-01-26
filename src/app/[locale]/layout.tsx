@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ChatWidget } from '@/components/chat/ChatWidget';
+import { MessengerCTA } from '@/components/cta/MessengerCTA';
 import { locales, type Locale } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
@@ -37,6 +38,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         <main className="flex-1">{children}</main>
         <Footer />
         <ChatWidget />
+        <MessengerCTA variant="floating" size="lg" />
         <Toaster />
       </div>
     </NextIntlClientProvider>

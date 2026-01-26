@@ -817,5 +817,10 @@
   },
   "chatWidget": {
     "poweredBy": "Claude AIを使用"
+  },
+  "messenger": {
+    "chatOn": "チャットで相談",
+    "chatNow": "今すぐチャット",
+    "instantResponse": "⚡ 即時対応 • 24時間対応"
   }
 }

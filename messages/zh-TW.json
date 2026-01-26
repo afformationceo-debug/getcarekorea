@@ -817,5 +817,10 @@
   },
   "chatWidget": {
     "poweredBy": "由 Claude AI 提供"
+  },
+  "messenger": {
+    "chatOn": "立即諮詢",
+    "chatNow": "馬上聊",
+    "instantResponse": "⚡ 即時回覆 • 24小時服務"
   }
 }

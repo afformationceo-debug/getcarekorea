@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { HeroChatWidget } from '@/components/chat/ChatWidget';
+import { MessengerCTA } from '@/components/cta/MessengerCTA';
 
 export function HeroSection() {
   const t = useTranslations('hero');
@@ -131,17 +132,22 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
-              className="flex flex-wrap gap-4"
+              className="space-y-4"
             >
-              <Button size="lg" className="gap-2 rounded-full px-8 shadow-lg shadow-primary/30" asChild>
-                <Link href="/inquiry">
-                  {tLanding('hero.getConsultation')}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
-                <Link href="/hospitals">{tLanding('hero.browseHospitals')}</Link>
-              </Button>
+              <div className="flex flex-wrap gap-4">
+                <Button size="lg" className="gap-2 rounded-full px-8 shadow-lg shadow-primary/30" asChild>
+                  <Link href="/inquiry">
+                    {tLanding('hero.getConsultation')}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
+                  <Link href="/hospitals">{tLanding('hero.browseHospitals')}</Link>
+                </Button>
+              </div>
+
+              {/* Messenger CTA */}
+              <MessengerCTA variant="inline" size="lg" />
             </motion.div>
 
             {/* Trust badges */}

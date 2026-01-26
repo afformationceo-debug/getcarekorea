@@ -817,5 +817,10 @@
   },
   "chatWidget": {
     "poweredBy": "Powered by Claude AI"
+  },
+  "messenger": {
+    "chatOn": "Chat on",
+    "chatNow": "Chat Now",
+    "instantResponse": "⚡ Instant response • Available 24/7"
   }
 }
