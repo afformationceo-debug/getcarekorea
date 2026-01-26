@@ -324,7 +324,7 @@ export async function POST(req: Request) {
     const systemPromptWithContext = `${SYSTEM_PROMPT}\n\n${localeInstructions}`;
 
     // Stream the response
-    const result = streamText({
+    const result = await streamText({
       model: anthropic('claude-sonnet-4-20250514'),
       system: systemPromptWithContext,
       messages,
