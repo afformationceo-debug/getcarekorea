@@ -1,8 +1,13 @@
-import { streamText, tool, convertToCoreMessages, CoreMessage } from 'ai';
+import { streamText, tool } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import type { Locale } from '@/lib/i18n/config';
+
+interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
 
 // Note: Removed edge runtime for Supabase server client compatibility
 
@@ -302,7 +307,7 @@ const searchInterpretersTool = tool({
 
 export async function POST(req: Request) {
   try {
-    const { messages, locale = 'en' }: { messages: CoreMessage[]; locale?: string } = await req.json();
+    const { messages, locale = 'en' }: { messages: Message[]; locale?: string } = await req.json();
 
     // Check for API key
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -322,7 +327,7 @@ export async function POST(req: Request) {
     const result = streamText({
       model: anthropic('claude-sonnet-4-20250514'),
       system: systemPromptWithContext,
-      messages: convertToCoreMessages(messages),
+      messages,
       tools: {
         searchHospitals: searchHospitalsTool,
         getProcedureInfo: getProcedureInfoTool,
