@@ -253,7 +253,8 @@
       "helpful": "เป็นประโยชน์ไหม?",
       "yes": "ใช่",
       "no": "ไม่"
-    }
+    },
+    "poweredBy": "ขับเคลื่อนโดย Claude AI"
   },
   "inquiry": {
     "title": "ปรึกษาฟรี",
@@ -318,6 +319,16 @@
       "orthopedics": "กระดูกและข้อ",
       "fertility": "การรักษาภาวะมีบุตรยาก",
       "other": "อื่นๆ"
+    },
+    "badge": "ปรึกษาฟรี",
+    "cta": {
+      "primary": "ส่งคำถาม",
+      "secondary": "แชท"
+    },
+    "contact": {
+      "phone": "+82-10-1234-5678",
+      "email": "support@getcarekorea.com",
+      "support": "รองรับ 24/7"
     }
   },
   "reviews": {
@@ -563,8 +574,8 @@
       "title": "เป็นที่รักของผู้ป่วยทั่วโลก",
       "subtitle": "เข้าร่วมกับผู้ป่วยที่พึงพอใจหลายพันคนที่เปลี่ยนชีวิตผ่าน GetCareKorea",
       "stats": {
-        "happyPatients": "ผู้ป่วยที่พึงพอใจ",
-        "avgRating": "คะแนนเฉลี่ย",
+        "patients": "ผู้ป่วยที่พึงพอใจ",
+        "rating": "คะแนนเฉลี่ย",
         "countries": "ประเทศ",
         "satisfaction": "อัตราความพึงพอใจ"
       }
@@ -673,6 +684,15 @@
       "chatWithAI": "แชทกับ AI",
       "phone": "+82-2-XXX-XXXX",
       "support247": "สนับสนุน 24 ชั่วโมง"
+    },
+    "featuredInterpreters": {
+      "badge": "ล่ามมืออาชีพ",
+      "title": "ล่ามทางการแพทย์พร้อมช่วยเหลือ",
+      "subtitle": "ล่ามที่ผ่านการรับรอง 7+ ภาษา",
+      "viewAll": "ดูล่ามทั้งหมด",
+      "available": "พร้อมให้บริการ",
+      "languages": "ภาษา",
+      "perDay": "/วัน"
     }
   },
   "about": {

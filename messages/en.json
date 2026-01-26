@@ -319,6 +319,16 @@
       "orthopedics": "Orthopedics",
       "fertility": "Fertility",
       "other": "Other"
+    },
+    "badge": "Free Consultation",
+    "cta": {
+      "primary": "Send Inquiry",
+      "secondary": "Chat with Us"
+    },
+    "contact": {
+      "phone": "+82-10-1234-5678",
+      "email": "support@getcarekorea.com",
+      "support": "24/7 Support Available"
     }
   },
   "reviews": {
@@ -564,8 +574,8 @@
       "title": "Loved by Patients Worldwide",
       "subtitle": "Join thousands of satisfied patients who transformed their lives through GetCareKorea",
       "stats": {
-        "happyPatients": "Happy Patients",
-        "avgRating": "Average Rating",
+        "patients": "Happy Patients",
+        "rating": "Average Rating",
         "countries": "Countries",
         "satisfaction": "Satisfaction Rate"
       }
@@ -674,6 +684,15 @@
       "chatWithAI": "Chat with AI",
       "phone": "+82-2-XXX-XXXX",
       "support247": "24/7 Support Available"
+    },
+    "featuredInterpreters": {
+      "badge": "Professional Interpreters",
+      "title": "Medical Interpreters Ready to Help",
+      "subtitle": "Certified interpreters available in 7+ languages for your medical journey",
+      "viewAll": "View All Interpreters",
+      "available": "Available Now",
+      "languages": "Languages",
+      "perDay": "/day"
     }
   },
   "about": {

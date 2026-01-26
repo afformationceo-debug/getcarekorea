@@ -107,7 +107,7 @@ const HowItWorksSection = dynamic(() => import('@/components/landing/HowItWorksS
 const TestimonialsSection = dynamic(() => import('@/components/landing/TestimonialsSection').then(mod => ({ default: mod.TestimonialsSection })), {
   loading: () => <div className="h-96 animate-pulse bg-gray-50" />,
 });
-const LocalInfoSection = dynamic(() => import('@/components/landing/LocalInfoSection').then(mod => ({ default: mod.LocalInfoSection })), {
+const FeaturedInterpretersSection = dynamic(() => import('@/components/landing/FeaturedInterpretersSection').then(mod => ({ default: mod.FeaturedInterpretersSection })), {
   loading: () => <div className="h-96 animate-pulse bg-gray-100" />,
 });
 const CTASection = dynamic(() => import('@/components/landing/CTASection').then(mod => ({ default: mod.CTASection })), {
@@ -171,7 +171,7 @@ export default async function HomePage({ params }: PageProps) {
       </Suspense>
 
       <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
-        <LocalInfoSection />
+        <FeaturedInterpretersSection />
       </Suspense>
 
       <Suspense fallback={<div className="h-64 animate-pulse bg-violet-100" />}>

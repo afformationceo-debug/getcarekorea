@@ -253,7 +253,8 @@
       "helpful": "役に立ちましたか？",
       "yes": "はい",
       "no": "いいえ"
-    }
+    },
+    "poweredBy": "Claude AIを搭載"
   },
   "inquiry": {
     "title": "無料相談",
@@ -318,6 +319,16 @@
       "orthopedics": "整形外科",
       "fertility": "不妊治療",
       "other": "その他"
+    },
+    "badge": "無料相談",
+    "cta": {
+      "primary": "お問い合わせ",
+      "secondary": "チャット"
+    },
+    "contact": {
+      "phone": "+82-10-1234-5678",
+      "email": "support@getcarekorea.com",
+      "support": "24時間サポート対応"
     }
   },
   "reviews": {
@@ -563,8 +574,8 @@
       "title": "世界中の患者様に愛されています",
       "subtitle": "GetCareKoreaを通じて人生を変えた何千人もの満足した患者様と一緒に",
       "stats": {
-        "happyPatients": "満足した患者",
-        "avgRating": "平均評価",
+        "patients": "満足した患者",
+        "rating": "平均評価",
         "countries": "国",
         "satisfaction": "満足度"
       }
@@ -673,6 +684,15 @@
       "chatWithAI": "AIとチャット",
       "phone": "+82-2-XXX-XXXX",
       "support247": "24時間相談対応"
+    },
+    "featuredInterpreters": {
+      "badge": "プロ通訳者",
+      "title": "医療通訳者がお手伝いします",
+      "subtitle": "7つ以上の言語で認定通訳者が対応",
+      "viewAll": "すべての通訳者を見る",
+      "available": "対応可能",
+      "languages": "言語",
+      "perDay": "/日"
     }
   },
   "about": {

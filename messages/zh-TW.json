@@ -253,7 +253,8 @@
       "helpful": "這有幫助嗎？",
       "yes": "有",
       "no": "沒有"
-    }
+    },
+    "poweredBy": "由 Claude AI 提供支持"
   },
   "inquiry": {
     "title": "免費諮詢",
@@ -318,6 +319,16 @@
       "orthopedics": "骨科",
       "fertility": "不孕症治療",
       "other": "其他"
+    },
+    "badge": "免費諮詢",
+    "cta": {
+      "primary": "發送詢問",
+      "secondary": "聊天"
+    },
+    "contact": {
+      "phone": "+82-10-1234-5678",
+      "email": "support@getcarekorea.com",
+      "support": "24/7 支援"
     }
   },
   "reviews": {
@@ -563,8 +574,8 @@
       "title": "深受全球患者喜愛",
       "subtitle": "加入通過GetCareKorea改變生活的數千名滿意患者",
       "stats": {
-        "happyPatients": "滿意患者",
-        "avgRating": "平均評分",
+        "patients": "滿意患者",
+        "rating": "平均評分",
         "countries": "國家",
         "satisfaction": "滿意度"
       }
@@ -673,6 +684,15 @@
       "chatWithAI": "與AI聊天",
       "phone": "+82-2-XXX-XXXX",
       "support247": "24小時諮詢服務"
+    },
+    "featuredInterpreters": {
+      "badge": "專業口譯員",
+      "title": "醫療口譯員隨時協助",
+      "subtitle": "7種以上語言的認證口譯員",
+      "viewAll": "查看所有口譯員",
+      "available": "現在可用",
+      "languages": "語言",
+      "perDay": "/天"
     }
   },
   "about": {
