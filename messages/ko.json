@@ -486,6 +486,10 @@
       "subtitle": "수천 명의 환자가 왜 병원 직접 예약 대신 GetCareKorea를 선택하는지 확인하세요",
       "getCareKorea": "GetCareKorea",
       "direct": "직접",
+      "tableHeader": {
+        "feature": "기능",
+        "direct": "직접 예약"
+      },
       "comparison": {
         "interpreter": "전문 의료 통역사",
         "priceMatch": "최저가 보장",
@@ -512,6 +516,14 @@
         "support": {
           "title": "24시간 지원",
           "description": "언제든지 도움 드립니다"
+        },
+        "airportPickup": {
+          "title": "공항 픽업",
+          "description": "무료 공항 픽업 서비스"
+        },
+        "accommodation": {
+          "title": "숙소",
+          "description": "호텔 예약 지원 포함"
         }
       }
     },
@@ -574,10 +586,12 @@
     },
     "pricing": {
       "badge": "최대 70% 절약",
-      "procedure": "시술",
-      "korea": "한국",
-      "usa": "미국",
-      "savings": "절약",
+      "tableHeader": {
+        "procedure": "시술",
+        "korea": "한국",
+        "usa": "미국",
+        "savings": "절약"
+      },
       "bestPriceGuarantee": "최저가 보장",
       "priceMatchDesc": "더 낮은 가격 매칭 + 10% 추가 할인",
       "foundBetter": "다른 곳에서 더 저렴한 가격을 찾으셨나요?",
@@ -590,7 +604,14 @@
         "hairTransplant": "모발 이식",
         "dentalImplant": "치과 임플란트",
         "lasik": "라식",
-        "healthCheckup": "건강검진"
+        "healthCheckup": "건강검진",
+        "doubleEyelid": "쌍꺼풀 수술",
+        "facelift": "안면 리프팅"
+      },
+      "guarantee": {
+        "title": "최저가 보장",
+        "subtitle": "모든 가격 매칭",
+        "description": "더 저렴한 가격을 찾으셨나요? 10% 추가 할인해 드립니다"
       }
     },
     "featuredHospitals": {
@@ -608,22 +629,42 @@
         "restaurants": {
           "title": "회복 친화적 식당",
           "description": "상위 클리닉 근처 연식 식당 엄선 목록",
-          "items": ["죽 카페", "국밥집", "주스바", "건강 카페"]
+          "items": [
+            "죽 카페",
+            "국밥집",
+            "주스바",
+            "건강 카페"
+          ]
         },
         "accommodation": {
           "title": "의료 전용 호텔",
           "description": "의료 관광 패키지가 있는 파트너 호텔",
-          "items": ["회복 스위트", "병원 근처", "간호사 콜", "식사 서비스"]
+          "items": [
+            "회복 스위트",
+            "병원 근처",
+            "간호사 콜",
+            "식사 서비스"
+          ]
         },
         "transport": {
           "title": "교통편",
           "description": "병원과 호텔 간 원활한 이동",
-          "items": ["공항 픽업", "병원 셔틀", "전용 차량", "휠체어 이용"]
+          "items": [
+            "공항 픽업",
+            "병원 셔틀",
+            "전용 차량",
+            "휠체어 이용"
+          ]
         },
         "pharmacy": {
           "title": "약국 및 용품",
           "description": "24시간 약국 및 의료용품점",
-          "items": ["24시간 약국", "의료 용품", "처방 도움", "배송"]
+          "items": [
+            "24시간 약국",
+            "의료 용품",
+            "처방 도움",
+            "배송"
+          ]
         }
       }
     },

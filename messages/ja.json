@@ -511,7 +511,19 @@
         "support": {
           "title": "24時間サポート",
           "description": "いつでもお手伝いします"
+        },
+        "airportPickup": {
+          "title": "空港送迎",
+          "description": "無料空港送迎サービス"
+        },
+        "accommodation": {
+          "title": "宿泊施設",
+          "description": "ホテル予約サポート込み"
         }
+      },
+      "tableHeader": {
+        "feature": "機能",
+        "direct": "直接予約"
       }
     },
     "howItWorks": {
@@ -573,10 +585,12 @@
     },
     "pricing": {
       "badge": "最大70%節約",
-      "procedure": "施術",
-      "korea": "韓国",
-      "usa": "アメリカ",
-      "savings": "節約額",
+      "tableHeader": {
+        "procedure": "施術",
+        "korea": "韓国",
+        "usa": "アメリカ",
+        "savings": "節約"
+      },
       "bestPriceGuarantee": "最安値保証",
       "priceMatchDesc": "より低い価格にマッチング + 10%追加割引",
       "foundBetter": "他でより安い価格を見つけましたか？",
@@ -589,7 +603,14 @@
         "hairTransplant": "植毛",
         "dentalImplant": "歯科インプラント",
         "lasik": "レーシック",
-        "healthCheckup": "健康診断"
+        "healthCheckup": "健康診断",
+        "doubleEyelid": "二重まぶた",
+        "facelift": "フェイスリフト"
+      },
+      "guarantee": {
+        "title": "最安値保証",
+        "subtitle": "すべての価格に対応",
+        "description": "より安い価格を見つけましたか？10%追加割引します"
       }
     },
     "featuredHospitals": {
@@ -607,22 +628,42 @@
         "restaurants": {
           "title": "回復に優しいレストラン",
           "description": "トップクリニック近くの柔らかい食事レストラン厳選リスト",
-          "items": ["おかゆカフェ", "スープレストラン", "ジュースバー", "ヘルシーカフェ"]
+          "items": [
+            "おかゆカフェ",
+            "スープレストラン",
+            "ジュースバー",
+            "ヘルシーカフェ"
+          ]
         },
         "accommodation": {
           "title": "医療専用ホテル",
           "description": "医療ツーリズムパッケージのある提携ホテル",
-          "items": ["回復スイート", "病院近く", "ナースコール", "食事サービス"]
+          "items": [
+            "回復スイート",
+            "病院近く",
+            "ナースコール",
+            "食事サービス"
+          ]
         },
         "transport": {
           "title": "交通",
           "description": "病院とホテル間のスムーズな移動",
-          "items": ["空港送迎", "病院シャトル", "プライベートカー", "車椅子対応"]
+          "items": [
+            "空港送迎",
+            "病院シャトル",
+            "プライベートカー",
+            "車椅子対応"
+          ]
         },
         "pharmacy": {
           "title": "薬局・医療用品",
           "description": "24時間薬局と医療用品店",
-          "items": ["24時間薬局", "医療用品", "処方サポート", "配達"]
+          "items": [
+            "24時間薬局",
+            "医療用品",
+            "処方サポート",
+            "配達"
+          ]
         }
       }
     },

@@ -83,8 +83,8 @@ export function FreeInterpreterBanner() {
                 <div className="mt-6 flex flex-wrap justify-center gap-4 lg:justify-start">
                   {[
                     { icon: Languages, text: t('features.languages') },
-                    { icon: Clock, text: t('features.coverage') },
-                    { icon: Sparkles, text: t('features.certified') },
+                    { icon: Clock, text: t('features.support') },
+                    { icon: Sparkles, text: t('features.medical') },
                   ].map((feature, index) => (
                     <div
                       key={index}

@@ -48,7 +48,8 @@ const hospitals = [
 ];
 
 export function FeaturedHospitalsSection() {
-  const t = useTranslations('hospitals');
+  const t = useTranslations('landing.featuredHospitals');
+  const tHospitals = useTranslations('hospitals');
 
   return (
     <section className="relative overflow-hidden bg-muted/30 py-20 lg:py-28">
@@ -68,10 +69,10 @@ export function FeaturedHospitalsSection() {
               {t('badge')}
             </span>
             <h2 className="mb-4 text-3xl font-bold tracking-tight lg:text-5xl">
-              {t('title')}
+              {tHospitals('title')}
             </h2>
             <p className="max-w-xl text-lg text-muted-foreground">
-              {t('subtitle')}
+              {tHospitals('subtitle')}
             </p>
           </div>
           <Button size="lg" variant="outline" className="gap-2 rounded-full" asChild>

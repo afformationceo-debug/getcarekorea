@@ -30,13 +30,13 @@ export function WhyPlatformSection() {
 
   const comparisonData = [
     { feature: t('comparison.interpreter'), platform: true, direct: false, highlight: true },
-    { feature: t('comparison.bestPrice'), platform: true, direct: false, highlight: true },
-    { feature: t('comparison.support247'), platform: true, direct: false },
+    { feature: t('comparison.priceMatch'), platform: true, direct: false, highlight: true },
+    { feature: t('comparison.support'), platform: true, direct: false },
     { feature: t('comparison.airportPickup'), platform: true, direct: false },
     { feature: t('comparison.accommodation'), platform: true, direct: false },
-    { feature: t('comparison.followUp'), platform: true, direct: false },
-    { feature: t('comparison.verifiedReviews'), platform: true, direct: false },
-    { feature: t('comparison.communicationBarrier'), platform: false, direct: true, negative: true },
+    { feature: t('comparison.aftercare'), platform: true, direct: false },
+    { feature: t('comparison.verified'), platform: true, direct: false },
+    { feature: t('comparison.singleContact'), platform: false, direct: true, negative: true },
   ];
 
   const benefits = [

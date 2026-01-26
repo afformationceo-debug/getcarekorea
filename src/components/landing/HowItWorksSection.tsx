@@ -25,8 +25,8 @@ export function HowItWorksSection() {
 
   const steps = [
     { number: '01', icon: stepIcons[0], title: t('steps.consultation.title'), description: t('steps.consultation.description'), color: stepColors[0] },
-    { number: '02', icon: stepIcons[1], title: t('steps.book.title'), description: t('steps.book.description'), color: stepColors[1] },
-    { number: '03', icon: stepIcons[2], title: t('steps.arrive.title'), description: t('steps.arrive.description'), color: stepColors[2] },
+    { number: '02', icon: stepIcons[1], title: t('steps.matching.title'), description: t('steps.matching.description'), color: stepColors[1] },
+    { number: '03', icon: stepIcons[2], title: t('steps.travel.title'), description: t('steps.travel.description'), color: stepColors[2] },
     { number: '04', icon: stepIcons[3], title: t('steps.treatment.title'), description: t('steps.treatment.description'), color: stepColors[3] },
     { number: '05', icon: stepIcons[4], title: t('steps.recovery.title'), description: t('steps.recovery.description'), color: stepColors[4] },
   ];
@@ -77,7 +77,7 @@ export function HowItWorksSection() {
                 >
                   {/* Step number */}
                   <div className="absolute -top-3 left-4 rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
-                    {t('step')} {step.number}
+                    {t('stepLabel', { number: step.number })}
                   </div>
 
                   {/* Icon */}

@@ -486,6 +486,10 @@
       "subtitle": "See why thousands of patients choose GetCareKorea over booking directly with hospitals",
       "getCareKorea": "GetCareKorea",
       "direct": "Direct",
+      "tableHeader": {
+        "feature": "Feature",
+        "direct": "Direct Booking"
+      },
       "comparison": {
         "interpreter": "Professional Medical Interpreter",
         "priceMatch": "Best Price Guarantee",
@@ -512,6 +516,14 @@
         "support": {
           "title": "24/7 Support",
           "description": "Always here when you need us"
+        },
+        "airportPickup": {
+          "title": "Airport Pickup",
+          "description": "Complimentary airport transfer service"
+        },
+        "accommodation": {
+          "title": "Accommodation",
+          "description": "Hotel booking assistance included"
         }
       }
     },
@@ -574,10 +586,12 @@
     },
     "pricing": {
       "badge": "Save Up To 70%",
-      "procedure": "Procedure",
-      "korea": "Korea",
-      "usa": "USA",
-      "savings": "Savings",
+      "tableHeader": {
+        "procedure": "Procedure",
+        "korea": "Korea",
+        "usa": "USA",
+        "savings": "Savings"
+      },
       "bestPriceGuarantee": "Best Price Guarantee",
       "priceMatchDesc": "We match any lower price + 10% off",
       "foundBetter": "Found a better price elsewhere? We'll beat it by",
@@ -590,7 +604,14 @@
         "hairTransplant": "Hair Transplant",
         "dentalImplant": "Dental Implant",
         "lasik": "LASIK",
-        "healthCheckup": "Health Checkup"
+        "healthCheckup": "Health Checkup",
+        "doubleEyelid": "Double Eyelid",
+        "facelift": "Face Lift"
+      },
+      "guarantee": {
+        "title": "Best Price Guarantee",
+        "subtitle": "We match any price",
+        "description": "Found a better price? We will beat it by 10%"
       }
     },
     "featuredHospitals": {
@@ -608,22 +629,42 @@
         "restaurants": {
           "title": "Recovery-Friendly Restaurants",
           "description": "Curated list of soft food restaurants near top clinics",
-          "items": ["Porridge Cafes", "Soup Restaurants", "Juice Bars", "Healthy Cafes"]
+          "items": [
+            "Porridge Cafes",
+            "Soup Restaurants",
+            "Juice Bars",
+            "Healthy Cafes"
+          ]
         },
         "accommodation": {
           "title": "Medical Stay Hotels",
           "description": "Partner hotels with medical tourism packages",
-          "items": ["Recovery Suites", "Near Hospitals", "Nurse Call", "Meal Service"]
+          "items": [
+            "Recovery Suites",
+            "Near Hospitals",
+            "Nurse Call",
+            "Meal Service"
+          ]
         },
         "transport": {
           "title": "Transportation",
           "description": "Seamless travel between hospital and hotel",
-          "items": ["Airport Pickup", "Hospital Shuttle", "Private Car", "Wheelchair Access"]
+          "items": [
+            "Airport Pickup",
+            "Hospital Shuttle",
+            "Private Car",
+            "Wheelchair Access"
+          ]
         },
         "pharmacy": {
           "title": "Pharmacies & Supplies",
           "description": "24-hour pharmacies and medical supply stores",
-          "items": ["24h Pharmacy", "Medical Supplies", "Prescription Help", "Delivery"]
+          "items": [
+            "24h Pharmacy",
+            "Medical Supplies",
+            "Prescription Help",
+            "Delivery"
+          ]
         }
       }
     },

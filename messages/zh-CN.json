@@ -511,7 +511,19 @@
         "support": {
           "title": "24小时支持",
           "description": "随时为您服务"
+        },
+        "airportPickup": {
+          "title": "机场接送",
+          "description": "免费机场接送服务"
+        },
+        "accommodation": {
+          "title": "住宿",
+          "description": "包含酒店预订协助"
         }
+      },
+      "tableHeader": {
+        "feature": "功能",
+        "direct": "直接预订"
       }
     },
     "howItWorks": {
@@ -573,10 +585,12 @@
     },
     "pricing": {
       "badge": "节省高达70%",
-      "procedure": "疗程",
-      "korea": "韩国",
-      "usa": "美国",
-      "savings": "节省",
+      "tableHeader": {
+        "procedure": "手术",
+        "korea": "韩国",
+        "usa": "美国",
+        "savings": "节省"
+      },
       "bestPriceGuarantee": "最优价格保证",
       "priceMatchDesc": "匹配更低价格 + 10%额外折扣",
       "foundBetter": "在其他地方找到更优惠的价格？",
@@ -589,7 +603,14 @@
         "hairTransplant": "植发",
         "dentalImplant": "牙科植体",
         "lasik": "激光手术",
-        "healthCheckup": "健康检查"
+        "healthCheckup": "健康检查",
+        "doubleEyelid": "双眼皮",
+        "facelift": "拉皮"
+      },
+      "guarantee": {
+        "title": "最低价保证",
+        "subtitle": "价格匹配",
+        "description": "找到更便宜的价格？我们将再优惠10%"
       }
     },
     "featuredHospitals": {
@@ -607,22 +628,42 @@
         "restaurants": {
           "title": "康复友好餐厅",
           "description": "顶级诊所附近精选软食餐厅",
-          "items": ["粥店", "汤品餐厅", "果汁吧", "健康咖啡厅"]
+          "items": [
+            "粥店",
+            "汤品餐厅",
+            "果汁吧",
+            "健康咖啡厅"
+          ]
         },
         "accommodation": {
           "title": "医疗专用酒店",
           "description": "提供医疗旅游套餐的合作酒店",
-          "items": ["康复套房", "医院附近", "护士呼叫", "餐饮服务"]
+          "items": [
+            "康复套房",
+            "医院附近",
+            "护士呼叫",
+            "餐饮服务"
+          ]
         },
         "transport": {
           "title": "交通",
           "description": "医院和酒店之间的顺畅接送",
-          "items": ["机场接送", "医院接驳", "专车", "轮椅通道"]
+          "items": [
+            "机场接送",
+            "医院接驳",
+            "专车",
+            "轮椅通道"
+          ]
         },
         "pharmacy": {
           "title": "药店和用品",
           "description": "24小时药店和医疗用品店",
-          "items": ["24小时药店", "医疗用品", "处方协助", "配送"]
+          "items": [
+            "24小时药店",
+            "医疗用品",
+            "处方协助",
+            "配送"
+          ]
         }
       }
     },

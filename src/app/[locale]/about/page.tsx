@@ -29,10 +29,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import type { Locale } from '@/lib/i18n/config';
 
 const getStats = (t: any) => [
-  { icon: Users, value: '50,000+', label: t('hero.stats.patients') },
-  { icon: Building2, value: '200+', label: t('hero.stats.hospitals') },
-  { icon: Languages, value: '7', label: t('hero.stats.languages') },
-  { icon: Globe, value: '50+', label: t('hero.stats.countries') },
+  { icon: Users, value: '50,000+', label: t('stats.patients') },
+  { icon: Building2, value: '200+', label: t('stats.hospitals') },
+  { icon: Languages, value: '7', label: t('stats.languages') },
+  { icon: Globe, value: '50+', label: t('stats.countries') },
 ];
 
 const valuesData = [
@@ -42,7 +42,7 @@ const valuesData = [
     color: 'from-blue-500 to-cyan-500',
   },
   {
-    key: 'patientFirst',
+    key: 'compassion',
     icon: Heart,
     color: 'from-pink-500 to-rose-500',
   },
@@ -52,7 +52,7 @@ const valuesData = [
     color: 'from-amber-500 to-orange-500',
   },
   {
-    key: 'accessibility',
+    key: 'innovation',
     icon: Globe,
     color: 'from-violet-500 to-purple-500',
   },
@@ -60,31 +60,29 @@ const valuesData = [
 
 const teamData = [
   {
-    key: 'member1',
+    key: 'sarah',
     image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400',
   },
   {
-    key: 'member2',
+    key: 'james',
     image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
   },
   {
-    key: 'member3',
+    key: 'mina',
     image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400',
   },
   {
-    key: 'member4',
+    key: 'david',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
   },
 ];
 
 const milestonesData = [
-  { key: 'milestone1', year: '2018' },
-  { key: 'milestone2', year: '2019' },
-  { key: 'milestone3', year: '2020' },
-  { key: 'milestone4', year: '2021' },
-  { key: 'milestone5', year: '2022' },
-  { key: 'milestone6', year: '2023' },
-  { key: 'milestone7', year: '2024' },
+  { key: 'founded', year: '2018' },
+  { key: 'partnerships', year: '2019' },
+  { key: 'expansion', year: '2021' },
+  { key: 'ai', year: '2023' },
+  { key: 'milestone', year: '2024' },
 ];
 
 const containerVariants = {
@@ -280,8 +278,8 @@ export default function AboutPage() {
           viewport={{ once: true }}
           className="mb-12 text-center"
         >
-          <Badge className="mb-4 bg-violet-500">{t('timeline.badge')}</Badge>
-          <h2 className="mb-4 text-3xl font-bold lg:text-4xl">{t('timeline.title')}</h2>
+          <Badge className="mb-4 bg-violet-500">{t('journey.badge')}</Badge>
+          <h2 className="mb-4 text-3xl font-bold lg:text-4xl">{t('journey.title')}</h2>
         </motion.div>
 
         <div className="relative mx-auto max-w-4xl">
@@ -301,8 +299,8 @@ export default function AboutPage() {
                     <Badge className="mb-2 bg-gradient-to-r from-violet-500 to-purple-500">
                       {milestone.year}
                     </Badge>
-                    <h3 className="mb-1 font-bold">{t(`timeline.milestones.${milestone.key}.title`)}</h3>
-                    <p className="text-sm text-muted-foreground">{t(`timeline.milestones.${milestone.key}.description`)}</p>
+                    <h3 className="mb-1 font-bold">{t(`journey.items.${milestone.key}.title`)}</h3>
+                    <p className="text-sm text-muted-foreground">{t(`journey.items.${milestone.key}.description`)}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -386,10 +384,10 @@ export default function AboutPage() {
                 <Rocket className="h-10 w-10 text-white" />
               </motion.div>
               <h2 className="mb-4 text-3xl font-bold text-white lg:text-4xl">
-                {t('cta.title')}
+                {t('ctaSection.title')}
               </h2>
               <p className="mx-auto mb-8 max-w-2xl text-white/70">
-                {t('cta.description')}
+                {t('ctaSection.subtitle')}
               </p>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Button
@@ -399,7 +397,7 @@ export default function AboutPage() {
                 >
                   <Link href={`/${locale}/inquiry`}>
                     <Sparkles className="mr-2 h-4 w-4" />
-                    {t('cta.primary')}
+                    {t('ctaSection.getConsultation')}
                   </Link>
                 </Button>
                 <Button
@@ -409,7 +407,7 @@ export default function AboutPage() {
                   asChild
                 >
                   <Link href={`/${locale}/hospitals`}>
-                    {t('cta.secondary')}
+                    {t('ctaSection.exploreHospitals')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
