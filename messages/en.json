@@ -249,6 +249,7 @@
     "tryAsking": "Try asking:",
     "thinking": "Thinking...",
     "error": "Sorry, I encountered an error. Please try again.",
+    "poweredBy": "Powered by Claude AI",
     "feedback": {
       "helpful": "Was this helpful?",
       "yes": "Yes",
@@ -412,7 +413,12 @@
       "placeholder": "Enter your email",
       "subscribe": "Subscribe"
     },
-    "copyright": "© {year} GetCareKorea. All rights reserved."
+    "copyright": "© {year} GetCareKorea. All rights reserved.",
+    "bottom": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "cookies": "Cookie Policy"
+    }
   },
   "errors": {
     "notFound": {

@@ -249,6 +249,7 @@
     "tryAsking": "이렇게 물어보세요:",
     "thinking": "생각 중...",
     "error": "죄송합니다, 오류가 발생했습니다. 다시 시도해 주세요.",
+    "poweredBy": "Claude AI 기반",
     "feedback": {
       "helpful": "도움이 되셨나요?",
       "yes": "예",
@@ -412,7 +413,12 @@
       "placeholder": "이메일 주소 입력",
       "subscribe": "구독"
     },
-    "copyright": "© {year} GetCareKorea. All rights reserved."
+    "copyright": "© {year} GetCareKorea. All rights reserved.",
+    "bottom": {
+      "privacy": "개인정보처리방침",
+      "terms": "이용약관",
+      "cookies": "쿠키 정책"
+    }
   },
   "errors": {
     "notFound": {

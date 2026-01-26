@@ -412,7 +412,12 @@
       "placeholder": "輸入您的電子郵件",
       "subscribe": "訂閱"
     },
-    "copyright": "© {year} GetCareKorea. 版權所有。"
+    "copyright": "© {year} GetCareKorea. 版權所有。",
+    "bottom": {
+      "privacy": "隱私權政策",
+      "terms": "服務條款",
+      "cookies": "Cookie 政策"
+    }
   },
   "errors": {
     "notFound": {
@@ -750,6 +755,6 @@
     "noImage": "無圖片"
   },
   "chatWidget": {
-    "poweredBy": "由Claude AI驅動"
+    "poweredBy": "由 Claude AI 提供"
   }
 }

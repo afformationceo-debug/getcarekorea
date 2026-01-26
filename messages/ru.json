@@ -412,7 +412,12 @@
       "placeholder": "Введите ваш email",
       "subscribe": "Подписаться"
     },
-    "copyright": "© {year} GetCareKorea. Все права защищены."
+    "copyright": "© {year} GetCareKorea. Все права защищены.",
+    "bottom": {
+      "privacy": "Политика конфиденциальности",
+      "terms": "Условия использования",
+      "cookies": "Политика использования файлов cookie"
+    }
   },
   "errors": {
     "notFound": {
@@ -750,6 +755,6 @@
     "noImage": "Нет изображения"
   },
   "chatWidget": {
-    "poweredBy": "На базе Claude AI"
+    "poweredBy": "Работает на Claude AI"
   }
 }

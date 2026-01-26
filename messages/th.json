@@ -412,7 +412,12 @@
       "placeholder": "ใส่อีเมลของคุณ",
       "subscribe": "สมัคร"
     },
-    "copyright": "© {year} GetCareKorea. สงวนลิขสิทธิ์"
+    "copyright": "© {year} GetCareKorea. สงวนลิขสิทธิ์",
+    "bottom": {
+      "privacy": "นโยบายความเป็นส่วนตัว",
+      "terms": "ข้อกำหนดการใช้บริการ",
+      "cookies": "นโยบายคุกกี้"
+    }
   },
   "errors": {
     "notFound": {

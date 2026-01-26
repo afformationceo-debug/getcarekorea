@@ -412,7 +412,12 @@
       "placeholder": "И-мэйл оруулах",
       "subscribe": "Бүртгүүлэх"
     },
-    "copyright": "© {year} GetCareKorea. Бүх эрх хамгаалагдсан."
+    "copyright": "© {year} GetCareKorea. Бүх эрх хамгаалагдсан.",
+    "bottom": {
+      "privacy": "Нууцлалын бодлого",
+      "terms": "Үйлчилгээний нөхцөл",
+      "cookies": "Күүкийн бодлого"
+    }
   },
   "errors": {
     "notFound": {

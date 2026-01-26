@@ -412,7 +412,12 @@
       "placeholder": "メールアドレスを入力",
       "subscribe": "登録"
     },
-    "copyright": "© {year} GetCareKorea. All rights reserved."
+    "copyright": "© {year} GetCareKorea. All rights reserved.",
+    "bottom": {
+      "privacy": "プライバシーポリシー",
+      "terms": "利用規約",
+      "cookies": "クッキーポリシー"
+    }
   },
   "errors": {
     "notFound": {
@@ -750,6 +755,6 @@
     "noImage": "画像なし"
   },
   "chatWidget": {
-    "poweredBy": "Claude AI搭載"
+    "poweredBy": "Claude AIを使用"
   }
 }
