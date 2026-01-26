@@ -23,7 +23,20 @@ Guidelines:
 - Highlight the benefits of Korean medical services (quality, technology, affordability)
 - When users show interest, guide them toward making an inquiry
 
-You have access to tools to search for hospitals, procedures, and interpreters. Use them to provide accurate, up-to-date information.
+CRITICAL - Internal Link Recommendations:
+When providing information about hospitals, procedures, or interpreters, ALWAYS include specific internal links in your response using this EXACT format:
+[LINK: Text to Display | /path/to/page | type]
+
+Examples:
+- For hospitals: [LINK: View Seoul National University Hospital | /hospitals/seoul-national-university-hospital | hospital]
+- For procedures: [LINK: Learn more about Rhinoplasty | /procedures/rhinoplasty | procedure]
+- For interpreters: [LINK: Browse All Interpreters | /interpreters | interpreter]
+- For inquiries: [LINK: Get Free Consultation | /inquiry | inquiry]
+
+ALWAYS include 1-3 relevant links in EVERY response to help users navigate to the information they need.
+When you use search tools and find results, ALWAYS create links for those specific results.
+
+You have access to tools to search for hospitals, procedures, and interpreters. Use them to provide accurate, up-to-date information, and ALWAYS include relevant links based on the search results.
 
 IMPORTANT: Always respond in the user's language (determined by the locale parameter).
 `;
@@ -41,7 +54,7 @@ interface HospitalSearchResult {
 
 // Tool definitions for the chat - using actual database queries
 const searchHospitalsTool = tool({
-  description: 'Search for hospitals by specialty, location, or name',
+  description: 'Search for hospitals by specialty, location, or name. When you use this tool, make sure to include [LINK] tags in your response for each hospital found.',
   inputSchema: z.object({
     query: z.string().describe('Search query for hospitals'),
     specialty: z.string().optional().describe('Medical specialty filter'),
@@ -86,9 +99,11 @@ const searchHospitalsTool = tool({
           rating: h.avg_rating,
           reviewCount: h.review_count,
           languages: h.languages,
+          link: `/hospitals/${h.slug}`,
         })),
         query,
         filters: { specialty, city },
+        instructions: 'IMPORTANT: Include [LINK] tags for each hospital in your response. Format: [LINK: View {Hospital Name} | /hospitals/{slug} | hospital]',
       };
     } catch (error) {
       console.error('Hospital search error:', error);
@@ -114,7 +129,7 @@ interface ProcedureSearchResult {
 }
 
 const getProcedureInfoTool = tool({
-  description: 'Get detailed information about a medical procedure',
+  description: 'Get detailed information about a medical procedure. When you use this tool, make sure to include [LINK] tags in your response for each procedure found.',
   inputSchema: z.object({
     procedure: z.string().describe('Name of the procedure'),
     category: z.string().optional().describe('Procedure category'),
@@ -157,6 +172,7 @@ const getProcedureInfoTool = tool({
             typicalPriceRange: 'Varies by complexity',
             bookingRequired: true,
           },
+          instructions: 'Include a link to the inquiry page: [LINK: Get Free Consultation | /inquiry | inquiry]',
         };
       }
 
@@ -177,7 +193,9 @@ const getProcedureInfoTool = tool({
             name: p.hospitals.name_en,
             slug: p.hospitals.slug,
           } : null,
+          link: `/procedures/${p.slug}`,
         })),
+        instructions: 'IMPORTANT: Include [LINK] tags for each procedure in your response. Format: [LINK: Learn about {Procedure Name} | /procedures/{slug} | procedure]',
       };
     } catch (error) {
       console.error('Procedure search error:', error);
@@ -188,7 +206,7 @@ const getProcedureInfoTool = tool({
 
 const createInquiryTool = tool({
   description:
-    'Create an inquiry for the user to get a personalized consultation',
+    'Create an inquiry for the user to get a personalized consultation. Always include the inquiry link in your response.',
   inputSchema: z.object({
     procedureInterest: z.string().describe('Procedure or service of interest'),
     additionalNotes: z.string().optional().describe('Additional information'),
@@ -201,6 +219,7 @@ const createInquiryTool = tool({
       inquiryUrl: `/inquiry?procedure=${encodeURIComponent(procedureInterest)}`,
       procedureInterest,
       additionalNotes,
+      instructions: 'IMPORTANT: Include this link in your response: [LINK: Get Free Consultation | /inquiry | inquiry]',
     };
   },
 });
@@ -219,7 +238,7 @@ interface InterpreterSearchResult {
 
 // Add interpreter search tool
 const searchInterpretersTool = tool({
-  description: 'Search for medical interpreters by language and specialty',
+  description: 'Search for medical interpreters by language and specialty. When you use this tool, make sure to include [LINK] tags in your response.',
   inputSchema: z.object({
     language: z.string().describe('Language the interpreter speaks'),
     specialty: z.string().optional().describe('Medical specialty'),
@@ -268,9 +287,11 @@ const searchInterpretersTool = tool({
           dailyRate: i.daily_rate,
           rating: i.avg_rating,
           reviewCount: i.review_count,
+          link: `/interpreters/${i.id}`,
         })),
         searchedLanguage: language,
         specialty,
+        instructions: 'IMPORTANT: Include [LINK] tags for interpreters. Format: [LINK: View {Interpreter Name} | /interpreters/{id} | interpreter] and also include [LINK: Browse All Interpreters | /interpreters | interpreter]',
       };
     } catch (error) {
       console.error('Interpreter search error:', error);
@@ -327,13 +348,14 @@ export async function POST(req: Request) {
 // Get locale-specific instructions
 function getLocaleInstructions(locale: Locale): string {
   const instructions: Record<string, string> = {
-    en: 'Respond in English. Be professional and helpful.',
-    'zh-TW': 'Please respond in Traditional Chinese (繁體中文). Be warm and professional.',
-    'zh-CN': 'Please respond in Simplified Chinese (简体中文). Be warm and professional.',
-    ja: 'Please respond in Japanese (日本語). Be polite and formal.',
-    th: 'Please respond in Thai (ภาษาไทย). Be respectful and helpful.',
-    mn: 'Please respond in Mongolian (Монгол хэл). Be clear and helpful.',
-    ru: 'Please respond in Russian (Русский). Be professional and detailed.',
+    en: 'Respond in English. Be professional and helpful. ALWAYS include [LINK] tags for relevant pages.',
+    ko: 'Please respond in Korean (한국어). Be professional and helpful. ALWAYS include [LINK] tags for relevant pages.',
+    'zh-TW': 'Please respond in Traditional Chinese (繁體中文). Be warm and professional. ALWAYS include [LINK] tags for relevant pages.',
+    'zh-CN': 'Please respond in Simplified Chinese (简体中文). Be warm and professional. ALWAYS include [LINK] tags for relevant pages.',
+    ja: 'Please respond in Japanese (日本語). Be polite and formal. ALWAYS include [LINK] tags for relevant pages.',
+    th: 'Please respond in Thai (ภาษาไทย). Be respectful and helpful. ALWAYS include [LINK] tags for relevant pages.',
+    mn: 'Please respond in Mongolian (Монгол хэл). Be clear and helpful. ALWAYS include [LINK] tags for relevant pages.',
+    ru: 'Please respond in Russian (Русский). Be professional and detailed. ALWAYS include [LINK] tags for relevant pages.',
   };
 
   return instructions[locale] || instructions.en;

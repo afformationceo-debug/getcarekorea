@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/lib/i18n/config';
+import { MessageContent } from './MessageContent';
 
 interface Message {
   id: string;
@@ -236,7 +237,11 @@ export function ChatWidget({
                         : 'rounded-tl-sm bg-muted/60'
                     )}
                   >
-                    {message.content}
+                    {message.role === 'user' ? (
+                      message.content
+                    ) : (
+                      <MessageContent content={message.content} />
+                    )}
                   </div>
                   {message.role === 'assistant' && message.id !== 'welcome' && (
                     <div className="flex gap-1">
@@ -452,7 +457,11 @@ export function ChatWidget({
                             : 'bg-muted'
                         )}
                       >
-                        {message.content}
+                        {message.role === 'user' ? (
+                          message.content
+                        ) : (
+                          <MessageContent content={message.content} />
+                        )}
                       </div>
                       {/* Feedback buttons for assistant messages */}
                       {message.role === 'assistant' && message.id !== 'welcome' && (
