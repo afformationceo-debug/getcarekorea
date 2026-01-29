@@ -17,9 +17,8 @@ import type { Locale } from '@/lib/i18n/config';
 export interface AuthorPersonaBasic {
   id: string;
   slug: string;
-  name_en: string;
-  name_ko: string;
-  target_locales: string[];
+  name: Record<string, string>;
+  languages: Array<{ code: string; proficiency: string }>;
   primary_specialty: string | null;
   secondary_specialties: string[] | null;
   total_posts: number;
@@ -51,15 +50,14 @@ export async function assignAuthorForKeyword(
   try {
     const supabase = await createAdminClient();
 
-    // 1. locale이 target_locales에 포함된 활성 통역사 조회
+    // 1. 활성 통역사 조회 (languages JSONB 필드 사용)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: authors, error } = await (supabase.from('author_personas') as any)
       .select(`
         id,
         slug,
-        name_en,
-        name_ko,
-        target_locales,
+        name,
+        languages,
         primary_specialty,
         secondary_specialties,
         total_posts,
@@ -67,8 +65,7 @@ export async function assignAuthorForKeyword(
         is_available
       `)
       .eq('is_active', true)
-      .eq('is_available', true)
-      .contains('target_locales', [locale]);
+      .eq('is_available', true);
 
     if (error) {
       console.error('Error fetching authors:', error);
@@ -76,12 +73,23 @@ export async function assignAuthorForKeyword(
     }
 
     if (!authors || authors.length === 0) {
-      console.warn(`No active authors found for locale: ${locale}`);
+      console.warn(`No active authors found`);
+      return { authorPersonaId: null, authorName: null, reason: 'No active authors' };
+    }
+
+    // 2. locale에 해당하는 언어를 구사하는 통역사 필터링
+    const localeMatchedAuthors = authors.filter((a: AuthorPersonaBasic) => {
+      if (!a.languages || !Array.isArray(a.languages)) return false;
+      return a.languages.some((lang) => lang.code === locale);
+    });
+
+    if (localeMatchedAuthors.length === 0) {
+      console.warn(`No authors found for locale: ${locale}`);
       return { authorPersonaId: null, authorName: null, reason: `No authors for locale ${locale}` };
     }
 
-    // 2. category가 있으면 전문 분야 매칭 시도
-    let matchedAuthors = authors as AuthorPersonaBasic[];
+    // 3. category가 있으면 전문 분야 매칭 시도
+    let matchedAuthors = localeMatchedAuthors as AuthorPersonaBasic[];
 
     if (category) {
       // Primary specialty 매칭
@@ -104,18 +112,19 @@ export async function assignAuthorForKeyword(
       }
     }
 
-    // 3. 균등 배분: total_posts가 가장 적은 사람 선택 (라운드 로빈)
+    // 4. 균등 배분: total_posts가 가장 적은 사람 선택 (라운드 로빈)
     const sortedByPosts = matchedAuthors.sort(
       (a, b) => (a.total_posts || 0) - (b.total_posts || 0)
     );
 
     const selectedAuthor = sortedByPosts[0];
+    const authorName = selectedAuthor.name?.en || selectedAuthor.name?.ko || selectedAuthor.slug;
 
-    console.log(`Assigned author: ${selectedAuthor.name_en} (${selectedAuthor.slug}) for locale=${locale}, category=${category || 'any'}`);
+    console.log(`Assigned author: ${authorName} (${selectedAuthor.slug}) for locale=${locale}, category=${category || 'any'}`);
 
     return {
       authorPersonaId: selectedAuthor.id,
-      authorName: selectedAuthor.name_en,
+      authorName,
       reason: `Matched by ${category ? 'specialty' : 'locale'} with load balancing`,
     };
   } catch (error) {

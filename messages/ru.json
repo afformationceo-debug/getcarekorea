@@ -845,6 +845,7 @@
         "inquiries": "Запросы",
         "keywords": "Ключевые слова",
         "content": "Контент",
+        "cron": "Cron задачи",
         "progress": "Прогресс",
         "feedback": "Обратная связь",
         "analytics": "Аналитика",

@@ -845,6 +845,7 @@
         "inquiries": "咨询",
         "keywords": "关键词",
         "content": "内容",
+        "cron": "定时任务",
         "progress": "进度",
         "feedback": "反馈",
         "analytics": "分析",

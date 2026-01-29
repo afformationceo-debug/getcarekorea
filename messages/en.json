@@ -845,6 +845,7 @@
         "inquiries": "Inquiries",
         "keywords": "Keywords",
         "content": "Content",
+        "cron": "Cron Jobs",
         "progress": "Progress",
         "feedback": "Feedback",
         "analytics": "Analytics",

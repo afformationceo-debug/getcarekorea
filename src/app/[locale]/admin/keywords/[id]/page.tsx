@@ -24,19 +24,30 @@ interface Keyword {
 }
 
 async function getKeyword(id: string): Promise<Keyword | null> {
-  const supabase = await createAdminClient();
+  try {
+    const supabase = await createAdminClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.from('content_keywords') as any)
-    .select('*')
-    .eq('id', id)
-    .single();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from('content_keywords') as any)
+      .select('*')
+      .eq('id', id)
+      .single();
 
-  if (error || !data) {
+    if (error) {
+      console.error('[Keyword Detail] Error fetching keyword:', error.message, { id });
+      return null;
+    }
+
+    if (!data) {
+      console.error('[Keyword Detail] Keyword not found:', { id });
+      return null;
+    }
+
+    return data as Keyword;
+  } catch (err) {
+    console.error('[Keyword Detail] Exception:', err);
     return null;
   }
-
-  return data as Keyword;
 }
 
 export default async function KeywordDetailPage({ params }: PageProps) {

@@ -845,6 +845,7 @@
         "inquiries": "문의",
         "keywords": "키워드",
         "content": "콘텐츠",
+        "cron": "크론 작업",
         "progress": "진행상황",
         "feedback": "피드백",
         "analytics": "분석",

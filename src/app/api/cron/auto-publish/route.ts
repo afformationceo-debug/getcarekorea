@@ -3,15 +3,16 @@
  *
  * GET /api/cron/auto-publish - 고품질 드래프트 자동 발행
  *
- * Vercel Cron 설정 (vercel.json):
- * "crons": [{ "path": "/api/cron/auto-publish", "schedule": "0 10 * * *" }]
- * (매일 오전 10시 실행 - auto-generate 1시간 후)
+ * Vercel Cron: 15분마다 실행 (vercel.json)
+ * DB 설정에 따라 실제 실행 여부 결정
  *
  * 동작 방식:
- * 1. draft 상태의 blog_posts 조회
- * 2. 품질 점수 75점 이상인 포스트 필터링
- * 3. 자동 발행 (published 상태로 변경)
- * 4. ISR 재검증 트리거
+ * 1. system_settings에서 스케줄 설정 조회
+ * 2. 현재 시간이 설정된 스케줄에 맞는지 확인
+ * 3. draft 상태의 blog_posts 조회
+ * 4. 품질 점수 75점 이상인 포스트 필터링
+ * 5. 자동 발행 (published 상태로 변경)
+ * 6. ISR 재검증 트리거
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -28,8 +29,80 @@ export const maxDuration = 120; // 2분 타임아웃
 // Cron 인증 키
 const CRON_SECRET = process.env.CRON_SECRET;
 
-// 일일 발행 제한
-const DAILY_PUBLISH_LIMIT = 10;
+// 기본 발행 제한
+const DEFAULT_PUBLISH_LIMIT = 10;
+
+// =====================================================
+// SCHEDULE CHECK HELPERS
+// =====================================================
+
+interface CronPublishSettings {
+  enabled: boolean;
+  schedule: string;
+  max_publish_per_run: number;
+}
+
+/**
+ * Parse cron expression and check if current time matches
+ */
+function shouldRunNow(cronExpression: string): boolean {
+  const now = new Date();
+  const currentMinute = now.getMinutes();
+  const currentHour = now.getHours();
+  const currentDay = now.getDate();
+  const currentMonth = now.getMonth() + 1;
+  const currentDow = now.getDay();
+
+  const parts = cronExpression.trim().split(/\s+/);
+  if (parts.length !== 5) return false;
+
+  const [minutePart, hourPart, dayPart, monthPart, dowPart] = parts;
+
+  // Check minute
+  if (!matchesCronField(minutePart, currentMinute, 0, 59)) return false;
+
+  // Check hour
+  if (!matchesCronField(hourPart, currentHour, 0, 23)) return false;
+
+  // Check day of month
+  if (!matchesCronField(dayPart, currentDay, 1, 31)) return false;
+
+  // Check month
+  if (!matchesCronField(monthPart, currentMonth, 1, 12)) return false;
+
+  // Check day of week
+  if (!matchesCronField(dowPart, currentDow, 0, 6)) return false;
+
+  return true;
+}
+
+/**
+ * Check if a value matches a cron field
+ */
+function matchesCronField(field: string, value: number, min: number, max: number): boolean {
+  if (field === '*') return true;
+
+  // Step values: */15, */2, etc.
+  if (field.startsWith('*/')) {
+    const step = parseInt(field.slice(2));
+    return (value - min) % step === 0;
+  }
+
+  // Range: 1-5
+  if (field.includes('-') && !field.includes(',')) {
+    const [start, end] = field.split('-').map(n => parseInt(n));
+    return value >= start && value <= end;
+  }
+
+  // List: 1,3,5
+  if (field.includes(',')) {
+    const values = field.split(',').map(n => parseInt(n.trim()));
+    return values.includes(value);
+  }
+
+  // Exact value
+  return parseInt(field) === value;
+}
 
 /**
  * GET /api/cron/auto-publish
@@ -47,7 +120,41 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createAdminClient();
 
-    console.log('\n🚀 Auto-publish cron: Starting...');
+    // 0. 시스템 설정 조회
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: settingsData } = await (supabase.from('system_settings') as any)
+      .select('value')
+      .eq('key', 'cron_auto_publish')
+      .single();
+
+    const settings: CronPublishSettings = settingsData?.value || {
+      enabled: true,
+      schedule: '0 10 * * *',
+      max_publish_per_run: DEFAULT_PUBLISH_LIMIT,
+    };
+
+    // 0-1. 비활성화 체크
+    if (!settings.enabled) {
+      console.log('🔕 Auto-publish is disabled');
+      return NextResponse.json({
+        success: true,
+        data: { skipped: true, reason: 'Auto-publish is disabled' },
+      });
+    }
+
+    // 0-2. 스케줄 체크 (현재 시간이 설정된 스케줄에 맞는지)
+    if (!shouldRunNow(settings.schedule)) {
+      console.log(`⏭️ Skipping: Current time does not match schedule (${settings.schedule})`);
+      return NextResponse.json({
+        success: true,
+        data: { skipped: true, reason: 'Not scheduled to run at this time', schedule: settings.schedule },
+      });
+    }
+
+    console.log(`\n🚀 Auto-publish cron: Schedule matched (${settings.schedule})`);
+
+    // 사용할 발행 제한 (DB 설정 우선)
+    const publishLimit = settings.max_publish_per_run || DEFAULT_PUBLISH_LIMIT;
 
     // 1. 고품질 드래프트 자동 발행
     const publishResult = await autoPublishPendingPosts(supabase, {
@@ -55,7 +162,7 @@ export async function GET(request: NextRequest) {
         ...DEFAULT_PUBLISHING_CRITERIA,
         minQualityScore: 75, // 75점 이상만 자동 발행
       },
-      limit: DAILY_PUBLISH_LIMIT,
+      limit: publishLimit,
       dryRun: false,
     });
 

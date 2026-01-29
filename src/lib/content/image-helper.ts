@@ -33,6 +33,7 @@ export interface GeneratedImage {
   placeholder: string;           // [IMAGE_PLACEHOLDER_1]
   url: string;                   // Generated image URL
   alt: string;                   // Alt text
+  caption?: string;              // Optional caption
   prompt: string;                // Original prompt
   revised_prompt?: string;       // DALL-E's revised prompt
   size: string;                  // '1024x1024', '1792x1024', etc.
@@ -266,6 +267,7 @@ async function generateSingleImage(
       placeholder: imageMetadata.placeholder,
       url: imageUrl,
       alt: enhancedAlt,
+      caption: imageMetadata.caption,
       prompt: imageMetadata.prompt,
       revised_prompt: revisedPrompt,
       size,
@@ -455,17 +457,35 @@ export function injectImagesIntoHTML(
   let injectedContent = htmlContent;
 
   for (const image of generatedImages) {
-    // Find the placeholder img tag
-    const placeholderRegex = new RegExp(
+    // Create the new img tag with actual URL
+    const newImgTag = `<figure class="content-image-wrapper">
+  <img src="${image.url}" alt="${image.alt}" class="content-image" loading="lazy" />
+  ${image.caption ? `<figcaption>${image.caption}</figcaption>` : ''}
+</figure>`;
+
+    // 1. Try to find placeholder as img tag: <img src="[IMAGE_PLACEHOLDER_X]" ...>
+    const imgTagRegex = new RegExp(
       `<img[^>]*src=["']${escapeRegExp(image.placeholder)}["'][^>]*>`,
       'gi'
     );
+    if (imgTagRegex.test(injectedContent)) {
+      injectedContent = injectedContent.replace(imgTagRegex, newImgTag);
+      continue;
+    }
 
-    // Create the new img tag with actual URL
-    const newImgTag = `<img src="${image.url}" alt="${image.alt}" class="content-image" loading="lazy" />`;
+    // 2. Try to find placeholder wrapped in <p>: <p>[IMAGE_PLACEHOLDER_X]</p>
+    const pTagRegex = new RegExp(
+      `<p[^>]*>\\s*${escapeRegExp(image.placeholder)}\\s*</p>`,
+      'gi'
+    );
+    if (pTagRegex.test(injectedContent)) {
+      injectedContent = injectedContent.replace(pTagRegex, newImgTag);
+      continue;
+    }
 
-    // Replace placeholder with actual image
-    injectedContent = injectedContent.replace(placeholderRegex, newImgTag);
+    // 3. Try to find plain text placeholder: [IMAGE_PLACEHOLDER_X]
+    const plainTextRegex = new RegExp(escapeRegExp(image.placeholder), 'gi');
+    injectedContent = injectedContent.replace(plainTextRegex, newImgTag);
   }
 
   return injectedContent;

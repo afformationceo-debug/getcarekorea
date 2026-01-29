@@ -2,7 +2,7 @@
 
 > 한국 의료관광 플랫폼 - AI 기반 자동 콘텐츠 생성 & 다국어 SEO 최적화
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.1-black)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.1-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E)](https://supabase.com/)
@@ -23,7 +23,7 @@ GetCareKorea는 외국인 환자들이 한국에서 의료 서비스를 받을 �
 
 | 분류 | 기술 |
 |------|------|
-| **Frontend** | Next.js 15.1, React 19, Tailwind CSS v4 |
+| **Frontend** | Next.js 16.1, React 19, Tailwind CSS v4 |
 | **Backend** | Next.js API Routes, Vercel Edge Functions |
 | **Database** | Supabase (PostgreSQL) |
 | **AI/LLM** | Claude Sonnet 4 (Anthropic) |
@@ -153,7 +153,7 @@ ISR 재검증 → 즉시 배포
 
 - [IMPLEMENTATION_SUMMARY.md](docs/IMPLEMENTATION_SUMMARY.md) - 전체 아키텍처
 - [AUTOMATED-CONTENT-SYSTEM.md](docs/AUTOMATED-CONTENT-SYSTEM.md) - 자동화 시스템
-- [PHASE7_IMPLEMENTATION.md](docs/PHASE7_IMPLEMENTATION.md) - 자동 발행 시스템
+- [PHASE9_IMPLEMENTATION.md](docs/PHASE9_IMPLEMENTATION.md) - 관리자 시스템 개선
 - [ENVIRONMENT_SETUP.md](docs/ENVIRONMENT_SETUP.md) - 환경 설정 가이드
 
 ## 🔗 링크

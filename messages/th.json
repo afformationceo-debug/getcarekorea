@@ -845,6 +845,7 @@
         "inquiries": "สอบถาม",
         "keywords": "คีย์เวิร์ด",
         "content": "เนื้อหา",
+        "cron": "งาน Cron",
         "progress": "ความคืบหน้า",
         "feedback": "ข้อเสนอแนะ",
         "analytics": "การวิเคราะห์",

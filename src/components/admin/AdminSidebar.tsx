@@ -17,6 +17,7 @@ import {
   Gauge,
   MessageCircle,
   LogOut,
+  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ const navItems = [
   { href: '/admin/inquiries', labelKey: 'inquiries', icon: MessageSquare, disabled: true },
   { href: '/admin/keywords', labelKey: 'keywords', icon: Search },
   { href: '/admin/content', labelKey: 'content', icon: FileText },
+  { href: '/admin/cron', labelKey: 'cron', icon: Clock },
   { href: '/admin/progress', labelKey: 'progress', icon: Gauge, disabled: true },
   { href: '/admin/feedback', labelKey: 'feedback', icon: MessageCircle, disabled: true },
   { href: '/admin/analytics', labelKey: 'analytics', icon: BarChart3, disabled: true },

@@ -39,7 +39,6 @@ async function getKeywords(): Promise<{ keywords: Keyword[]; categories: string[
         status
       )
     `)
-    .order('priority', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(1000);
 

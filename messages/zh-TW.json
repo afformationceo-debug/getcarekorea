@@ -845,6 +845,7 @@
         "inquiries": "諮詢",
         "keywords": "關鍵字",
         "content": "內容",
+        "cron": "定時任務",
         "progress": "進度",
         "feedback": "回饋",
         "analytics": "分析",

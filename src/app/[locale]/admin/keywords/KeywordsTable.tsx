@@ -7,18 +7,14 @@ import {
   Search,
   Plus,
   Play,
-  MoreHorizontal,
-  ArrowUpDown,
   CheckCircle,
   AlertCircle,
-  Trash2,
   FileText,
   RefreshCw,
   X,
   Upload,
   ExternalLink,
   Filter,
-  ChevronDown,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { KeywordBulkUpload } from '@/components/admin/KeywordBulkUpload';
@@ -35,12 +31,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
@@ -610,6 +600,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                 <TableHead>Keyword</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Locale</TableHead>
+                <TableHead className="text-center">Priority</TableHead>
                 <TableHead className="text-right">Volume</TableHead>
                 <TableHead className="text-right">Competition</TableHead>
                 <TableHead>Status</TableHead>
@@ -620,12 +611,13 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
               {filteredKeywords.map((keyword) => (
                 <TableRow
                   key={keyword.id}
+                  onClick={() => router.push(`/${currentLocale}/admin/keywords/${keyword.id}`)}
                   className={cn(
-                    "relative transition-colors hover:bg-muted/50",
+                    "relative transition-colors hover:bg-muted/50 cursor-pointer",
                     selectedIds.has(keyword.id) && 'bg-blue-50'
                   )}
                 >
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={selectedIds.has(keyword.id)}
                       onChange={() => handleSelectOne(keyword.id)}
@@ -633,18 +625,18 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                     />
                   </TableCell>
                   <TableCell>
-                    <Link
-                      href={`/${currentLocale}/admin/keywords/${keyword.id}`}
-                      className="font-medium hover:underline"
-                    >
-                      {keyword.keyword}
-                    </Link>
+                    <span className="font-medium">{keyword.keyword}</span>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{keyword.category}</Badge>
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{keyword.locale.toUpperCase()}</Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant={keyword.priority >= 7 ? "default" : keyword.priority >= 4 ? "secondary" : "outline"}>
+                      {keyword.priority}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     {keyword.search_volume?.toLocaleString() || '-'}
@@ -669,7 +661,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                   <TableCell>
                     <StatusBadge status={keyword.status} />
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-2">
                       {/* Generate Button - for pending status */}
                       {keyword.status === 'pending' && (
@@ -727,23 +719,6 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                           View Post
                         </Button>
                       )}
-                      {/* More Options */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDeleteKeyword(keyword.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
                   </TableCell>
                 </TableRow>

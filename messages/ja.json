@@ -845,6 +845,7 @@
         "inquiries": "お問い合わせ",
         "keywords": "キーワード",
         "content": "コンテンツ",
+        "cron": "Cronジョブ",
         "progress": "進捗",
         "feedback": "フィードバック",
         "analytics": "分析",

@@ -185,21 +185,41 @@ export async function POST(request: NextRequest) {
       const adminClient = await createAdminClient();
 
       // Find matching author persona for this locale
+      // Uses 'languages' JSONB field: [{code: 'en', proficiency: 'native'}, ...]
       let authorPersonaId: string | null = null;
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: personas } = await (adminClient.from('author_personas') as any)
-          .select('id, slug, target_locales, primary_specialty')
+          .select('id, slug, languages, primary_specialty, total_posts')
           .eq('is_active', true)
-          .contains('target_locales', [locale]);
+          .eq('is_available', true);
 
         if (personas && personas.length > 0) {
-          // Try to find one with matching specialty
-          const matchingSpecialty = personas.find(
-            (p: { primary_specialty: string }) => p.primary_specialty === category
-          );
-          authorPersonaId = matchingSpecialty?.id || personas[0].id;
-          console.log(`   ✅ Matched author persona: ${matchingSpecialty?.slug || personas[0].slug}`);
+          // Filter personas who speak this locale's language
+          const matchingPersonas = personas.filter((p: { languages: Array<{ code: string }> }) => {
+            if (!p.languages || !Array.isArray(p.languages)) return false;
+            return p.languages.some((lang: { code: string }) => lang.code === locale);
+          });
+
+          if (matchingPersonas.length > 0) {
+            // Try to find one with matching specialty first
+            let selectedPersona = matchingPersonas.find(
+              (p: { primary_specialty: string }) => p.primary_specialty === category
+            );
+
+            // If no specialty match, use round-robin (lowest total_posts)
+            if (!selectedPersona) {
+              selectedPersona = matchingPersonas.sort(
+                (a: { total_posts: number }, b: { total_posts: number }) =>
+                  (a.total_posts || 0) - (b.total_posts || 0)
+              )[0];
+            }
+
+            authorPersonaId = selectedPersona.id;
+            console.log(`   ✅ Matched author persona: ${selectedPersona.slug} (language: ${locale}, specialty: ${selectedPersona.primary_specialty})`);
+          } else {
+            console.warn(`   ⚠️  No author persona found for locale: ${locale}`);
+          }
         }
       } catch (personaError: unknown) {
         console.warn(`   ⚠️  Could not find author persona:`, personaError instanceof Error ? personaError.message : 'Unknown error');
