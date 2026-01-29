@@ -26,7 +26,6 @@ import {
   Sparkles,
   User,
   Tag,
-  Loader2,
   AlertCircle,
   X,
   Phone,
@@ -38,6 +37,7 @@ import {
   FileText,
   ListChecks,
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -631,7 +631,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -641,7 +641,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <AlertCircle className="w-12 h-12 text-red-500" />
         <h1 className="text-xl font-semibold">{error || t('notFound')}</h1>
-        <Link href={`/${locale}/blog`}>
+        <Link href={`/blog`}>
           <Button variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
             {t('back')}
@@ -983,7 +983,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
     <div className="min-h-screen bg-background">
       {/* Back button */}
       <div className="container max-w-4xl mx-auto px-4 pt-6">
-        <Link href={`/${locale}/blog`}>
+        <Link href={`/blog`}>
           <Button variant="ghost" className="gap-2 -ml-2">
             <ArrowLeft className="w-4 h-4" />
             {t('back')}
@@ -1085,6 +1085,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
                 src={post.cover_image_url || DEFAULT_IMAGE}
                 alt={post.title}
                 fill
+                sizes="(max-width: 1200px) 100vw, 1200px"
                 className="object-cover"
                 priority
               />
@@ -1317,7 +1318,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
                 <div className="flex items-center gap-2 flex-wrap">
                   <Tag className="w-4 h-4 text-muted-foreground" />
                   {post.tags.map((tag) => (
-                    <Link key={tag} href={`/${locale}/blog?tag=${tag}`}>
+                    <Link key={tag} href={`/blog?tag=${tag}`}>
                       <Badge variant="outline" className="cursor-pointer hover:bg-muted">
                         {tag}
                       </Badge>
@@ -1446,6 +1447,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
                         src={relatedPost.cover_image_url || DEFAULT_IMAGE}
                         alt={relatedPost.title}
                         fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
                         className="object-cover"
                       />
                     </div>

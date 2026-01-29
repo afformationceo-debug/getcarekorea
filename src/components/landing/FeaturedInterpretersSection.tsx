@@ -18,7 +18,6 @@ const interpreters = [
     languages: ['English', 'Korean'],
     specialties: ['Plastic Surgery', 'Dermatology'],
     city: 'Seoul',
-    rate: 150,
     available: true,
   },
   {
@@ -30,7 +29,6 @@ const interpreters = [
     languages: ['Japanese', 'Korean', 'English'],
     specialties: ['Dental', 'Ophthalmology'],
     city: 'Seoul',
-    rate: 180,
     available: true,
   },
   {
@@ -42,7 +40,6 @@ const interpreters = [
     languages: ['Mandarin', 'Korean', 'English'],
     specialties: ['Health Checkup', 'Orthopedics'],
     city: 'Seoul',
-    rate: 160,
     available: false,
   },
 ];
@@ -107,7 +104,9 @@ export function FeaturedInterpretersSection() {
                       src={interpreter.image}
                       alt={interpreter.name}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                       className="object-cover transition-transform group-hover:scale-105"
+                      unoptimized={interpreter.image?.includes('.svg') || interpreter.image?.includes('dicebear')}
                     />
                     {interpreter.available && (
                       <div className="absolute right-3 top-3">
@@ -164,16 +163,8 @@ export function FeaturedInterpretersSection() {
                       ))}
                     </div>
 
-                    {/* Rate */}
-                    <div className="flex items-center justify-between border-t pt-4">
-                      <div>
-                        <p className="text-2xl font-bold text-primary">
-                          ${interpreter.rate}
-                          <span className="text-sm font-normal text-muted-foreground">
-                            {t('perDay')}
-                          </span>
-                        </p>
-                      </div>
+                    {/* View Profile */}
+                    <div className="flex items-center justify-end border-t pt-4">
                       <ArrowRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
                     </div>
                   </div>

@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     const now = new Date().toISOString();
 
     // 예약 발행 대기 중인 포스트 조회
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: scheduledPosts, error: fetchError } = await (supabase
       .from('blog_posts') as any)
       .select('id, title, scheduled_at, locale, category')

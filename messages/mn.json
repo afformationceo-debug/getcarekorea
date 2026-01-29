@@ -246,15 +246,19 @@
       "Солонгост эмчлүүлэхэд эмнэлгийн виз хэрэгтэй юу?",
       "Монгол хэлтэй орчуулагч санал болгож чадах уу?"
     ],
+    "suggestionsLabel": "Асуух оролдлого хийнэ үү",
     "tryAsking": "Асуух оролдлого хийнэ үү:",
+    "typing": "Бичиж байна...",
     "thinking": "Бодож байна...",
     "error": "Уучлаарай, алдаа гарлаа. Дахин оролдоно уу.",
+    "poweredBy": "Claude AI-ээр ажилладаг",
+    "helpful": "Тустай",
+    "notHelpful": "Тус болсонгүй",
     "feedback": {
       "helpful": "Энэ тусалсан уу?",
       "yes": "Тийм",
       "no": "Үгүй"
-    },
-    "poweredBy": "Claude AI-ээр ажилладаг"
+    }
   },
   "inquiry": {
     "title": "Үнэгүй зөвлөгөө авах",
@@ -822,5 +826,186 @@
     "chatOn": "WhatsApp 1:1 үнэгүй зөвлөгөө",
     "chatNow": "Үнэгүй зөвлөгөө эхлүүлэх",
     "instantResponse": "⚡ Шуурхай хариулт • 24/7 мэргэжилтэн дэмжлэг"
+  },
+  "admin": {
+    "header": {
+      "viewSite": "Сайт харах",
+      "accountSettings": "Бүртгэлийн тохиргоо",
+      "logout": "Гарах"
+    },
+    "sidebar": {
+      "title": "Админ хяналтын самбар",
+      "subtitle": "Платформоо удирдах",
+      "soon": "Удахгүй",
+      "logout": "Гарах",
+      "nav": {
+        "dashboard": "Хяналтын самбар",
+        "hospitals": "Эмнэлэг",
+        "interpreters": "Орчуулагч",
+        "inquiries": "Лавлагаа",
+        "keywords": "Түлхүүр үг",
+        "content": "Агуулга",
+        "progress": "Явц",
+        "feedback": "Санал хүсэлт",
+        "analytics": "Аналитик",
+        "system": "Систем",
+        "notifications": "Мэдэгдэл",
+        "settings": "Тохиргоо"
+      }
+    },
+    "interpreters": {
+      "title": "Орчуулагч удирдлага",
+      "subtitle": "Эмнэлгийн орчуулагчдыг удирдах",
+      "addInterpreter": "Орчуулагч нэмэх",
+      "editInterpreter": "Орчуулагч засах",
+      "createNew": "Шинэ орчуулагчийн профайл үүсгэх",
+      "updateProfile": "Орчуулагчийн профайл шинэчлэх",
+      "searchPlaceholder": "Орчуулагч хайх...",
+      "noResults": "Орчуулагч олдсонгүй",
+      "noFilterResults": "Үр дүн олдсонгүй",
+      "viewDetails": "Дэлгэрэнгүй харах",
+      "deleteConfirm": "Энэ орчуулагчийг устгахдаа итгэлтэй байна уу?",
+      "filters": {
+        "label": "Шүүлтүүр:",
+        "language": "Хэл",
+        "specialty": "Мэргэжил",
+        "status": "Төлөв",
+        "allStatus": "Бүх төлөв",
+        "active": "Идэвхтэй",
+        "inactive": "Идэвхгүй",
+        "featured": "Онцлох",
+        "verified": "Баталгаажсан",
+        "selected": "{count} сонгосон",
+        "clearSelection": "Сонголт арилгах",
+        "reset": "Дахин тохируулах",
+        "resultCount": "{count} хүн / нийт {total} хүн"
+      },
+      "stats": {
+        "total": "Нийт",
+        "active": "Идэвхтэй",
+        "featured": "Онцлох",
+        "verified": "Баталгаажсан"
+      },
+      "table": {
+        "interpreter": "Орчуулагч",
+        "targetLocales": "Зорилтот хэл",
+        "specialty": "Мэргэжил",
+        "languages": "Хэл",
+        "status": "Төлөв",
+        "stats": "Статистик",
+        "reviews": "{count} шүүмж"
+      },
+      "tabs": {
+        "basic": "Үндсэн мэдээлэл",
+        "localization": "Олон хэл",
+        "skills": "Ур чадвар",
+        "settings": "Тохиргоо"
+      },
+      "fields": {
+        "slug": "Slug (URL)",
+        "slugPlaceholder": "sophia-chen",
+        "profilePhoto": "Профайл зураг",
+        "location": "Байршил",
+        "locationPlaceholder": "Сөүл, Каннам",
+        "yearsOfExperience": "Туршлагын жил",
+        "preferredMessenger": "Мессенжер",
+        "displayOrder": "Харуулах дараалал",
+        "language": "Хэл",
+        "proficiency": "Ур чадварын түвшин",
+        "name": "Нэр",
+        "bioShort": "Товч танилцуулга",
+        "bioFull": "Дэлгэрэнгүй танилцуулга",
+        "primarySpecialty": "Үндсэн мэргэжил",
+        "secondarySpecialties": "Нэмэлт мэргэжил",
+        "languagesSpoken": "Хэл",
+        "addLanguage": "Хэл нэмэх",
+        "certifications": "Гэрчилгээ",
+        "addCertification": "Гэрчилгээ нэмэх...",
+        "avgRating": "Дундаж үнэлгээ",
+        "reviewCount": "Шүүмжийн тоо",
+        "isActive": "Идэвхтэй",
+        "isActiveDesc": "Вэбсайтад энэ орчуулагчийг харуулах",
+        "isAvailable": "Боломжтой",
+        "isAvailableDesc": "Одоо захиалга авч байна",
+        "isVerified": "Баталгаажсан",
+        "isVerifiedDesc": "Баталгаажсан тэмдэг харуулах",
+        "isFeatured": "Онцлох",
+        "isFeaturedDesc": "Жагсаалтын дээд хэсэгт харуулах"
+      },
+      "descriptions": {
+        "basicInfo": "Үндсэн профайл мэдээлэл оруулна уу",
+        "languages": "Хэл бүрээр нэр болон танилцуулга оруулна уу",
+        "specialties": "Мэргэжил сонгоно уу",
+        "photoRatio": "1:1 квадрат зураг санал болгоно"
+      },
+      "placeholders": {
+        "selectLanguage": "Хэл сонгох",
+        "name": "Нэр ({language})",
+        "bioShort": "Картын товч танилцуулга (заавал биш)",
+        "bioFull": "Дэлгэрэнгүй хуудасны танилцуулга (заавал биш)",
+        "certification": "Гэрчилгээ нэмэх (заавал биш)"
+      },
+      "specialties": {
+        "plastic-surgery": "Гоо заслын мэс засал",
+        "dermatology": "Арьс судлал",
+        "dental": "Шүдний эмнэлэг",
+        "health-checkup": "Эрүүл мэндийн үзлэг",
+        "fertility": "Үргүйдэл",
+        "hair-transplant": "Үс суулгах",
+        "ophthalmology": "Нүдний эмнэлэг",
+        "orthopedics": "Ортопеди",
+        "general-medical": "Ерөнхий эмнэлэг"
+      },
+      "locales": {
+        "en": "Англи",
+        "ko": "Солонгос",
+        "ja": "Япон",
+        "zh-TW": "Хятад (Уламжлалт)",
+        "zh-CN": "Хятад (Хялбаршуулсан)",
+        "th": "Тайланд",
+        "mn": "Монгол",
+        "ru": "Орос"
+      },
+      "messengers": {
+        "whatsapp": "WhatsApp",
+        "line": "LINE",
+        "wechat": "WeChat",
+        "kakao": "KakaoTalk"
+      },
+      "proficiency": {
+        "native": "Төрөлх",
+        "fluent": "Чөлөөтэй",
+        "conversational": "Харилцан ярианы"
+      },
+      "actions": {
+        "view": "Харах",
+        "edit": "Засах",
+        "delete": "Устгах",
+        "cancel": "Цуцлах",
+        "save": "Өөрчлөлт хадгалах",
+        "create": "Орчуулагч үүсгэх",
+        "removePhoto": "Зураг устгах"
+      },
+      "messages": {
+        "saveSuccess": "Амжилттай хадгалагдсан",
+        "saveFailed": "Хадгалж чадсангүй",
+        "deleteFailed": "Устгаж чадсангүй",
+        "atLeastOneLanguage": "Хамгийн багадаа нэг хэл болон нэр оруулна уу",
+        "imageUploaded": "Зураг амжилттай байршуулагдсан",
+        "uploadFailed": "Байршуулж чадсангүй",
+        "updated": "Орчуулагчийн мэдээлэл шинэчлэгдсэн",
+        "created": "Орчуулагч амжилттай үүсгэгдсэн",
+        "addLanguagePrompt": "Хэл нэмнэ үү"
+      },
+      "upload": {
+        "click": "Байршуулахын тулд дарна уу"
+      }
+    },
+    "upload": {
+      "dragDrop": "Зураг чирж эсвэл энд дарна уу",
+      "uploading": "Байршуулж байна...",
+      "fileLimit": "PNG, JPG, WebP, GIF хамгийн ихдээ 5MB",
+      "orUseUrl": "Эсвэл URL ашиглах"
+    }
   }
 }

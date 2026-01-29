@@ -212,7 +212,7 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
                 onHoverStart={() => setHoveredId(procedure.id)}
                 onHoverEnd={() => setHoveredId(null)}
               >
-                <Link href={`/${locale}/procedures/${procedure.slug}`}>
+                <Link href={`/procedures/${procedure.slug}`}>
                   <motion.div
                     whileHover={{
                       y: -12,
@@ -229,6 +229,7 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
                           src={procedure.image}
                           alt={procedure.name}
                           fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           className="object-cover transition-transform duration-700 group-hover:scale-110"
                         />
                       ) : (
@@ -334,7 +335,7 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
                   Our AI assistant can help analyze your needs and recommend the best procedures based on your goals and medical history.
                 </p>
               </div>
-              <Link href={`/${locale}/inquiry`}>
+              <Link href={`/inquiry`}>
                 <Button
                   size="lg"
                   className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/25"

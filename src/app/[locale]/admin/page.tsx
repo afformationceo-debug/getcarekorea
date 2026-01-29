@@ -1,15 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
-import {
-  Building2,
-  Users,
-  MessageSquare,
-  FileText,
-  TrendingUp,
-  Eye,
-  Calendar,
-  Sparkles,
-} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { StatsCard } from '@/components/ui/stats-card';
 import { createClient } from '@/lib/supabase/server';
 
 interface PageProps {
@@ -26,14 +17,12 @@ async function getDashboardStats() {
     interpretersResult,
     inquiriesResult,
     blogPostsResult,
-    bookingsResult,
     chatConversationsResult,
   ] = await Promise.all([
     supabase.from('hospitals').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-    supabase.from('interpreters').select('id', { count: 'exact', head: true }).eq('is_available', true),
+    supabase.from('author_personas').select('id', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('inquiries').select('id', { count: 'exact', head: true }).eq('status', 'new'),
     supabase.from('blog_posts').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-    supabase.from('bookings').select('id', { count: 'exact', head: true }),
     supabase.from('chat_conversations').select('id', { count: 'exact', head: true }),
   ]);
 
@@ -42,7 +31,6 @@ async function getDashboardStats() {
     activeInterpreters: interpretersResult.count || 0,
     newInquiries: inquiriesResult.count || 0,
     publishedArticles: blogPostsResult.count || 0,
-    totalBookings: bookingsResult.count || 0,
     chatSessions: chatConversationsResult.count || 0,
   };
 }
@@ -97,47 +85,42 @@ export default async function AdminDashboardPage({ params }: PageProps) {
         <StatsCard
           title="Total Hospitals"
           value={stats.totalHospitals.toString()}
-          icon={Building2}
+          icon="building2"
         />
         <StatsCard
           title="Active Interpreters"
           value={stats.activeInterpreters.toString()}
-          icon={Users}
+          icon="users"
         />
         <StatsCard
           title="New Inquiries"
           value={stats.newInquiries.toString()}
-          icon={MessageSquare}
+          icon="messageSquare"
           highlight={stats.newInquiries > 0}
         />
         <StatsCard
           title="Published Articles"
           value={stats.publishedArticles.toString()}
-          icon={FileText}
+          icon="fileText"
         />
       </div>
 
       {/* Second Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
-          title="Total Bookings"
-          value={stats.totalBookings.toString()}
-          icon={Calendar}
-        />
-        <StatsCard
           title="Chat Sessions"
           value={stats.chatSessions.toString()}
-          icon={Sparkles}
+          icon="sparkles"
         />
         <StatsCard
           title="Avg. Rating"
           value="4.8"
-          icon={TrendingUp}
+          icon="trendingUp"
         />
         <StatsCard
           title="Total Views"
           value="0"
-          icon={Eye}
+          icon="eye"
         />
       </div>
 
@@ -147,32 +130,6 @@ export default async function AdminDashboardPage({ params }: PageProps) {
         <ContentPerformance posts={topPosts} />
       </div>
     </div>
-  );
-}
-
-function StatsCard({
-  title,
-  value,
-  icon: Icon,
-  highlight = false,
-}: {
-  title: string;
-  value: string;
-  icon: React.ElementType;
-  highlight?: boolean;
-}) {
-  return (
-    <Card className={highlight ? 'border-primary bg-primary/5' : ''}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <Icon className={`h-4 w-4 ${highlight ? 'text-primary' : 'text-muted-foreground'}`} />
-      </CardHeader>
-      <CardContent>
-        <div className={`text-2xl font-bold ${highlight ? 'text-primary' : ''}`}>{value}</div>
-      </CardContent>
-    </Card>
   );
 }
 

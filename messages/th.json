@@ -246,15 +246,19 @@
       "ฉันต้องการวีซ่าทางการแพทย์เพื่อรับการรักษาในเกาหลีไหม?",
       "คุณแนะนำล่ามที่พูดภาษาไทยได้ไหม?"
     ],
+    "suggestionsLabel": "ลองถาม",
     "tryAsking": "ลองถาม:",
+    "typing": "กำลังพิมพ์...",
     "thinking": "กำลังคิด...",
     "error": "ขออภัย เกิดข้อผิดพลาด กรุณาลองใหม่",
+    "poweredBy": "ขับเคลื่อนโดย Claude AI",
+    "helpful": "มีประโยชน์",
+    "notHelpful": "ไม่มีประโยชน์",
     "feedback": {
       "helpful": "เป็นประโยชน์ไหม?",
       "yes": "ใช่",
       "no": "ไม่"
-    },
-    "poweredBy": "ขับเคลื่อนโดย Claude AI"
+    }
   },
   "inquiry": {
     "title": "ปรึกษาฟรี",
@@ -822,5 +826,186 @@
     "chatOn": "ปรึกษาฟรี 1:1 ทาง LINE",
     "chatNow": "เริ่มปรึกษาฟรี",
     "instantResponse": "⚡ ตอบทันที • ผู้เชี่ยวชาญพร้อม 24/7"
+  },
+  "admin": {
+    "header": {
+      "viewSite": "ดูเว็บไซต์",
+      "accountSettings": "การตั้งค่าบัญชี",
+      "logout": "ออกจากระบบ"
+    },
+    "sidebar": {
+      "title": "แดชบอร์ดผู้ดูแล",
+      "subtitle": "จัดการแพลตฟอร์มของคุณ",
+      "soon": "เร็วๆ นี้",
+      "logout": "ออกจากระบบ",
+      "nav": {
+        "dashboard": "แดชบอร์ด",
+        "hospitals": "โรงพยาบาล",
+        "interpreters": "ล่าม",
+        "inquiries": "สอบถาม",
+        "keywords": "คีย์เวิร์ด",
+        "content": "เนื้อหา",
+        "progress": "ความคืบหน้า",
+        "feedback": "ข้อเสนอแนะ",
+        "analytics": "การวิเคราะห์",
+        "system": "ระบบ",
+        "notifications": "การแจ้งเตือน",
+        "settings": "การตั้งค่า"
+      }
+    },
+    "interpreters": {
+      "title": "จัดการล่าม",
+      "subtitle": "จัดการล่ามทางการแพทย์",
+      "addInterpreter": "เพิ่มล่าม",
+      "editInterpreter": "แก้ไขล่าม",
+      "createNew": "สร้างโปรไฟล์ล่ามใหม่",
+      "updateProfile": "อัปเดตโปรไฟล์ล่าม",
+      "searchPlaceholder": "ค้นหาล่าม...",
+      "noResults": "ไม่พบล่าม",
+      "noFilterResults": "ไม่พบผลลัพธ์",
+      "viewDetails": "ดูรายละเอียด",
+      "deleteConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบล่ามนี้?",
+      "filters": {
+        "label": "ตัวกรอง:",
+        "language": "ภาษา",
+        "specialty": "ความเชี่ยวชาญ",
+        "status": "สถานะ",
+        "allStatus": "สถานะทั้งหมด",
+        "active": "ใช้งาน",
+        "inactive": "ไม่ใช้งาน",
+        "featured": "แนะนำ",
+        "verified": "ยืนยันแล้ว",
+        "selected": "เลือก {count} รายการ",
+        "clearSelection": "ล้างการเลือก",
+        "reset": "รีเซ็ต",
+        "resultCount": "{count} คน / ทั้งหมด {total} คน"
+      },
+      "stats": {
+        "total": "ทั้งหมด",
+        "active": "ใช้งาน",
+        "featured": "แนะนำ",
+        "verified": "ยืนยันแล้ว"
+      },
+      "table": {
+        "interpreter": "ล่าม",
+        "targetLocales": "ภาษาเป้าหมาย",
+        "specialty": "ความเชี่ยวชาญ",
+        "languages": "ภาษา",
+        "status": "สถานะ",
+        "stats": "สถิติ",
+        "reviews": "{count} รีวิว"
+      },
+      "tabs": {
+        "basic": "ข้อมูลพื้นฐาน",
+        "localization": "หลายภาษา",
+        "skills": "ทักษะ",
+        "settings": "การตั้งค่า"
+      },
+      "fields": {
+        "slug": "Slug (URL)",
+        "slugPlaceholder": "sophia-chen",
+        "profilePhoto": "รูปโปรไฟล์",
+        "location": "สถานที่",
+        "locationPlaceholder": "โซล, คังนัม",
+        "yearsOfExperience": "ประสบการณ์ (ปี)",
+        "preferredMessenger": "แอปแชทที่ใช้",
+        "displayOrder": "ลำดับการแสดง",
+        "language": "ภาษา",
+        "proficiency": "ความเชี่ยวชาญ",
+        "name": "ชื่อ",
+        "bioShort": "แนะนำสั้นๆ",
+        "bioFull": "แนะนำเต็ม",
+        "primarySpecialty": "ความเชี่ยวชาญหลัก",
+        "secondarySpecialties": "ความเชี่ยวชาญรอง",
+        "languagesSpoken": "ภาษา",
+        "addLanguage": "เพิ่มภาษา",
+        "certifications": "ใบรับรอง",
+        "addCertification": "เพิ่มใบรับรอง...",
+        "avgRating": "คะแนนเฉลี่ย",
+        "reviewCount": "จำนวนรีวิว",
+        "isActive": "ใช้งาน",
+        "isActiveDesc": "แสดงล่ามนี้บนเว็บไซต์",
+        "isAvailable": "พร้อมให้บริการ",
+        "isAvailableDesc": "รับการจองในขณะนี้",
+        "isVerified": "ยืนยันแล้ว",
+        "isVerifiedDesc": "แสดงตราสัญลักษณ์ยืนยัน",
+        "isFeatured": "แนะนำ",
+        "isFeaturedDesc": "แสดงที่ด้านบนของรายการ"
+      },
+      "descriptions": {
+        "basicInfo": "กรอกข้อมูลโปรไฟล์พื้นฐาน",
+        "languages": "กรอกชื่อและคำแนะนำสำหรับแต่ละภาษา",
+        "specialties": "เลือกความเชี่ยวชาญ",
+        "photoRatio": "แนะนำรูปสี่เหลี่ยมจัตุรัส 1:1"
+      },
+      "placeholders": {
+        "selectLanguage": "เลือกภาษา",
+        "name": "ชื่อ ({language})",
+        "bioShort": "คำแนะนำสั้นๆ สำหรับการ์ด (ไม่บังคับ)",
+        "bioFull": "คำแนะนำเต็มสำหรับหน้ารายละเอียด (ไม่บังคับ)",
+        "certification": "เพิ่มใบรับรอง (ไม่บังคับ)"
+      },
+      "specialties": {
+        "plastic-surgery": "ศัลยกรรมตกแต่ง",
+        "dermatology": "ผิวหนัง",
+        "dental": "ทันตกรรม",
+        "health-checkup": "ตรวจสุขภาพ",
+        "fertility": "มีบุตรยาก",
+        "hair-transplant": "ปลูกผม",
+        "ophthalmology": "จักษุ",
+        "orthopedics": "กระดูก",
+        "general-medical": "แพทย์ทั่วไป"
+      },
+      "locales": {
+        "en": "อังกฤษ",
+        "ko": "เกาหลี",
+        "ja": "ญี่ปุ่น",
+        "zh-TW": "จีน (ตัวเต็ม)",
+        "zh-CN": "จีน (ตัวย่อ)",
+        "th": "ไทย",
+        "mn": "มองโกเลีย",
+        "ru": "รัสเซีย"
+      },
+      "messengers": {
+        "whatsapp": "WhatsApp",
+        "line": "LINE",
+        "wechat": "WeChat",
+        "kakao": "KakaoTalk"
+      },
+      "proficiency": {
+        "native": "เจ้าของภาษา",
+        "fluent": "คล่อง",
+        "conversational": "สนทนาได้"
+      },
+      "actions": {
+        "view": "ดู",
+        "edit": "แก้ไข",
+        "delete": "ลบ",
+        "cancel": "ยกเลิก",
+        "save": "บันทึกการเปลี่ยนแปลง",
+        "create": "สร้างล่าม",
+        "removePhoto": "ลบรูปภาพ"
+      },
+      "messages": {
+        "saveSuccess": "บันทึกสำเร็จ",
+        "saveFailed": "บันทึกไม่สำเร็จ",
+        "deleteFailed": "ลบไม่สำเร็จ",
+        "atLeastOneLanguage": "กรุณาเพิ่มอย่างน้อยหนึ่งภาษาและชื่อ",
+        "imageUploaded": "อัปโหลดรูปภาพสำเร็จ",
+        "uploadFailed": "อัปโหลดไม่สำเร็จ",
+        "updated": "อัปเดตข้อมูลล่ามสำเร็จ",
+        "created": "สร้างล่ามสำเร็จ",
+        "addLanguagePrompt": "กรุณาเพิ่มภาษา"
+      },
+      "upload": {
+        "click": "คลิกเพื่ออัปโหลด"
+      }
+    },
+    "upload": {
+      "dragDrop": "คลิกหรือลากรูปภาพมาที่นี่",
+      "uploading": "กำลังอัปโหลด...",
+      "fileLimit": "PNG, JPG, WebP, GIF สูงสุด 5MB",
+      "orUseUrl": "หรือใช้ URL"
+    }
   }
 }

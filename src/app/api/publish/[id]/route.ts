@@ -40,7 +40,7 @@ export async function GET(
     }
 
     // 포스트 조회
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: post, error: postError } = await (supabase
       .from('blog_posts') as any)
       .select('id, title, slug, locale, status, published_at, scheduled_at, created_at, updated_at')
@@ -140,7 +140,7 @@ export async function POST(
 
     if (result.success && revalidateSecret) {
       // 포스트 정보 조회
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: post } = await (supabase
         .from('blog_posts') as any)
         .select('slug, locale')
@@ -198,7 +198,7 @@ export async function DELETE(
     }
 
     // 현재 상태 확인
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: post } = await (supabase
       .from('blog_posts') as any)
       .select('status')
@@ -223,7 +223,7 @@ export async function DELETE(
 
     // 발행 취소 (published → draft)
     if (post.status === 'published') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error } = await (supabase
         .from('blog_posts') as any)
         .update({

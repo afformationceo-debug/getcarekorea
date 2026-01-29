@@ -160,7 +160,7 @@ export async function runImagePipeline(
     console.log(`   Prompt: ${prompt.substring(0, 100)}...`);
 
     // 2. Create image generation record
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: generation, error: insertError } = await (supabase
       .from('image_generations') as any)
       .insert({

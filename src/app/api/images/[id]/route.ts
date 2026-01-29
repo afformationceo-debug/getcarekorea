@@ -42,7 +42,7 @@ export async function GET(
     }
 
     // 포스트 존재 확인
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: post, error: postError } = await (supabase
       .from('blog_posts') as any)
       .select('id, title, cover_image_url, cover_image_alt')
@@ -57,7 +57,7 @@ export async function GET(
     const status = await getImageGenerationStatus(supabase, blogPostId);
 
     // 생성 히스토리 조회
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: history } = await (supabase
       .from('image_generations') as any)
       .select('id, status, prompt, image_url, generation_time_ms, created_at')
@@ -120,7 +120,7 @@ export async function DELETE(
     await deleteStoredImage(supabase, blogPostId);
 
     // 블로그 포스트 이미지 URL 제거
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase
       .from('blog_posts') as any)
       .update({
@@ -172,7 +172,7 @@ export async function PUT(
     }
 
     // 포스트 정보 조회
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: post, error: postError } = await (supabase
       .from('blog_posts') as any)
       .select('id, title_en, excerpt_en, category')

@@ -359,7 +359,7 @@ function insertLinksIntoContent(
 
   // Split content into sections
   const paragraphs = content.split(/\n\n+/);
-  let currentPosition = 0;
+  const currentPosition = 0;
 
   for (const candidate of candidates) {
     const { slug, anchorText } = candidate;

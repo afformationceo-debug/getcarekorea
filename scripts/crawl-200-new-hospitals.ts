@@ -391,7 +391,7 @@ function extractDistrict(address: string): string | undefined {
 
 function translateCategoryToEnglish(koreanName: string, category: string): string {
   // Remove Korean characters
-  let cleanedName = koreanName
+  const cleanedName = koreanName
     .replace(/[가-힣ㄱ-ㅎㅏ-ㅣ]/g, ' ')
     .replace(/[\u3040-\u309F\u30A0-\u30FF]/g, ' ')
     .replace(/[\u4E00-\u9FFF]/g, ' ')

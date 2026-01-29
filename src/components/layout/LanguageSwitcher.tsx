@@ -70,9 +70,6 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
           >
             <span className="mr-2">{localeFlags[l]}</span>
             <span className="flex-1">{localeNames[l]}</span>
-            {locale === l && (
-              <span className="text-xs text-muted-foreground">Current</span>
-            )}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

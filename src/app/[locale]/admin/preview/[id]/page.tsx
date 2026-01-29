@@ -13,9 +13,9 @@ import {
   Edit,
   Send,
   Check,
-  Loader2,
   MessageSquare,
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -196,7 +196,7 @@ export default function PreviewPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -319,7 +319,7 @@ export default function PreviewPage() {
               {content.status !== 'published' && (
                 <Button size="sm" onClick={handlePublish} disabled={publishing}>
                   {publishing ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <LoadingSpinner size="sm" className="mr-2" />
                   ) : (
                     <Send className="h-4 w-4 mr-2" />
                   )}
@@ -501,11 +501,11 @@ export default function PreviewPage() {
               variant="secondary"
               disabled={publishing}
             >
-              {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {publishing ? <LoadingSpinner size="sm" /> : null}
               피드백 없이 발행
             </Button>
             <Button onClick={handleFeedback} disabled={submitting || !feedbackText.trim()}>
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {submitting ? <LoadingSpinner size="sm" className="mr-2" /> : null}
               피드백 반영 후 재생성
             </Button>
           </DialogFooter>

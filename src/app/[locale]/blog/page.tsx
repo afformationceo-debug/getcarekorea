@@ -15,12 +15,12 @@ import {
   MessageCircle,
   Bookmark,
   ChevronRight,
-  Loader2,
   AlertCircle,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import type { Locale } from '@/lib/i18n/config';
 
 // Types
@@ -325,7 +325,7 @@ export default function BlogPage() {
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-10 w-10 animate-spin text-violet-500" />
+            <LoadingSpinner size="xl" color="secondary" />
           </div>
         )}
 
@@ -424,7 +424,7 @@ export default function BlogPage() {
                 >
                   {loadingMore ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <LoadingSpinner size="sm" color="secondary" />
                       {t('loading')}
                     </>
                   ) : (

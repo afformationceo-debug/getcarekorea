@@ -280,7 +280,7 @@ export function parseCSVV2(
   const actualDelimiter = delimiter || detectedDelimiter;
 
   // Parse header if enhanced format
-  let columnMap: Record<string, number> = {};
+  const columnMap: Record<string, number> = {};
   let startIndex = 0;
 
   if (detectedFormat === 'enhanced' && skipHeader) {

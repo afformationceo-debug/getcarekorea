@@ -246,15 +246,19 @@
       "韓国で治療を受けるには医療ビザが必要ですか？",
       "日本語が話せる通訳を紹介してもらえますか？"
     ],
+    "suggestionsLabel": "こんな質問をしてみましょう",
     "tryAsking": "こんな質問をしてみましょう：",
+    "typing": "入力中...",
     "thinking": "考え中...",
     "error": "申し訳ありません、エラーが発生しました。もう一度お試しください。",
+    "poweredBy": "Claude AIを搭載",
+    "helpful": "役立った",
+    "notHelpful": "役に立たなかった",
     "feedback": {
       "helpful": "役に立ちましたか？",
       "yes": "はい",
       "no": "いいえ"
-    },
-    "poweredBy": "Claude AIを搭載"
+    }
   },
   "inquiry": {
     "title": "無料相談",
@@ -822,5 +826,186 @@
     "chatOn": "LINEで1:1無料相談",
     "chatNow": "無料相談を始める",
     "instantResponse": "⚡ 即時返信 • 24時間専門家サポート"
+  },
+  "admin": {
+    "header": {
+      "viewSite": "サイトを見る",
+      "accountSettings": "アカウント設定",
+      "logout": "ログアウト"
+    },
+    "sidebar": {
+      "title": "管理ダッシュボード",
+      "subtitle": "プラットフォームを管理",
+      "soon": "準備中",
+      "logout": "ログアウト",
+      "nav": {
+        "dashboard": "ダッシュボード",
+        "hospitals": "病院",
+        "interpreters": "通訳者",
+        "inquiries": "お問い合わせ",
+        "keywords": "キーワード",
+        "content": "コンテンツ",
+        "progress": "進捗",
+        "feedback": "フィードバック",
+        "analytics": "分析",
+        "system": "システム",
+        "notifications": "通知",
+        "settings": "設定"
+      }
+    },
+    "interpreters": {
+      "title": "通訳者管理",
+      "subtitle": "医療通訳者を管理",
+      "addInterpreter": "通訳者を追加",
+      "editInterpreter": "通訳者を編集",
+      "createNew": "新しい通訳者プロフィールを作成",
+      "updateProfile": "通訳者プロフィールを更新",
+      "searchPlaceholder": "通訳者を検索...",
+      "noResults": "通訳者が見つかりません",
+      "noFilterResults": "検索結果がありません",
+      "viewDetails": "詳細を見る",
+      "deleteConfirm": "この通訳者を削除してもよろしいですか？",
+      "filters": {
+        "label": "フィルター:",
+        "language": "言語",
+        "specialty": "専門分野",
+        "status": "ステータス",
+        "allStatus": "全てのステータス",
+        "active": "アクティブ",
+        "inactive": "非アクティブ",
+        "featured": "おすすめ",
+        "verified": "認証済み",
+        "selected": "{count}件選択",
+        "clearSelection": "選択解除",
+        "reset": "リセット",
+        "resultCount": "{count}名 / 全{total}名"
+      },
+      "stats": {
+        "total": "合計",
+        "active": "アクティブ",
+        "featured": "おすすめ",
+        "verified": "認証済み"
+      },
+      "table": {
+        "interpreter": "通訳者",
+        "targetLocales": "対象言語",
+        "specialty": "専門分野",
+        "languages": "言語",
+        "status": "ステータス",
+        "stats": "統計",
+        "reviews": "レビュー {count}件"
+      },
+      "tabs": {
+        "basic": "基本情報",
+        "localization": "多言語設定",
+        "skills": "スキル",
+        "settings": "設定"
+      },
+      "fields": {
+        "slug": "スラッグ (URL)",
+        "slugPlaceholder": "sophia-chen",
+        "profilePhoto": "プロフィール写真",
+        "location": "活動地域",
+        "locationPlaceholder": "ソウル、江南",
+        "yearsOfExperience": "経験年数",
+        "preferredMessenger": "優先メッセンジャー",
+        "displayOrder": "表示順序",
+        "language": "言語",
+        "proficiency": "習熟度",
+        "name": "名前",
+        "bioShort": "短い紹介",
+        "bioFull": "詳細紹介",
+        "primarySpecialty": "主な専門分野",
+        "secondarySpecialties": "副専門分野",
+        "languagesSpoken": "言語",
+        "addLanguage": "言語を追加",
+        "certifications": "資格",
+        "addCertification": "資格を追加...",
+        "avgRating": "平均評価",
+        "reviewCount": "レビュー数",
+        "isActive": "アクティブ",
+        "isActiveDesc": "サイトにこの通訳者を表示",
+        "isAvailable": "予約可能",
+        "isAvailableDesc": "現在予約を受け付け中",
+        "isVerified": "認証済み",
+        "isVerifiedDesc": "認証バッジを表示",
+        "isFeatured": "おすすめ",
+        "isFeaturedDesc": "リストの上部に表示"
+      },
+      "descriptions": {
+        "basicInfo": "基本プロフィール情報を入力してください",
+        "languages": "各言語の名前と紹介を入力してください",
+        "specialties": "専門分野を選択してください",
+        "photoRatio": "1:1正方形推奨"
+      },
+      "placeholders": {
+        "selectLanguage": "言語を選択",
+        "name": "名前 ({language})",
+        "bioShort": "カード用の短い紹介（任意）",
+        "bioFull": "詳細ページ用の紹介（任意）",
+        "certification": "資格を追加（任意）"
+      },
+      "specialties": {
+        "plastic-surgery": "美容整形",
+        "dermatology": "皮膚科",
+        "dental": "歯科",
+        "health-checkup": "健康診断",
+        "fertility": "不妊治療",
+        "hair-transplant": "植毛",
+        "ophthalmology": "眼科",
+        "orthopedics": "整形外科",
+        "general-medical": "一般医療"
+      },
+      "locales": {
+        "en": "英語",
+        "ko": "韓国語",
+        "ja": "日本語",
+        "zh-TW": "中国語 (繁体字)",
+        "zh-CN": "中国語 (簡体字)",
+        "th": "タイ語",
+        "mn": "モンゴル語",
+        "ru": "ロシア語"
+      },
+      "messengers": {
+        "whatsapp": "WhatsApp",
+        "line": "LINE",
+        "wechat": "WeChat",
+        "kakao": "カカオトーク"
+      },
+      "proficiency": {
+        "native": "ネイティブ",
+        "fluent": "流暢",
+        "conversational": "日常会話"
+      },
+      "actions": {
+        "view": "表示",
+        "edit": "編集",
+        "delete": "削除",
+        "cancel": "キャンセル",
+        "save": "変更を保存",
+        "create": "通訳者を作成",
+        "removePhoto": "写真を削除"
+      },
+      "messages": {
+        "saveSuccess": "正常に保存されました",
+        "saveFailed": "保存失敗",
+        "deleteFailed": "削除に失敗しました",
+        "atLeastOneLanguage": "少なくとも1つの言語と名前を追加してください",
+        "imageUploaded": "画像がアップロードされました",
+        "uploadFailed": "アップロードに失敗しました",
+        "updated": "通訳者情報が更新されました",
+        "created": "通訳者が作成されました",
+        "addLanguagePrompt": "言語を追加してください"
+      },
+      "upload": {
+        "click": "クリックしてアップロード"
+      }
+    },
+    "upload": {
+      "dragDrop": "画像をここにドラッグするかクリック",
+      "uploading": "アップロード中...",
+      "fileLimit": "PNG, JPG, WebP, GIF 最大5MB",
+      "orUseUrl": "またはURLを使用"
+    }
   }
 }

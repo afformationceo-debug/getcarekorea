@@ -246,15 +246,19 @@
       "在韓國就醫需要醫療簽證嗎？",
       "可以推薦會說中文的口譯員嗎？"
     ],
+    "suggestionsLabel": "試試問",
     "tryAsking": "試試問：",
+    "typing": "輸入中...",
     "thinking": "思考中...",
     "error": "抱歉，發生錯誤。請重試。",
+    "poweredBy": "由 Claude AI 提供支持",
+    "helpful": "有幫助",
+    "notHelpful": "沒幫助",
     "feedback": {
       "helpful": "這有幫助嗎？",
       "yes": "有",
       "no": "沒有"
-    },
-    "poweredBy": "由 Claude AI 提供支持"
+    }
   },
   "inquiry": {
     "title": "免費諮詢",
@@ -822,5 +826,186 @@
     "chatOn": "LINE 1對1免費諮詢",
     "chatNow": "開始免費諮詢",
     "instantResponse": "⚡ 即時回覆 • 24小時專家支援"
+  },
+  "admin": {
+    "header": {
+      "viewSite": "查看網站",
+      "accountSettings": "帳戶設定",
+      "logout": "登出"
+    },
+    "sidebar": {
+      "title": "管理後台",
+      "subtitle": "管理您的平台",
+      "soon": "即將推出",
+      "logout": "登出",
+      "nav": {
+        "dashboard": "儀表板",
+        "hospitals": "醫院",
+        "interpreters": "口譯員",
+        "inquiries": "諮詢",
+        "keywords": "關鍵字",
+        "content": "內容",
+        "progress": "進度",
+        "feedback": "回饋",
+        "analytics": "分析",
+        "system": "系統",
+        "notifications": "通知",
+        "settings": "設定"
+      }
+    },
+    "interpreters": {
+      "title": "翻譯管理",
+      "subtitle": "管理醫療翻譯",
+      "addInterpreter": "新增翻譯",
+      "editInterpreter": "編輯翻譯",
+      "createNew": "建立新翻譯檔案",
+      "updateProfile": "更新翻譯檔案",
+      "searchPlaceholder": "搜尋翻譯...",
+      "noResults": "找不到翻譯",
+      "noFilterResults": "沒有搜尋結果",
+      "viewDetails": "查看詳情",
+      "deleteConfirm": "確定要刪除此翻譯嗎？",
+      "filters": {
+        "label": "篩選:",
+        "language": "語言",
+        "specialty": "專業領域",
+        "status": "狀態",
+        "allStatus": "全部狀態",
+        "active": "活躍",
+        "inactive": "不活躍",
+        "featured": "推薦",
+        "verified": "已驗證",
+        "selected": "已選 {count} 項",
+        "clearSelection": "清除選擇",
+        "reset": "重置",
+        "resultCount": "{count} 人 / 共 {total} 人"
+      },
+      "stats": {
+        "total": "總計",
+        "active": "活躍",
+        "featured": "推薦",
+        "verified": "已驗證"
+      },
+      "table": {
+        "interpreter": "翻譯",
+        "targetLocales": "目標語言",
+        "specialty": "專業領域",
+        "languages": "語言",
+        "status": "狀態",
+        "stats": "統計",
+        "reviews": "{count} 則評論"
+      },
+      "tabs": {
+        "basic": "基本資訊",
+        "localization": "多語言設定",
+        "skills": "技能",
+        "settings": "設定"
+      },
+      "fields": {
+        "slug": "網址代碼 (URL)",
+        "slugPlaceholder": "sophia-chen",
+        "profilePhoto": "大頭照",
+        "location": "所在地",
+        "locationPlaceholder": "首爾，江南",
+        "yearsOfExperience": "經驗年數",
+        "preferredMessenger": "偏好通訊軟體",
+        "displayOrder": "顯示順序",
+        "language": "語言",
+        "proficiency": "熟練度",
+        "name": "姓名",
+        "bioShort": "簡短介紹",
+        "bioFull": "詳細介紹",
+        "primarySpecialty": "主要專業",
+        "secondarySpecialties": "次要專業",
+        "languagesSpoken": "語言",
+        "addLanguage": "新增語言",
+        "certifications": "證照",
+        "addCertification": "新增證照...",
+        "avgRating": "平均評分",
+        "reviewCount": "評論數量",
+        "isActive": "啟用",
+        "isActiveDesc": "在網站上顯示此翻譯",
+        "isAvailable": "可預約",
+        "isAvailableDesc": "目前接受預約",
+        "isVerified": "已驗證",
+        "isVerifiedDesc": "顯示驗證徽章",
+        "isFeatured": "推薦",
+        "isFeaturedDesc": "顯示在列表頂部"
+      },
+      "descriptions": {
+        "basicInfo": "輸入基本資料資訊",
+        "languages": "輸入每種語言的姓名和介紹",
+        "specialties": "選擇專業領域",
+        "photoRatio": "建議使用1:1正方形圖片"
+      },
+      "placeholders": {
+        "selectLanguage": "選擇語言",
+        "name": "姓名 ({language})",
+        "bioShort": "卡片上顯示的簡短介紹（選填）",
+        "bioFull": "詳情頁顯示的完整介紹（選填）",
+        "certification": "新增證照（選填）"
+      },
+      "specialties": {
+        "plastic-surgery": "整形外科",
+        "dermatology": "皮膚科",
+        "dental": "牙科",
+        "health-checkup": "健康檢查",
+        "fertility": "不孕症",
+        "hair-transplant": "植髮",
+        "ophthalmology": "眼科",
+        "orthopedics": "骨科",
+        "general-medical": "一般醫療"
+      },
+      "locales": {
+        "en": "英文",
+        "ko": "韓文",
+        "ja": "日文",
+        "zh-TW": "繁體中文",
+        "zh-CN": "簡體中文",
+        "th": "泰文",
+        "mn": "蒙古文",
+        "ru": "俄文"
+      },
+      "messengers": {
+        "whatsapp": "WhatsApp",
+        "line": "LINE",
+        "wechat": "微信",
+        "kakao": "KakaoTalk"
+      },
+      "proficiency": {
+        "native": "母語",
+        "fluent": "流利",
+        "conversational": "日常會話"
+      },
+      "actions": {
+        "view": "檢視",
+        "edit": "編輯",
+        "delete": "刪除",
+        "cancel": "取消",
+        "save": "儲存變更",
+        "create": "建立翻譯",
+        "removePhoto": "刪除照片"
+      },
+      "messages": {
+        "saveSuccess": "儲存成功",
+        "saveFailed": "儲存失敗",
+        "deleteFailed": "刪除失敗",
+        "atLeastOneLanguage": "請至少添加一種語言和姓名",
+        "imageUploaded": "圖片上傳成功",
+        "uploadFailed": "上傳失敗",
+        "updated": "翻譯資訊已更新",
+        "created": "翻譯已建立",
+        "addLanguagePrompt": "請新增語言"
+      },
+      "upload": {
+        "click": "點擊上傳"
+      }
+    },
+    "upload": {
+      "dragDrop": "點擊或拖曳圖片至此",
+      "uploading": "上傳中...",
+      "fileLimit": "PNG, JPG, WebP, GIF 最大 5MB",
+      "orUseUrl": "或使用網址"
+    }
   }
 }

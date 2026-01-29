@@ -346,6 +346,7 @@ export default function AboutPage() {
                       src={member.image}
                       alt={t(`team.members.${member.key}.name`)}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                       className="object-cover transition-transform duration-500 hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
@@ -395,7 +396,7 @@ export default function AboutPage() {
                   className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/25"
                   asChild
                 >
-                  <Link href={`/${locale}/inquiry`}>
+                  <Link href={`/inquiry`}>
                     <Sparkles className="mr-2 h-4 w-4" />
                     {t('ctaSection.getConsultation')}
                   </Link>
@@ -406,7 +407,7 @@ export default function AboutPage() {
                   className="border-white/20 text-white hover:bg-white/10"
                   asChild
                 >
-                  <Link href={`/${locale}/hospitals`}>
+                  <Link href="/hospitals">
                     {t('ctaSection.exploreHospitals')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>

@@ -13,7 +13,6 @@ import {
   MessageCircle,
   Phone,
   Mail,
-  Loader2,
   Sparkles,
   Shield,
   Clock,
@@ -28,6 +27,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -451,7 +451,7 @@ function InquiryFormContent() {
                       >
                         {isSubmitting ? (
                           <>
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            <LoadingSpinner size="sm" color="white" className="mr-2" />
                             {t('form.submitting')}
                           </>
                         ) : (
@@ -590,12 +590,7 @@ function InquiryFormFallback() {
     <div className="min-h-screen bg-background">
       <div className="relative overflow-hidden bg-gradient-to-b from-violet-950 via-purple-900 to-background py-32">
         <div className="container flex items-center justify-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          >
-            <Loader2 className="h-12 w-12 text-white" />
-          </motion.div>
+          <LoadingSpinner size="xl" color="white" />
         </div>
       </div>
     </div>

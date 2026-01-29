@@ -31,7 +31,6 @@ import {
   MessageSquare,
   Upload,
   Link as LinkIcon,
-  Loader2,
   Monitor,
   Smartphone,
   Tablet,
@@ -42,6 +41,7 @@ import {
   Languages,
   ChevronDown,
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -76,6 +76,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { DeleteDialog } from '@/components/ui/confirm-dialog';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
@@ -331,20 +333,6 @@ export default function ContentPage() {
     }
 
     return locales;
-  };
-
-  const statusIcons: Record<string, React.ReactNode> = {
-    draft: <Clock className="h-4 w-4 text-gray-500" />,
-    review: <AlertCircle className="h-4 w-4 text-yellow-500" />,
-    published: <CheckCircle className="h-4 w-4 text-green-500" />,
-    archived: <Archive className="h-4 w-4 text-gray-400" />,
-  };
-
-  const statusBadges: Record<string, 'secondary' | 'outline' | 'default' | 'destructive'> = {
-    draft: 'secondary',
-    review: 'outline',
-    published: 'default',
-    archived: 'secondary',
   };
 
   const getQualityScore = (post: BlogPost): number => {
@@ -842,12 +830,7 @@ export default function ContentPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          {statusIcons[post.status]}
-                          <Badge variant={statusBadges[post.status]}>
-                            {post.status}
-                          </Badge>
-                        </div>
+                        <StatusBadge status={post.status as 'draft' | 'review' | 'published' | 'archived'} />
                       </TableCell>
                       <TableCell>
                         {getPublishedUrl(post) ? (
@@ -1146,9 +1129,11 @@ export default function ContentPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={statusBadges[previewPost.status]} className="mr-2">
-                      {previewPost.status.toUpperCase()}
-                    </Badge>
+                    <StatusBadge
+                      status={previewPost.status as 'draft' | 'review' | 'published' | 'archived'}
+                      label={previewPost.status.toUpperCase()}
+                      className="mr-2"
+                    />
                     <Button
                       variant="outline"
                       size="sm"
@@ -1212,6 +1197,7 @@ export default function ContentPage() {
                     src={previewPost.cover_image_url || DEFAULT_IMAGE}
                     alt={getPostTitle(previewPost, previewLocale)}
                     fill
+                    sizes="100vw"
                     className="object-cover"
                     priority
                   />
@@ -1496,46 +1482,16 @@ export default function ContentPage() {
       </Dialog>
 
       {/* Delete Confirmation Modal */}
-      <Dialog open={!!deletePost} onOpenChange={() => setDeletePost(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
-              <Trash2 className="h-5 w-5" />
-              Delete Article
-            </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this article? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-
-          {deletePost && (
-            <div className="space-y-4">
-              <div className="p-4 bg-muted rounded-lg">
-                <p className="font-medium">{getPostTitle(deletePost)}</p>
-                <p className="text-sm text-muted-foreground">/{deletePost.slug}</p>
-              </div>
-
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDeletePost(null)}>
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={actionLoading === deletePost.id}
-                >
-                  {actionLoading === deletePost.id ? (
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="mr-2 h-4 w-4" />
-                  )}
-                  Delete
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <DeleteDialog
+        open={!!deletePost}
+        onOpenChange={() => setDeletePost(null)}
+        title="Delete Article"
+        description="Are you sure you want to delete this article? This action cannot be undone."
+        itemName={deletePost ? getPostTitle(deletePost) : ''}
+        itemDescription={deletePost ? `/${deletePost.slug}` : ''}
+        onConfirm={handleDelete}
+        isLoading={actionLoading === deletePost?.id}
+      />
 
       {/* Feedback Modal */}
       <Dialog open={!!feedbackPost} onOpenChange={() => { setFeedbackPost(null); setFeedbackText(''); }}>
@@ -1624,7 +1580,7 @@ export default function ContentPage() {
                     className="gap-2"
                   >
                     {feedbackLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <LoadingSpinner size="sm" />
                     ) : (
                       <RefreshCw className="h-4 w-4" />
                     )}
@@ -1636,7 +1592,7 @@ export default function ContentPage() {
                     className="gap-2 bg-green-600 hover:bg-green-700"
                   >
                     {publishLoading === feedbackPost.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <LoadingSpinner size="sm" color="white" />
                     ) : (
                       <Upload className="h-4 w-4" />
                     )}

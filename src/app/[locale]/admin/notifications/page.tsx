@@ -6,7 +6,6 @@ import {
   Info,
   XCircle,
   CheckCircle,
-  Loader2,
   Trash2,
   Settings,
   MessageSquare,
@@ -37,7 +36,7 @@ interface Notification {
 async function getNotifications(): Promise<Notification[]> {
   const supabase = await createClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase
     .from('admin_notifications') as any)
     .select('*')
@@ -79,7 +78,7 @@ async function getNotificationSettings() {
 async function getApiUsageStats() {
   const supabase = await createClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: usageData } = await (supabase
     .from('api_usage_logs') as any)
     .select('provider, tokens_used, cost_usd, created_at')

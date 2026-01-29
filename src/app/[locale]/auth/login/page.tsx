@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { useLocale } from 'next-intl';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { createClient } from '@/lib/supabase/client';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -111,7 +112,7 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
                   <Link
-                    href={`/${locale}/auth/forgot-password`}
+                    href={`/auth/forgot-password`}
                     className="text-sm text-primary hover:underline"
                   >
                     Forgot password?
@@ -149,7 +150,7 @@ export default function LoginPage() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <LoadingSpinner size="sm" color="white" className="mr-2" />
                     Signing in...
                   </>
                 ) : (
@@ -161,7 +162,7 @@ export default function LoginPage() {
             <div className="mt-6 text-center text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
               <Link
-                href={`/${locale}/auth/signup`}
+                href={`/auth/signup`}
                 className="font-medium text-primary hover:underline"
               >
                 Sign up
@@ -172,11 +173,11 @@ export default function LoginPage() {
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
           By signing in, you agree to our{' '}
-          <Link href={`/${locale}/terms`} className="underline hover:text-foreground">
+          <Link href={`/terms`} className="underline hover:text-foreground">
             Terms of Service
           </Link>{' '}
           and{' '}
-          <Link href={`/${locale}/privacy`} className="underline hover:text-foreground">
+          <Link href={`/privacy`} className="underline hover:text-foreground">
             Privacy Policy
           </Link>
         </p>

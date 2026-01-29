@@ -21,7 +21,17 @@ export const revalidate = 60;
 
 type Params = { params: Promise<{ id: string }> };
 
-// Map locale to name field suffix
+// Type for localized JSONB fields
+type LocalizedField = Record<string, string>;
+
+// Get localized value from JSONB field with fallback to English
+function getLocalizedValue(field: unknown, locale: string): string {
+  const data = field as LocalizedField | null;
+  if (!data) return '';
+  return data[locale] || data['en'] || '';
+}
+
+// Map locale to column suffix (for blog_posts which still uses column-based approach)
 const localeFieldMap: Record<string, string> = {
   en: 'en',
   ko: 'ko',
@@ -90,25 +100,15 @@ function getLanguageName(code: string): string {
   return names[code] || code.toUpperCase();
 }
 
-// Generate default photo URL based on name
-function getDefaultPhoto(name: string): string {
-  const seed = encodeURIComponent(name);
-  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
-}
-
 // Transform author_persona to interpreter format
 function transformToInterpreter(persona: Record<string, unknown>, locale: string) {
-  const suffix = localeFieldMap[locale] || 'en';
+  // Get localized name from JSONB
+  const nameData = persona.name as LocalizedField;
+  const name = getLocalizedValue(nameData, locale);
 
-  // Get localized name
-  const nameKey = `name_${suffix}`;
-  const name = (persona[nameKey] as string) || (persona.name_en as string);
-
-  // Get localized bio
-  const bioShortKey = `bio_short_${suffix}`;
-  const bioFullKey = `bio_full_${suffix}`;
-  const bioShort = (persona[bioShortKey] as string) || (persona.bio_short_en as string) || '';
-  const bioFull = (persona[bioFullKey] as string) || (persona.bio_full_en as string) || '';
+  // Get localized bio from JSONB
+  const bioShort = getLocalizedValue(persona.bio_short, locale);
+  const bioFull = getLocalizedValue(persona.bio_full, locale);
 
   // Parse languages from JSONB
   const languages = parseLanguages(persona.languages);
@@ -120,22 +120,20 @@ function transformToInterpreter(persona: Record<string, unknown>, locale: string
   ].filter(Boolean);
 
   // Get messenger CTA text
-  const messengerCtaText = persona.messenger_cta_text as Record<string, string> | null;
+  const messengerCtaText = persona.messenger_cta_text as LocalizedField | null;
   const ctaText = messengerCtaText?.[locale] || messengerCtaText?.en || 'Contact Us';
 
   return {
     id: persona.id as string,
     slug: persona.slug as string,
     name,
-    name_en: persona.name_en as string,
+    name_en: nameData?.en || name,
     name_local: name,
-    photo_url: (persona.photo_url as string) || getDefaultPhoto(name),
+    photo_url: (persona.photo_url as string) || null,
     languages,
     specialties,
     bio: bioShort || bioFull,
     bio_full: bioFull,
-    hourly_rate: (persona.hourly_rate as number) || 50,
-    daily_rate: (persona.daily_rate as number) || 350,
     avg_rating: parseFloat(String(persona.avg_rating || 4.8)),
     review_count: (persona.review_count as number) || 0,
     total_bookings: (persona.total_bookings as number) || 0,
@@ -196,7 +194,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     // Fetch blog posts written by this author if requested
     if (includePosts) {
       const suffix = localeFieldMap[locale] || 'en';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: posts } = await (supabase
         .from('blog_posts')
         .select(`

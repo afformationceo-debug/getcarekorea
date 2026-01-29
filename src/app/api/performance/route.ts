@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 최근 고성과 콘텐츠 조회
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: topPerformers } = await (supabase
       .from('content_performance') as any)
       .select(`
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       .limit(10);
 
     // 성과 등급별 분포
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: tierDistribution } = await (supabase
       .from('content_performance') as any)
       .select('performance_tier')

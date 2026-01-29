@@ -393,7 +393,7 @@ function enhanceImagePrompt(
   const stockPhotoSpecs = `Professional stock photography, shot on Sony A7R IV full-frame mirrorless camera with Zeiss 35mm f/1.4 lens. `;
 
   // Clean the base prompt - aggressively remove AI/illustration triggers
-  let cleaned = basePrompt
+  const cleaned = basePrompt
     .replace(/\b(illustration|infographic|diagram|cartoon|graphic|vector|icon|clipart|drawing|sketch|animated|3d render|render|CGI|digital art|concept art|artistic|stylized)\b/gi, '')
     .replace(/\b(medical illustration|educational diagram|split composition|morphing)\b/gi, 'medical documentation photo')
     .replace(/\b(vibrant|vivid|saturated|HDR|hyper|ultra)\b/gi, 'natural')

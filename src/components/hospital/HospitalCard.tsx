@@ -29,6 +29,7 @@ export function HospitalCard({ hospital, locale }: HospitalCardProps) {
             src={hospital.cover_image_url}
             alt={name}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition-transform group-hover:scale-105"
           />
         ) : (
@@ -67,6 +68,7 @@ export function HospitalCard({ hospital, locale }: HospitalCardProps) {
                 src={hospital.logo_url}
                 alt={`${name} logo`}
                 fill
+                sizes="48px"
                 className="object-cover"
               />
             </div>

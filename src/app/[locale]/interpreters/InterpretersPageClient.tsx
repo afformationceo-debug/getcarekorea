@@ -51,12 +51,10 @@ interface Interpreter {
   id: string;
   slug?: string;
   name: string;
-  photo_url: string;
+  photo_url: string | null;
   languages: Language[];
   specialties: string[];
   bio: string;
-  hourly_rate: number;
-  daily_rate: number;
   avg_rating: number;
   review_count: number;
   total_bookings: number;
@@ -67,7 +65,7 @@ interface Interpreter {
   video_url: string | null;
   experience_years: number;
   location: string;
-  target_locales?: string[];
+  language_codes?: string[];
 }
 
 interface InterpretersPageClientProps {
@@ -473,7 +471,7 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
                 className="h-14 gap-3 rounded-2xl bg-white px-10 text-lg font-bold text-purple-700 shadow-2xl hover:bg-white/90"
                 asChild
               >
-                <Link href={`/${locale}/inquiry`}>
+                <Link href={`/inquiry`}>
                   <Zap className="h-5 w-5" />
                   Get AI-Matched Interpreter
                 </Link>
@@ -518,12 +516,22 @@ function InterpreterCard3D({
 
         {/* Image Section - Much Larger */}
         <div className="relative h-72 overflow-hidden">
-          <Image
-            src={interpreter.photo_url}
-            alt={interpreter.name}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
-          />
+          {interpreter.photo_url ? (
+            <Image
+              src={interpreter.photo_url}
+              alt={interpreter.name}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              unoptimized={interpreter.photo_url.includes('.svg') || interpreter.photo_url.includes('dicebear')}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
+              <span className="text-6xl font-bold text-primary/40">
+                {interpreter.name[0]?.toUpperCase() || '?'}
+              </span>
+            </div>
+          )}
 
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -631,27 +639,13 @@ function InterpreterCard3D({
             ))}
           </div>
 
-          {/* Pricing */}
-          <div className="mb-5 flex items-baseline justify-between rounded-2xl bg-gradient-to-r from-primary/5 to-purple-500/5 p-4">
-            <div>
-              <span className="text-3xl font-black text-primary">
-                ${interpreter.hourly_rate}
-              </span>
-              <span className="text-muted-foreground">/hr</span>
-            </div>
-            <div className="text-right">
-              <span className="text-lg font-bold">${interpreter.daily_rate}</span>
-              <span className="text-sm text-muted-foreground">/day</span>
-            </div>
-          </div>
-
           {/* CTA */}
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               className="h-12 w-full gap-2 rounded-xl bg-gradient-to-r from-primary to-violet-600 text-base font-semibold shadow-lg hover:shadow-xl"
               asChild
             >
-              <Link href={`/${locale}/interpreters/${interpreter.slug || interpreter.id}`}>
+              <Link href={`/interpreters/${interpreter.slug || interpreter.id}`}>
                 View Profile
                 <ChevronRight className="h-5 w-5" />
               </Link>
@@ -680,12 +674,22 @@ function InterpreterListCard({
         <div className="flex flex-col lg:flex-row">
           {/* Image section - Larger */}
           <div className="relative h-64 w-full lg:h-auto lg:w-80">
-            <Image
-              src={interpreter.photo_url}
-              alt={interpreter.name}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-            />
+            {interpreter.photo_url ? (
+              <Image
+                src={interpreter.photo_url}
+                alt={interpreter.name}
+                fill
+                sizes="(max-width: 1024px) 100vw, 320px"
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                unoptimized={interpreter.photo_url.includes('.svg') || interpreter.photo_url.includes('dicebear')}
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
+                <span className="text-6xl font-bold text-primary/40">
+                  {interpreter.name[0]?.toUpperCase() || '?'}
+                </span>
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-black/30 lg:bg-gradient-to-b" />
 
             {/* Badges */}
@@ -798,19 +802,6 @@ function InterpreterListCard({
                   </span>
                 </div>
 
-                {/* Pricing */}
-                <div className="text-right">
-                  <div>
-                    <span className="text-3xl font-black text-primary">
-                      ${interpreter.hourly_rate}
-                    </span>
-                    <span className="text-muted-foreground">/hr</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    ${interpreter.daily_rate}/day
-                  </div>
-                </div>
-
                 {/* CTA */}
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button
@@ -818,7 +809,7 @@ function InterpreterListCard({
                     className="gap-2 rounded-xl bg-gradient-to-r from-primary to-violet-600 px-8 shadow-lg"
                     asChild
                   >
-                    <Link href={`/${locale}/interpreters/${interpreter.slug || interpreter.id}`}>
+                    <Link href={`/interpreters/${interpreter.slug || interpreter.id}`}>
                       View Profile
                       <ChevronRight className="h-5 w-5" />
                     </Link>

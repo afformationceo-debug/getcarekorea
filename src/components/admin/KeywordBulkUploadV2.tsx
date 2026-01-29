@@ -44,11 +44,11 @@ import {
   CheckCircle2,
   X,
   Download,
-  Loader2,
   RefreshCw,
   Globe,
   TrendingUp,
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import {
   parseCSVV2,
   generateCSVTemplateV2,
@@ -715,7 +715,7 @@ export function KeywordBulkUploadV2({
                 >
                   {isUploading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <LoadingSpinner size="sm" className="mr-2" />
                       업로드 중...
                     </>
                   ) : (

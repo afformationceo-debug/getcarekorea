@@ -261,11 +261,11 @@ export function HospitalDetailClient({
       >
         <div className="container py-3">
           <nav className="flex items-center gap-2 text-sm text-muted-foreground overflow-hidden">
-            <Link href={`/${locale}`} className="hover:text-foreground transition-colors shrink-0">
+            <Link href="/" className="hover:text-foreground transition-colors shrink-0">
               {tNav('home')}
             </Link>
             <ChevronRight className="h-4 w-4 shrink-0" />
-            <Link href={`/${locale}/hospitals`} className="hover:text-foreground transition-colors shrink-0">
+            <Link href="/hospitals" className="hover:text-foreground transition-colors shrink-0">
               {tNav('hospitals')}
             </Link>
             <ChevronRight className="h-4 w-4 shrink-0" />
@@ -291,6 +291,7 @@ export function HospitalDetailClient({
                   src={allImages[currentImageIndex]}
                   alt={hospital.name}
                   fill
+                  sizes="100vw"
                   className="object-cover"
                   priority
                 />
@@ -386,6 +387,7 @@ export function HospitalDetailClient({
                         src={hospital.logo_url}
                         alt={`${hospital.name} logo`}
                         fill
+                        sizes="80px"
                         className="object-cover"
                       />
                     </motion.div>
@@ -785,7 +787,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                   className="w-full gap-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 shadow-lg shadow-sky-500/25"
                   asChild
                 >
-                  <Link href={`/${locale}/inquiry?hospital=${hospital.id}`}>
+                  <Link href={`/inquiry?hospital=${hospital.id}`}>
                     <Calendar className="h-5 w-5" />
                     {t('detail.getFreeQuote')}
                   </Link>
@@ -796,7 +798,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                   className="w-full gap-2 border-sky-300 text-sky-700 hover:bg-sky-100 dark:border-sky-700 dark:text-sky-300 dark:hover:bg-sky-900/50"
                   asChild
                 >
-                  <Link href={`/${locale}/inquiry?hospital=${hospital.id}&service=interpreter`}>
+                  <Link href={`/inquiry?hospital=${hospital.id}&service=interpreter`}>
                     <Languages className="h-5 w-5" />
                     {t('detail.bookWithInterpreter')}
                   </Link>
@@ -843,6 +845,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                       src={img}
                       alt={`${hospital.name} photo ${index + 1}`}
                       fill
+                      sizes="(max-width: 768px) 50vw, 33vw"
                       className="object-cover transition-transform group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
@@ -1059,7 +1062,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                   className="gap-2 rounded-full bg-white text-violet-700 hover:bg-white/90 font-semibold shadow-lg"
                   asChild
                 >
-                  <Link href={`/${locale}/inquiry?hospital=${hospital.id}&service=interpreter`}>
+                  <Link href={`/inquiry?hospital=${hospital.id}&service=interpreter`}>
                     <MessageCircle className="h-5 w-5" />
                     {t('detail.requestInterpreter')}
                   </Link>
@@ -1069,7 +1072,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                   className="gap-2 rounded-full bg-white/20 text-white hover:bg-white/30 border-2 border-white/50 font-semibold"
                   asChild
                 >
-                  <Link href={`/${locale}/inquiry?hospital=${hospital.id}`}>
+                  <Link href={`/inquiry?hospital=${hospital.id}`}>
                     <Calendar className="h-5 w-5" />
                     {t('detail.bookConsultation')}
                   </Link>
@@ -1095,7 +1098,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                   {t('detail.relatedArticles')}
                 </div>
                 <Link
-                  href={`/${locale}/blog${hospital.category ? `?category=${hospital.category}` : ''}`}
+                  href={`/blog${hospital.category ? `?category=${hospital.category}` : ''}`}
                   className="text-sm font-normal text-primary hover:underline flex items-center gap-1"
                 >
                   {t('detail.viewAllArticles')}
@@ -1112,7 +1115,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 * index }}
                   >
-                    <Link href={`/${locale}/blog/${post.slug}`}>
+                    <Link href={`/blog/${post.slug}`}>
                       <div className="group relative overflow-hidden rounded-xl border border-border/50 bg-card hover:shadow-lg transition-all">
                         {/* Image */}
                         <div className="relative h-32 overflow-hidden bg-muted">
@@ -1121,6 +1124,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                               src={post.featured_image}
                               alt={post.title}
                               fill
+                              sizes="(max-width: 768px) 100vw, 33vw"
                               className="object-cover transition-transform group-hover:scale-110"
                               onError={(e) => {
                                 // Hide image on error and show fallback
@@ -1180,7 +1184,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                   className="gap-2"
                   asChild
                 >
-                  <Link href={`/${locale}/blog${hospital.specialties?.[0] ? `?search=${encodeURIComponent(hospital.specialties[0])}` : ''}`}>
+                  <Link href={`/blog${hospital.specialties?.[0] ? `?search=${encodeURIComponent(hospital.specialties[0])}` : ''}`}>
                     <BookOpen className="h-4 w-4" />
                     {tBlog('exploreMoreGuides')}
                     <ArrowRight className="h-4 w-4" />
@@ -1218,6 +1222,7 @@ function DoctorsSection({ doctors }: { doctors: Doctor[] }) {
                     src={doctor.image}
                     alt={doctor.name}
                     fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -1303,7 +1308,7 @@ function ProceduresSection({
                     className="gap-2 rounded-full bg-gradient-to-r from-primary to-violet-600 hover:opacity-90"
                     asChild
                   >
-                    <Link href={`/${locale}/inquiry?hospital=${hospitalId}&procedure=${procedure.id}`}>
+                    <Link href={`/inquiry?hospital=${hospitalId}&procedure=${procedure.id}`}>
                       Get Quote
                       <ArrowRight className="h-4 w-4" />
                     </Link>
@@ -1664,7 +1669,7 @@ function MobileBottomCTA({ hospital, locale }: { hospital: Hospital; locale: Loc
             className="flex-1 gap-1.5 rounded-xl bg-gradient-to-r from-primary to-violet-600 hover:opacity-90 py-5 text-sm font-semibold shadow-lg"
             asChild
           >
-            <Link href={`/${locale}/inquiry?hospital=${hospital.id}`}>
+            <Link href={`/inquiry?hospital=${hospital.id}`}>
               <MessageCircle className="h-4 w-4" />
               {cta.cta1}
             </Link>
@@ -1674,7 +1679,7 @@ function MobileBottomCTA({ hospital, locale }: { hospital: Hospital; locale: Loc
             className="flex-1 gap-1.5 rounded-xl py-5 text-sm font-semibold border-2 hover:bg-primary/5"
             asChild
           >
-            <Link href={`/${locale}/inquiry?hospital=${hospital.id}&service=interpreter`}>
+            <Link href={`/inquiry?hospital=${hospital.id}&service=interpreter`}>
               <Languages className="h-4 w-4" />
               {cta.cta2}
             </Link>
@@ -1780,7 +1785,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
               className="w-full gap-2 rounded-xl bg-gradient-to-r from-primary to-violet-600 hover:opacity-90 py-6 text-lg shadow-lg"
               asChild
             >
-              <Link href={`/${locale}/inquiry?hospital=${hospital.id}`}>
+              <Link href={`/inquiry?hospital=${hospital.id}`}>
                 <MessageCircle className="h-5 w-5" />
                 {cta.cta1}
               </Link>
@@ -1790,7 +1795,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
               className="w-full gap-2 rounded-xl py-6 text-lg border-2 hover:bg-primary/5"
               asChild
             >
-              <Link href={`/${locale}/inquiry?hospital=${hospital.id}&service=interpreter`}>
+              <Link href={`/inquiry?hospital=${hospital.id}&service=interpreter`}>
                 <Languages className="h-5 w-5" />
                 {cta.cta2}
               </Link>
@@ -1966,7 +1971,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
               <p className="text-xs text-muted-foreground">{t('chatWithUs')}</p>
             </div>
             <Button size="sm" className="bg-green-500 hover:bg-green-600" asChild>
-              <Link href={`/${locale}/contact`}>
+              <Link href={`/contact`}>
                 {t('chat')}
               </Link>
             </Button>

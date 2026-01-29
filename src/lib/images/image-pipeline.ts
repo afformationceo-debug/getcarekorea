@@ -90,7 +90,7 @@ export async function runImagePipeline(
     const optimizedPrompt = optimizePromptForDalle(prompt.prompt, options.category);
 
     // 3. 이미지 생성 기록 생성
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: generation, error: insertError } = await (supabase
       .from('image_generations') as any)
       .insert({
@@ -119,7 +119,7 @@ export async function runImagePipeline(
     if (!response.success || !response.imageUrl) {
       // 실패 기록
       if (generation?.id) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase
           .from('image_generations') as any)
           .update({
@@ -147,7 +147,7 @@ export async function runImagePipeline(
     );
 
     // 6. 블로그 포스트 업데이트
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase
       .from('blog_posts') as any)
       .update({
@@ -159,7 +159,7 @@ export async function runImagePipeline(
 
     // 7. 생성 기록 완료
     if (generation?.id) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       await (supabase
         .from('image_generations') as any)
         .update({
@@ -209,7 +209,7 @@ export async function runBatchImagePipeline(
   };
 
   // 블로그 포스트 정보 조회
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: posts, error } = await (supabase
     .from('blog_posts') as any)
     .select('id, title_en, excerpt_en, category')
@@ -363,7 +363,7 @@ export async function getPostsNeedingImages(
 ): Promise<{ id: string; title: string }[]> {
   const { status = 'published', limit = 50 } = options;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: posts } = await (supabase
     .from('blog_posts') as any)
     .select('id, title_en')
@@ -392,7 +392,7 @@ export async function getImageGenerationStatus(
   };
 }> {
   // 블로그 포스트 확인
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: post } = await (supabase
     .from('blog_posts') as any)
     .select('cover_image_url')
@@ -400,7 +400,7 @@ export async function getImageGenerationStatus(
     .single();
 
   // 최근 생성 기록 확인
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: generation } = await (supabase
     .from('image_generations') as any)
     .select('status, image_url, created_at')

@@ -24,7 +24,7 @@ export async function GET() {
 
     for (const tableName of REQUIRED_TABLES) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { count, error } = await (supabase
           .from(tableName) as any)
           .select('*', { count: 'exact', head: true });
@@ -47,7 +47,7 @@ export async function GET() {
     let keywordColumnsOk = false;
     if (results['content_keywords']?.exists) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data, error } = await (supabase
           .from('content_keywords') as any)
           .select('keyword_native, keyword_ko')

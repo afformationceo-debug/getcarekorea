@@ -246,10 +246,14 @@
       "Do I need a medical visa to get treatment in Korea?",
       "Can you recommend an English-speaking interpreter?"
     ],
+    "suggestionsLabel": "Try asking",
     "tryAsking": "Try asking:",
+    "typing": "Typing...",
     "thinking": "Thinking...",
     "error": "Sorry, I encountered an error. Please try again.",
     "poweredBy": "Powered by Claude AI",
+    "helpful": "Helpful",
+    "notHelpful": "Not helpful",
     "feedback": {
       "helpful": "Was this helpful?",
       "yes": "Yes",
@@ -822,5 +826,186 @@
     "chatOn": "1:1 Free Consultation on",
     "chatNow": "Start Free Consultation",
     "instantResponse": "⚡ Get instant reply • Free 24/7 expert support"
+  },
+  "admin": {
+    "header": {
+      "viewSite": "View Site",
+      "accountSettings": "Account Settings",
+      "logout": "Logout"
+    },
+    "sidebar": {
+      "title": "Admin Dashboard",
+      "subtitle": "Manage your platform",
+      "soon": "Soon",
+      "logout": "Logout",
+      "nav": {
+        "dashboard": "Dashboard",
+        "hospitals": "Hospitals",
+        "interpreters": "Interpreters",
+        "inquiries": "Inquiries",
+        "keywords": "Keywords",
+        "content": "Content",
+        "progress": "Progress",
+        "feedback": "Feedback",
+        "analytics": "Analytics",
+        "system": "System",
+        "notifications": "Notifications",
+        "settings": "Settings"
+      }
+    },
+    "interpreters": {
+      "title": "Interpreters",
+      "subtitle": "Manage medical interpreters",
+      "addInterpreter": "Add Interpreter",
+      "editInterpreter": "Edit Interpreter",
+      "createNew": "Create a new interpreter profile",
+      "updateProfile": "Update interpreter profile",
+      "searchPlaceholder": "Search interpreters...",
+      "noResults": "No interpreters found",
+      "noFilterResults": "No results found",
+      "viewDetails": "View details",
+      "deleteConfirm": "Are you sure you want to delete this interpreter?",
+      "filters": {
+        "label": "Filters:",
+        "language": "Language",
+        "specialty": "Specialty",
+        "status": "Status",
+        "allStatus": "All Status",
+        "active": "Active",
+        "inactive": "Inactive",
+        "featured": "Featured",
+        "verified": "Verified",
+        "selected": "{count} selected",
+        "clearSelection": "Clear selection",
+        "reset": "Reset",
+        "resultCount": "{count} / {total} total"
+      },
+      "stats": {
+        "total": "Total",
+        "active": "Active",
+        "featured": "Featured",
+        "verified": "Verified"
+      },
+      "table": {
+        "interpreter": "Interpreter",
+        "targetLocales": "Target Locales",
+        "specialty": "Specialty",
+        "languages": "Languages",
+        "status": "Status",
+        "stats": "Stats",
+        "reviews": "{count} reviews"
+      },
+      "tabs": {
+        "basic": "Basic Info",
+        "localization": "Localization",
+        "skills": "Skills",
+        "settings": "Settings"
+      },
+      "fields": {
+        "slug": "Slug (URL)",
+        "slugPlaceholder": "sophia-chen",
+        "profilePhoto": "Profile Photo",
+        "location": "Location",
+        "locationPlaceholder": "Seoul, Gangnam",
+        "yearsOfExperience": "Years of Experience",
+        "preferredMessenger": "Preferred Messenger",
+        "displayOrder": "Display Order",
+        "language": "Language",
+        "proficiency": "Proficiency",
+        "name": "Name",
+        "bioShort": "Short Bio",
+        "bioFull": "Full Bio",
+        "primarySpecialty": "Primary Specialty",
+        "secondarySpecialties": "Secondary Specialties",
+        "languagesSpoken": "Languages",
+        "addLanguage": "Add Language",
+        "certifications": "Certifications",
+        "addCertification": "Add certification...",
+        "avgRating": "Average Rating",
+        "reviewCount": "Review Count",
+        "isActive": "Active",
+        "isActiveDesc": "Show this interpreter on the site",
+        "isAvailable": "Available",
+        "isAvailableDesc": "Currently accepting bookings",
+        "isVerified": "Verified",
+        "isVerifiedDesc": "Show verified badge",
+        "isFeatured": "Featured",
+        "isFeaturedDesc": "Show at top of listings"
+      },
+      "descriptions": {
+        "basicInfo": "Enter basic profile information",
+        "languages": "Enter name and bio for each language",
+        "specialties": "Select specialties",
+        "photoRatio": "1:1 square recommended"
+      },
+      "placeholders": {
+        "selectLanguage": "Select language",
+        "name": "Name ({language})",
+        "bioShort": "Short bio for cards (optional)",
+        "bioFull": "Full bio for detail page (optional)",
+        "certification": "Add certification (optional)"
+      },
+      "specialties": {
+        "plastic-surgery": "Plastic Surgery",
+        "dermatology": "Dermatology",
+        "dental": "Dental",
+        "health-checkup": "Health Checkup",
+        "fertility": "Fertility",
+        "hair-transplant": "Hair Transplant",
+        "ophthalmology": "Ophthalmology",
+        "orthopedics": "Orthopedics",
+        "general-medical": "General Medical"
+      },
+      "locales": {
+        "en": "English",
+        "ko": "Korean",
+        "ja": "Japanese",
+        "zh-TW": "Chinese (Traditional)",
+        "zh-CN": "Chinese (Simplified)",
+        "th": "Thai",
+        "mn": "Mongolian",
+        "ru": "Russian"
+      },
+      "messengers": {
+        "whatsapp": "WhatsApp",
+        "line": "LINE",
+        "wechat": "WeChat",
+        "kakao": "KakaoTalk"
+      },
+      "proficiency": {
+        "native": "Native",
+        "fluent": "Fluent",
+        "conversational": "Conversational"
+      },
+      "actions": {
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "create": "Create Interpreter",
+        "removePhoto": "Remove Photo"
+      },
+      "messages": {
+        "saveSuccess": "Successfully saved",
+        "saveFailed": "Failed to save",
+        "deleteFailed": "Failed to delete",
+        "atLeastOneLanguage": "Please add at least one language with a name",
+        "imageUploaded": "Image uploaded successfully",
+        "uploadFailed": "Upload failed",
+        "updated": "Interpreter updated successfully",
+        "created": "Interpreter created successfully",
+        "addLanguagePrompt": "Please add a language"
+      },
+      "upload": {
+        "click": "Click to upload"
+      }
+    },
+    "upload": {
+      "dragDrop": "Click or drag image here",
+      "uploading": "Uploading...",
+      "fileLimit": "PNG, JPG, WebP, GIF up to 5MB",
+      "orUseUrl": "Or use URL"
+    }
   }
 }

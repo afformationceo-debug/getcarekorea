@@ -28,7 +28,6 @@ export async function GET(request: NextRequest, { params }: Params) {
     const locale = searchParams.get('locale') || 'en';
     const includeDoctors = searchParams.get('includeDoctors') === 'true';
     const includeProcedures = searchParams.get('includeProcedures') === 'true';
-    const includeReviews = searchParams.get('includeReviews') === 'true';
 
     const startTime = Date.now();
 
@@ -79,22 +78,6 @@ export async function GET(request: NextRequest, { params }: Params) {
       );
     }
 
-    if (includeReviews) {
-      relatedPromises.push(
-        (async () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data: reviews, count } = await (supabase.from('reviews') as any)
-            .select('*, profiles!reviews_profile_id_fkey(full_name, avatar_url)', { count: 'exact' })
-            .eq('hospital_id', hospital.id)
-            .eq('status', 'approved')
-            .order('created_at', { ascending: false })
-            .limit(10);
-          response.reviews = reviews || [];
-          response.reviewCount = count || 0;
-        })()
-      );
-    }
-
     await Promise.all(relatedPromises);
 
     const responseTime = Date.now() - startTime;
@@ -103,7 +86,6 @@ export async function GET(request: NextRequest, { params }: Params) {
       responseTimeMs: responseTime,
       includeDoctors,
       includeProcedures,
-      includeReviews,
     });
 
     return createSuccessResponse(response);

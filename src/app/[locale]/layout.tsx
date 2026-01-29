@@ -2,10 +2,8 @@ import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { Toaster } from '@/components/ui/sonner';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { ChatWidget } from '@/components/chat/ChatWidget';
-import { MessengerCTA } from '@/components/cta/MessengerCTA';
+import { ConditionalLayout } from '@/components/layout/ConditionalLayout';
+import { ClientFloatingWidgets } from '@/components/layout/ClientFloatingWidgets';
 import { locales, type Locale } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
@@ -33,14 +31,11 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <ChatWidget />
-        <MessengerCTA variant="floating" size="lg" />
-        <Toaster />
-      </div>
+      <ConditionalLayout>
+        {children}
+      </ConditionalLayout>
+      <ClientFloatingWidgets />
+      <Toaster position="top-right" richColors closeButton />
     </NextIntlClientProvider>
   );
 }

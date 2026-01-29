@@ -7,7 +7,6 @@ import {
   MessageCircle,
   X,
   Send,
-  Loader2,
   ThumbsUp,
   ThumbsDown,
   Bot,
@@ -19,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/lib/i18n/config';
 import { MessageContent } from './MessageContent';
@@ -301,7 +301,7 @@ export function ChatWidget({
                   <Bot className="h-4 w-4 text-primary" />
                 </div>
                 <div className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <LoadingSpinner size="sm" />
                   <span className="text-sm text-muted-foreground">{t('typing')}</span>
                 </div>
               </div>
@@ -498,7 +498,7 @@ export function ChatWidget({
                       <Bot className="h-4 w-4 text-primary" />
                     </div>
                     <div className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-3">
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <LoadingSpinner size="sm" />
                       <span className="text-sm text-muted-foreground">{t('typing')}</span>
                     </div>
                   </div>

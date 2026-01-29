@@ -33,7 +33,7 @@ export async function GET(
     }
 
     // 포스트 존재 확인
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: post, error: postError } = await (supabase
       .from('blog_posts') as any)
       .select('id, title, slug, locale, status')
@@ -45,7 +45,7 @@ export async function GET(
     }
 
     // 성과 데이터 조회 (최근 데이터)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: performances } = await (supabase
       .from('content_performance') as any)
       .select('*')
@@ -54,7 +54,7 @@ export async function GET(
       .limit(10);
 
     // 히스토리 데이터 (일별)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: history } = await (supabase
       .from('content_performance') as any)
       .select('gsc_clicks, gsc_impressions, gsc_ctr, gsc_position, date_range_start, date_range_end')

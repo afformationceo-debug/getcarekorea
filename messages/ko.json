@@ -246,10 +246,14 @@
       "한국에서 치료받으려면 의료 비자가 필요한가요?",
       "한국어 통역사를 추천해 주실 수 있나요?"
     ],
+    "suggestionsLabel": "이런 질문을 해보세요",
     "tryAsking": "이렇게 물어보세요:",
+    "typing": "입력 중...",
     "thinking": "생각 중...",
     "error": "죄송합니다, 오류가 발생했습니다. 다시 시도해 주세요.",
     "poweredBy": "Claude AI 기반",
+    "helpful": "도움됨",
+    "notHelpful": "도움 안 됨",
     "feedback": {
       "helpful": "도움이 되셨나요?",
       "yes": "예",
@@ -822,5 +826,186 @@
     "chatOn": "1:1 무료 상담",
     "chatNow": "무료 상담 시작하기",
     "instantResponse": "⚡ 즉시 응답 • 24시간 전문가 지원"
+  },
+  "admin": {
+    "header": {
+      "viewSite": "사이트 보기",
+      "accountSettings": "계정 설정",
+      "logout": "로그아웃"
+    },
+    "sidebar": {
+      "title": "관리자 대시보드",
+      "subtitle": "플랫폼을 관리하세요",
+      "soon": "준비중",
+      "logout": "로그아웃",
+      "nav": {
+        "dashboard": "대시보드",
+        "hospitals": "병원",
+        "interpreters": "통역사",
+        "inquiries": "문의",
+        "keywords": "키워드",
+        "content": "콘텐츠",
+        "progress": "진행상황",
+        "feedback": "피드백",
+        "analytics": "분석",
+        "system": "시스템",
+        "notifications": "알림",
+        "settings": "설정"
+      }
+    },
+    "interpreters": {
+      "title": "통역사 관리",
+      "subtitle": "의료 통역사 관리",
+      "addInterpreter": "통역사 추가",
+      "editInterpreter": "통역사 수정",
+      "createNew": "새 통역사 프로필 만들기",
+      "updateProfile": "통역사 프로필 수정",
+      "searchPlaceholder": "통역사 검색...",
+      "noResults": "통역사를 찾을 수 없습니다",
+      "noFilterResults": "검색 결과가 없습니다",
+      "viewDetails": "상세보기",
+      "deleteConfirm": "이 통역사를 삭제하시겠습니까?",
+      "filters": {
+        "label": "필터:",
+        "language": "구사언어",
+        "specialty": "전문분야",
+        "status": "상태",
+        "allStatus": "전체 상태",
+        "active": "활성",
+        "inactive": "비활성",
+        "featured": "추천",
+        "verified": "인증됨",
+        "selected": "{count}개 선택",
+        "clearSelection": "선택 해제",
+        "reset": "초기화",
+        "resultCount": "{count}명 / 총 {total}명"
+      },
+      "stats": {
+        "total": "전체",
+        "active": "활성",
+        "featured": "추천",
+        "verified": "인증"
+      },
+      "table": {
+        "interpreter": "통역사",
+        "targetLocales": "대상 언어",
+        "specialty": "전문 분야",
+        "languages": "구사 언어",
+        "status": "상태",
+        "stats": "통계",
+        "reviews": "리뷰 {count}개"
+      },
+      "tabs": {
+        "basic": "기본 정보",
+        "localization": "다국어 설정",
+        "skills": "전문 기술",
+        "settings": "설정"
+      },
+      "fields": {
+        "slug": "슬러그 (URL)",
+        "slugPlaceholder": "sophia-chen",
+        "profilePhoto": "프로필 사진",
+        "location": "활동 지역",
+        "locationPlaceholder": "서울, 강남",
+        "yearsOfExperience": "경력 연수",
+        "preferredMessenger": "선호 메신저",
+        "displayOrder": "표시 순서",
+        "language": "언어",
+        "proficiency": "유창도",
+        "name": "이름",
+        "bioShort": "짧은 소개",
+        "bioFull": "상세 소개",
+        "primarySpecialty": "주 전문 분야",
+        "secondarySpecialties": "부 전문 분야",
+        "languagesSpoken": "구사 언어",
+        "addLanguage": "언어 추가",
+        "certifications": "자격증",
+        "addCertification": "자격증 추가...",
+        "avgRating": "평균 별점",
+        "reviewCount": "리뷰 수",
+        "isActive": "활성화",
+        "isActiveDesc": "사이트에 통역사 표시",
+        "isAvailable": "예약 가능",
+        "isAvailableDesc": "현재 예약 가능 상태",
+        "isVerified": "인증 완료",
+        "isVerifiedDesc": "인증 배지 표시",
+        "isFeatured": "추천",
+        "isFeaturedDesc": "목록 상단에 표시"
+      },
+      "descriptions": {
+        "basicInfo": "기본 프로필 정보를 입력하세요",
+        "languages": "구사 언어별로 이름과 소개를 입력하세요",
+        "specialties": "전문 분야를 선택하세요",
+        "photoRatio": "1:1 정사각형 권장"
+      },
+      "placeholders": {
+        "selectLanguage": "언어 선택",
+        "name": "이름 ({language})",
+        "bioShort": "카드에 표시되는 짧은 소개 (선택)",
+        "bioFull": "상세 페이지에 표시되는 전체 소개 (선택)",
+        "certification": "자격증 추가 (선택)"
+      },
+      "specialties": {
+        "plastic-surgery": "성형외과",
+        "dermatology": "피부과",
+        "dental": "치과",
+        "health-checkup": "건강검진",
+        "fertility": "난임",
+        "hair-transplant": "모발이식",
+        "ophthalmology": "안과",
+        "orthopedics": "정형외과",
+        "general-medical": "일반 의료"
+      },
+      "locales": {
+        "en": "영어",
+        "ko": "한국어",
+        "ja": "일본어",
+        "zh-TW": "중국어 (번체)",
+        "zh-CN": "중국어 (간체)",
+        "th": "태국어",
+        "mn": "몽골어",
+        "ru": "러시아어"
+      },
+      "messengers": {
+        "whatsapp": "왓츠앱",
+        "line": "라인",
+        "wechat": "위챗",
+        "kakao": "카카오톡"
+      },
+      "proficiency": {
+        "native": "원어민",
+        "fluent": "유창",
+        "conversational": "일상 회화"
+      },
+      "actions": {
+        "view": "보기",
+        "edit": "수정",
+        "delete": "삭제",
+        "cancel": "취소",
+        "save": "변경사항 저장",
+        "create": "통역사 생성",
+        "removePhoto": "사진 삭제"
+      },
+      "messages": {
+        "saveSuccess": "성공적으로 저장되었습니다",
+        "saveFailed": "저장 실패",
+        "deleteFailed": "삭제에 실패했습니다",
+        "atLeastOneLanguage": "최소 한 개의 언어와 이름을 입력해주세요",
+        "imageUploaded": "이미지가 업로드되었습니다",
+        "uploadFailed": "업로드에 실패했습니다",
+        "updated": "통역사 정보가 수정되었습니다",
+        "created": "통역사가 추가되었습니다",
+        "addLanguagePrompt": "언어를 추가해주세요"
+      },
+      "upload": {
+        "click": "클릭하여 업로드"
+      }
+    },
+    "upload": {
+      "dragDrop": "이미지를 여기에 드래그하거나 클릭",
+      "uploading": "업로드 중...",
+      "fileLimit": "PNG, JPG, WebP, GIF 최대 5MB",
+      "orUseUrl": "또는 URL 사용"
+    }
   }
 }

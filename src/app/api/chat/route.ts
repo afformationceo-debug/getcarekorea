@@ -229,23 +229,23 @@ const createInquiryTool = tool({
   },
 });
 
-// Interpreter result type for type assertions
+// Interpreter result type for type assertions (using author_personas table)
 interface InterpreterSearchResult {
   id: string;
-  languages: Array<{ language: string; proficiency: string }>;
-  specialties: string[];
-  hourly_rate: number | null;
-  daily_rate: number | null;
+  slug: string;
+  name: Record<string, string>;
+  languages: Array<{ code: string; proficiency: string }>;
+  primary_specialty: string;
+  secondary_specialties: string[];
   avg_rating: number;
   review_count: number;
-  profiles: { full_name: string } | null;
 }
 
 // Add interpreter search tool
 const searchInterpretersTool = tool({
   description: 'Search for medical interpreters by language and specialty. When you use this tool, make sure to include [LINK] tags in your response.',
   inputSchema: z.object({
-    language: z.string().describe('Language the interpreter speaks'),
+    language: z.string().describe('Language the interpreter speaks (e.g., en, ko, ja, zh-TW)'),
     specialty: z.string().optional().describe('Medical specialty'),
   }),
   execute: async ({ language, specialty }) => {
@@ -253,17 +253,15 @@ const searchInterpretersTool = tool({
       const supabase = await createClient();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let dbQuery = (supabase.from('interpreters') as any)
-        .select(`
-          id, languages, specialties, hourly_rate, daily_rate, avg_rating, review_count,
-          profiles!inner(full_name)
-        `)
+      let dbQuery = (supabase.from('author_personas') as any)
+        .select('id, slug, name, languages, primary_specialty, secondary_specialties, avg_rating, review_count')
+        .eq('is_active', true)
         .eq('is_available', true)
         .order('avg_rating', { ascending: false })
         .limit(5);
 
       if (specialty) {
-        dbQuery = dbQuery.contains('specialties', [specialty]);
+        dbQuery = dbQuery.eq('primary_specialty', specialty);
       }
 
       const { data, error } = await dbQuery;
@@ -275,28 +273,27 @@ const searchInterpretersTool = tool({
 
       const interpreters = (data || []) as InterpreterSearchResult[];
 
-      // Filter by language
+      // Filter by language code
       const filtered = interpreters.filter(interpreter => {
         return interpreter.languages?.some(l =>
-          l.language.toLowerCase().includes(language.toLowerCase())
+          l.code.toLowerCase().includes(language.toLowerCase())
         );
       });
 
       return {
         interpreters: filtered.map(i => ({
           id: i.id,
-          name: i.profiles?.full_name || 'Unknown',
+          slug: i.slug,
+          name: i.name?.en || i.name?.ko || 'Unknown',
           languages: i.languages,
-          specialties: i.specialties,
-          hourlyRate: i.hourly_rate,
-          dailyRate: i.daily_rate,
+          specialty: i.primary_specialty,
           rating: i.avg_rating,
           reviewCount: i.review_count,
-          link: `/interpreters/${i.id}`,
+          link: `/interpreters/${i.slug}`,
         })),
         searchedLanguage: language,
         specialty,
-        instructions: 'IMPORTANT: Include [LINK] tags for interpreters. Format: [LINK: View {Interpreter Name} | /interpreters/{id} | interpreter] and also include [LINK: Browse All Interpreters | /interpreters | interpreter]',
+        instructions: 'IMPORTANT: Include [LINK] tags for interpreters. Format: [LINK: View {Interpreter Name} | /interpreters/{slug} | interpreter] and also include [LINK: Browse All Interpreters | /interpreters | interpreter]',
       };
     } catch (error) {
       console.error('Interpreter search error:', error);

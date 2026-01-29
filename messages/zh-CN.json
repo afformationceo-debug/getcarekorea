@@ -246,15 +246,19 @@
       "在韩国就医需要医疗签证吗？",
       "可以推荐会说中文的翻译吗？"
     ],
+    "suggestionsLabel": "试试问",
     "tryAsking": "试试问：",
+    "typing": "输入中...",
     "thinking": "思考中...",
     "error": "抱歉，发生错误。请重试。",
+    "poweredBy": "由 Claude AI 提供支持",
+    "helpful": "有帮助",
+    "notHelpful": "没帮助",
     "feedback": {
       "helpful": "这有帮助吗？",
       "yes": "有",
       "no": "没有"
-    },
-    "poweredBy": "由 Claude AI 提供支持"
+    }
   },
   "inquiry": {
     "title": "免费咨询",
@@ -822,5 +826,186 @@
     "chatOn": "微信1对1免费咨询",
     "chatNow": "开始免费咨询",
     "instantResponse": "⚡ 即时回复 • 24小时专家支持"
+  },
+  "admin": {
+    "header": {
+      "viewSite": "查看网站",
+      "accountSettings": "账户设置",
+      "logout": "退出登录"
+    },
+    "sidebar": {
+      "title": "管理后台",
+      "subtitle": "管理您的平台",
+      "soon": "即将推出",
+      "logout": "退出登录",
+      "nav": {
+        "dashboard": "仪表盘",
+        "hospitals": "医院",
+        "interpreters": "口译员",
+        "inquiries": "咨询",
+        "keywords": "关键词",
+        "content": "内容",
+        "progress": "进度",
+        "feedback": "反馈",
+        "analytics": "分析",
+        "system": "系统",
+        "notifications": "通知",
+        "settings": "设置"
+      }
+    },
+    "interpreters": {
+      "title": "翻译管理",
+      "subtitle": "管理医疗翻译",
+      "addInterpreter": "添加翻译",
+      "editInterpreter": "编辑翻译",
+      "createNew": "创建新翻译档案",
+      "updateProfile": "更新翻译档案",
+      "searchPlaceholder": "搜索翻译...",
+      "noResults": "找不到翻译",
+      "noFilterResults": "没有搜索结果",
+      "viewDetails": "查看详情",
+      "deleteConfirm": "确定要删除此翻译吗？",
+      "filters": {
+        "label": "筛选:",
+        "language": "语言",
+        "specialty": "专业领域",
+        "status": "状态",
+        "allStatus": "全部状态",
+        "active": "活跃",
+        "inactive": "不活跃",
+        "featured": "推荐",
+        "verified": "已验证",
+        "selected": "已选 {count} 项",
+        "clearSelection": "清除选择",
+        "reset": "重置",
+        "resultCount": "{count} 人 / 共 {total} 人"
+      },
+      "stats": {
+        "total": "总计",
+        "active": "活跃",
+        "featured": "推荐",
+        "verified": "已验证"
+      },
+      "table": {
+        "interpreter": "翻译",
+        "targetLocales": "目标语言",
+        "specialty": "专业领域",
+        "languages": "语言",
+        "status": "状态",
+        "stats": "统计",
+        "reviews": "{count} 条评论"
+      },
+      "tabs": {
+        "basic": "基本信息",
+        "localization": "多语言设置",
+        "skills": "技能",
+        "settings": "设置"
+      },
+      "fields": {
+        "slug": "网址代码 (URL)",
+        "slugPlaceholder": "sophia-chen",
+        "profilePhoto": "头像",
+        "location": "所在地",
+        "locationPlaceholder": "首尔，江南",
+        "yearsOfExperience": "经验年数",
+        "preferredMessenger": "偏好通讯软件",
+        "displayOrder": "显示顺序",
+        "language": "语言",
+        "proficiency": "熟练度",
+        "name": "姓名",
+        "bioShort": "简短介绍",
+        "bioFull": "详细介绍",
+        "primarySpecialty": "主要专业",
+        "secondarySpecialties": "次要专业",
+        "languagesSpoken": "语言",
+        "addLanguage": "添加语言",
+        "certifications": "证书",
+        "addCertification": "添加证书...",
+        "avgRating": "平均评分",
+        "reviewCount": "评论数量",
+        "isActive": "启用",
+        "isActiveDesc": "在网站上显示此翻译",
+        "isAvailable": "可预约",
+        "isAvailableDesc": "目前接受预约",
+        "isVerified": "已验证",
+        "isVerifiedDesc": "显示验证徽章",
+        "isFeatured": "推荐",
+        "isFeaturedDesc": "显示在列表顶部"
+      },
+      "descriptions": {
+        "basicInfo": "输入基本资料信息",
+        "languages": "输入每种语言的姓名和介绍",
+        "specialties": "选择专业领域",
+        "photoRatio": "建议使用1:1正方形图片"
+      },
+      "placeholders": {
+        "selectLanguage": "选择语言",
+        "name": "姓名 ({language})",
+        "bioShort": "卡片上显示的简短介绍（可选）",
+        "bioFull": "详情页显示的完整介绍（可选）",
+        "certification": "添加证书（可选）"
+      },
+      "specialties": {
+        "plastic-surgery": "整形外科",
+        "dermatology": "皮肤科",
+        "dental": "牙科",
+        "health-checkup": "健康检查",
+        "fertility": "不孕症",
+        "hair-transplant": "植发",
+        "ophthalmology": "眼科",
+        "orthopedics": "骨科",
+        "general-medical": "一般医疗"
+      },
+      "locales": {
+        "en": "英文",
+        "ko": "韩文",
+        "ja": "日文",
+        "zh-TW": "繁体中文",
+        "zh-CN": "简体中文",
+        "th": "泰文",
+        "mn": "蒙古文",
+        "ru": "俄文"
+      },
+      "messengers": {
+        "whatsapp": "WhatsApp",
+        "line": "LINE",
+        "wechat": "微信",
+        "kakao": "KakaoTalk"
+      },
+      "proficiency": {
+        "native": "母语",
+        "fluent": "流利",
+        "conversational": "日常会话"
+      },
+      "actions": {
+        "view": "查看",
+        "edit": "编辑",
+        "delete": "删除",
+        "cancel": "取消",
+        "save": "保存更改",
+        "create": "创建翻译",
+        "removePhoto": "删除照片"
+      },
+      "messages": {
+        "saveSuccess": "保存成功",
+        "saveFailed": "保存失败",
+        "deleteFailed": "删除失败",
+        "atLeastOneLanguage": "请至少添加一种语言和姓名",
+        "imageUploaded": "图片上传成功",
+        "uploadFailed": "上传失败",
+        "updated": "翻译信息已更新",
+        "created": "翻译已创建",
+        "addLanguagePrompt": "请添加语言"
+      },
+      "upload": {
+        "click": "点击上传"
+      }
+    },
+    "upload": {
+      "dragDrop": "点击或拖拽图片至此",
+      "uploading": "上传中...",
+      "fileLimit": "PNG, JPG, WebP, GIF 最大 5MB",
+      "orUseUrl": "或使用网址"
+    }
   }
 }

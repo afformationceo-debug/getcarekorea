@@ -103,7 +103,7 @@ export function ProcedureDetailClient({ procedure, locale }: Props) {
 
         <div className="container relative z-10 py-12 lg:py-20">
           {/* Back Button */}
-          <Link href={`/${locale}/procedures`}>
+          <Link href={`/procedures`}>
             <Button variant="ghost" className="mb-6 text-white/80 hover:text-white">
               <ArrowLeft className="mr-2 h-4 w-4" />
               All Procedures
@@ -184,6 +184,7 @@ export function ProcedureDetailClient({ procedure, locale }: Props) {
                     src={procedure.image_url}
                     alt={procedure.name}
                     fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover"
                     priority
                   />
@@ -311,7 +312,7 @@ export function ProcedureDetailClient({ procedure, locale }: Props) {
                       whileInView={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <Link href={`/${locale}/hospitals/${hospital.slug}`}>
+                      <Link href={`/hospitals/${hospital.slug}`}>
                         <Card className="overflow-hidden transition-all hover:shadow-lg hover:border-violet-500/30">
                           <CardContent className="p-0">
                             <div className="relative h-32">
@@ -320,6 +321,7 @@ export function ProcedureDetailClient({ procedure, locale }: Props) {
                                   src={hospital.cover_image_url}
                                   alt={hospital.name}
                                   fill
+                                  sizes="(max-width: 768px) 50vw, 200px"
                                   className="object-cover"
                                 />
                               ) : (
@@ -369,7 +371,7 @@ export function ProcedureDetailClient({ procedure, locale }: Props) {
                   ))}
                 </div>
                 {procedure.hospitals.length > 5 && (
-                  <Link href={`/${locale}/hospitals?specialty=${procedure.category}`}>
+                  <Link href={`/hospitals?specialty=${procedure.category}`}>
                     <Button variant="outline" className="mt-4 w-full">
                       View All {procedure.hospitals.length} Hospitals
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -394,7 +396,7 @@ export function ProcedureDetailClient({ procedure, locale }: Props) {
                       whileInView={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <Link href={`/${locale}/blog/${post.slug}`}>
+                      <Link href={`/blog/${post.slug}`}>
                         <div className="flex gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50">
                           <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
                             {post.featured_image ? (
@@ -402,6 +404,7 @@ export function ProcedureDetailClient({ procedure, locale }: Props) {
                                 src={post.featured_image}
                                 alt={post.title}
                                 fill
+                                sizes="64px"
                                 className="object-cover"
                               />
                             ) : (
@@ -431,7 +434,7 @@ export function ProcedureDetailClient({ procedure, locale }: Props) {
               <p className="mb-4 text-sm text-muted-foreground">
                 Get personalized recommendations from our medical tourism experts.
               </p>
-              <Link href={`/${locale}/inquiry`}>
+              <Link href={`/inquiry`}>
                 <Button className={`w-full bg-gradient-to-r ${gradientColor} text-white`}>
                   Free Consultation
                 </Button>

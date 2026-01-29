@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   RefreshCw,
-  Loader2,
   CheckCircle,
   XCircle,
   Clock,
@@ -18,6 +17,7 @@ import {
   Activity,
   TrendingUp,
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -135,7 +135,7 @@ export default function ProgressPage() {
       case 'translating':
       case 'image_generating':
       case 'running':
-        return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <LoadingSpinner size="sm" color="secondary" />;
       case 'completed':
       case 'success':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -254,7 +254,7 @@ export default function ProgressPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <LoadingSpinner size="sm" />
               Processing
             </CardTitle>
           </CardHeader>
@@ -337,7 +337,7 @@ export default function ProgressPage() {
             <CardContent>
               {loading ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <LoadingSpinner size="lg" color="muted" />
                 </div>
               ) : contentJobs.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
@@ -418,7 +418,7 @@ export default function ProgressPage() {
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                              <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
+                              <LoadingSpinner size="md" color="secondary" />
                             </div>
                             <div>
                               <p className="font-medium">{job.keyword}</p>
@@ -458,7 +458,7 @@ export default function ProgressPage() {
             <CardContent>
               {loading ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <LoadingSpinner size="lg" color="muted" />
                 </div>
               ) : imageJobs.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
@@ -531,7 +531,7 @@ export default function ProgressPage() {
             <CardContent>
               {loading ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <LoadingSpinner size="lg" color="muted" />
                 </div>
               ) : cronJobs.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">

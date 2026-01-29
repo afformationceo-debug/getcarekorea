@@ -101,14 +101,14 @@ async function getQueueStats() {
   const supabase = await createClient();
 
   // Get pending content generation
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count: pendingKeywords } = await (supabase
     .from('content_keywords') as any)
     .select('id', { count: 'exact', head: true })
     .is('generated_at', null);
 
   // Get recent cron logs
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: cronLogs } = await (supabase
     .from('cron_logs') as any)
     .select('job_name, status, execution_time_ms, created_at')
@@ -116,20 +116,20 @@ async function getQueueStats() {
     .limit(10);
 
   // Get draft/scheduled posts
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count: draftPosts } = await (supabase
     .from('blog_posts') as any)
     .select('id', { count: 'exact', head: true })
     .eq('status', 'draft');
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count: scheduledPosts } = await (supabase
     .from('blog_posts') as any)
     .select('id', { count: 'exact', head: true })
     .eq('status', 'scheduled');
 
   // Get image generation stats
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count: pendingImages } = await (supabase
     .from('image_generations') as any)
     .select('id', { count: 'exact', head: true })
@@ -149,34 +149,34 @@ async function getAutomationStats() {
   const supabase = await createClient();
 
   // Total generated content
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count: totalGenerated } = await (supabase
     .from('blog_posts') as any)
     .select('id', { count: 'exact', head: true });
 
   // Published content
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count: publishedCount } = await (supabase
     .from('blog_posts') as any)
     .select('id', { count: 'exact', head: true })
     .eq('status', 'published');
 
   // High performers (from learning data)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count: highPerformers } = await (supabase
     .from('llm_learning_data') as any)
     .select('id', { count: 'exact', head: true })
     .eq('source_type', 'high_performer');
 
   // Vectorized learning data
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count: vectorizedCount } = await (supabase
     .from('llm_learning_data') as any)
     .select('id', { count: 'exact', head: true })
     .eq('is_vectorized', true);
 
   // Total keywords
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count: totalKeywords } = await (supabase
     .from('content_keywords') as any)
     .select('id', { count: 'exact', head: true });

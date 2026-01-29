@@ -79,17 +79,24 @@ function generateInterpretersSchema(locale: Locale, interpreterCount: number) {
   return [breadcrumbSchema, collectionPageSchema];
 }
 
-// Map locale to name field suffix
-const localeFieldMap: Record<string, string> = {
-  en: 'en',
-  ko: 'ko',
-  'zh-TW': 'zh_tw',
-  'zh-CN': 'zh_cn',
-  ja: 'ja',
-  th: 'th',
-  mn: 'mn',
-  ru: 'ru',
-};
+// Type for localized JSONB fields
+type LocalizedField = Record<string, string>;
+
+// Get localized value from JSONB field with smart fallback
+function getLocalizedValue(field: unknown, locale: string): string {
+  const data = field as LocalizedField | null;
+  if (!data) return '';
+
+  // 1. Try current locale
+  if (data[locale]) return data[locale];
+
+  // 2. Try English as fallback
+  if (data['en']) return data['en'];
+
+  // 3. Return first available value
+  const values = Object.values(data).filter(v => v && typeof v === 'string');
+  return values[0] || '';
+}
 
 // Format specialty slug to display name
 function formatSpecialty(slug: string | null): string {
@@ -148,25 +155,14 @@ function getLanguageName(code: string): string {
   return names[code] || code.toUpperCase();
 }
 
-// Generate default photo URL based on name
-function getDefaultPhoto(name: string): string {
-  const seed = encodeURIComponent(name);
-  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
-}
-
 // Transform author_persona to interpreter format for frontend
 function transformToInterpreter(persona: Record<string, unknown>, locale: string) {
-  const suffix = localeFieldMap[locale] || 'en';
+  // Get localized name from JSONB (persona.name.ko, persona.name.en, etc.)
+  const name = getLocalizedValue(persona.name, locale);
 
-  // Get localized name
-  const nameKey = `name_${suffix}`;
-  const name = (persona[nameKey] as string) || (persona.name_en as string);
-
-  // Get localized bio
-  const bioShortKey = `bio_short_${suffix}`;
-  const bioFullKey = `bio_full_${suffix}`;
-  const bioShort = (persona[bioShortKey] as string) || (persona.bio_short_en as string) || '';
-  const bioFull = (persona[bioFullKey] as string) || (persona.bio_full_en as string) || '';
+  // Get localized bio from JSONB
+  const bioShort = getLocalizedValue(persona.bio_short, locale);
+  const bioFull = getLocalizedValue(persona.bio_full, locale);
 
   // Parse languages from JSONB
   const languages = parseLanguages(persona.languages);
@@ -181,12 +177,10 @@ function transformToInterpreter(persona: Record<string, unknown>, locale: string
     id: persona.id as string,
     slug: persona.slug as string,
     name,
-    photo_url: (persona.photo_url as string) || getDefaultPhoto(name),
+    photo_url: (persona.photo_url as string) || null,
     languages,
     specialties,
     bio: bioShort || bioFull,
-    hourly_rate: (persona.hourly_rate as number) || 50,
-    daily_rate: (persona.daily_rate as number) || 350,
     avg_rating: parseFloat(String(persona.avg_rating || 4.8)),
     review_count: (persona.review_count as number) || 0,
     total_bookings: (persona.total_bookings as number) || 0,
@@ -197,7 +191,8 @@ function transformToInterpreter(persona: Record<string, unknown>, locale: string
     video_url: persona.video_url as string | null,
     experience_years: (persona.years_of_experience as number) || 5,
     location: (persona.location as string) || 'Seoul, Gangnam',
-    target_locales: (persona.target_locales as string[]) || ['en'],
+    // Get language codes from languages array
+    language_codes: languages.map(l => l.code),
   };
 }
 
@@ -219,15 +214,12 @@ async function fetchInterpreters(locale: string) {
     }
 
     // Transform and filter by locale
+    // Only show interpreters who speak the language of the current page locale
     const interpreters = (data || [])
       .map((persona) => transformToInterpreter(persona, locale))
       .filter((interpreter) => {
-        // Show interpreters that serve this locale or English (global)
-        if (locale === 'en') return true;
-        return (
-          interpreter.target_locales.includes(locale) ||
-          interpreter.target_locales.includes('en')
-        );
+        // Show interpreter if they speak this locale's language
+        return interpreter.language_codes.includes(locale);
       });
 
     return interpreters;

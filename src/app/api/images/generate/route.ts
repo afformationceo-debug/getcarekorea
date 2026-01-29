@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     const posts = await getPostsNeedingImages(supabase, { status, limit });
 
     // 최근 이미지 생성 기록 조회
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: recentGenerations } = await (supabase
       .from('image_generations') as any)
       .select('blog_post_id, status, created_at')
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     // 단일 포스트 이미지 생성
     if (blogPostId) {
       // 포스트 정보 조회
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: post, error: postError } = await (supabase
         .from('blog_posts') as any)
         .select('id, title_en, excerpt_en, category')

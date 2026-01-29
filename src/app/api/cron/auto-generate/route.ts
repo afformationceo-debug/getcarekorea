@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createAdminClient();
 
     // 1. 대기 중인 키워드 조회 (우선순위: priority DESC, created_at ASC)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: pendingKeywords, error: fetchError } = await (supabase
       .from('content_keywords') as any)
       .select(`

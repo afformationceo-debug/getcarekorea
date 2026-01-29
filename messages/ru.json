@@ -246,15 +246,19 @@
       "Нужна ли медицинская виза для лечения в Корее?",
       "Можете порекомендовать русскоговорящего переводчика?"
     ],
+    "suggestionsLabel": "Попробуйте спросить",
     "tryAsking": "Попробуйте спросить:",
+    "typing": "Печатает...",
     "thinking": "Думаю...",
     "error": "Извините, произошла ошибка. Попробуйте ещё раз.",
+    "poweredBy": "Работает на Claude AI",
+    "helpful": "Полезно",
+    "notHelpful": "Не полезно",
     "feedback": {
       "helpful": "Было полезно?",
       "yes": "Да",
       "no": "Нет"
-    },
-    "poweredBy": "Работает на Claude AI"
+    }
   },
   "inquiry": {
     "title": "Бесплатная консультация",
@@ -822,5 +826,186 @@
     "chatOn": "Бесплатная консультация 1:1 в WhatsApp",
     "chatNow": "Начать бесплатную консультацию",
     "instantResponse": "⚡ Мгновенный ответ • Поддержка экспертов 24/7"
+  },
+  "admin": {
+    "header": {
+      "viewSite": "Просмотр сайта",
+      "accountSettings": "Настройки аккаунта",
+      "logout": "Выйти"
+    },
+    "sidebar": {
+      "title": "Панель администратора",
+      "subtitle": "Управление платформой",
+      "soon": "Скоро",
+      "logout": "Выйти",
+      "nav": {
+        "dashboard": "Панель",
+        "hospitals": "Больницы",
+        "interpreters": "Переводчики",
+        "inquiries": "Запросы",
+        "keywords": "Ключевые слова",
+        "content": "Контент",
+        "progress": "Прогресс",
+        "feedback": "Обратная связь",
+        "analytics": "Аналитика",
+        "system": "Система",
+        "notifications": "Уведомления",
+        "settings": "Настройки"
+      }
+    },
+    "interpreters": {
+      "title": "Управление переводчиками",
+      "subtitle": "Управление медицинскими переводчиками",
+      "addInterpreter": "Добавить переводчика",
+      "editInterpreter": "Редактировать переводчика",
+      "createNew": "Создать новый профиль переводчика",
+      "updateProfile": "Обновить профиль переводчика",
+      "searchPlaceholder": "Поиск переводчиков...",
+      "noResults": "Переводчики не найдены",
+      "noFilterResults": "Результаты не найдены",
+      "viewDetails": "Подробнее",
+      "deleteConfirm": "Вы уверены, что хотите удалить этого переводчика?",
+      "filters": {
+        "label": "Фильтры:",
+        "language": "Язык",
+        "specialty": "Специализация",
+        "status": "Статус",
+        "allStatus": "Все статусы",
+        "active": "Активные",
+        "inactive": "Неактивные",
+        "featured": "Рекомендуемые",
+        "verified": "Проверенные",
+        "selected": "Выбрано {count}",
+        "clearSelection": "Очистить выбор",
+        "reset": "Сбросить",
+        "resultCount": "{count} / всего {total}"
+      },
+      "stats": {
+        "total": "Всего",
+        "active": "Активных",
+        "featured": "Рекомендуемых",
+        "verified": "Проверенных"
+      },
+      "table": {
+        "interpreter": "Переводчик",
+        "targetLocales": "Целевые языки",
+        "specialty": "Специализация",
+        "languages": "Языки",
+        "status": "Статус",
+        "stats": "Статистика",
+        "reviews": "{count} отзывов"
+      },
+      "tabs": {
+        "basic": "Основная информация",
+        "localization": "Локализация",
+        "skills": "Навыки",
+        "settings": "Настройки"
+      },
+      "fields": {
+        "slug": "Slug (URL)",
+        "slugPlaceholder": "sophia-chen",
+        "profilePhoto": "Фото профиля",
+        "location": "Местоположение",
+        "locationPlaceholder": "Сеул, Каннам",
+        "yearsOfExperience": "Лет опыта",
+        "preferredMessenger": "Предпочтительный мессенджер",
+        "displayOrder": "Порядок отображения",
+        "language": "Язык",
+        "proficiency": "Уровень владения",
+        "name": "Имя",
+        "bioShort": "Краткое описание",
+        "bioFull": "Полное описание",
+        "primarySpecialty": "Основная специализация",
+        "secondarySpecialties": "Дополнительные специализации",
+        "languagesSpoken": "Языки",
+        "addLanguage": "Добавить язык",
+        "certifications": "Сертификаты",
+        "addCertification": "Добавить сертификат...",
+        "avgRating": "Средний рейтинг",
+        "reviewCount": "Количество отзывов",
+        "isActive": "Активен",
+        "isActiveDesc": "Показывать переводчика на сайте",
+        "isAvailable": "Доступен",
+        "isAvailableDesc": "В настоящее время принимает заказы",
+        "isVerified": "Проверен",
+        "isVerifiedDesc": "Показывать значок проверки",
+        "isFeatured": "Рекомендуемый",
+        "isFeaturedDesc": "Показывать в начале списка"
+      },
+      "descriptions": {
+        "basicInfo": "Введите основную информацию профиля",
+        "languages": "Введите имя и описание для каждого языка",
+        "specialties": "Выберите специализации",
+        "photoRatio": "Рекомендуется квадрат 1:1"
+      },
+      "placeholders": {
+        "selectLanguage": "Выберите язык",
+        "name": "Имя ({language})",
+        "bioShort": "Краткое описание для карточки (необязательно)",
+        "bioFull": "Полное описание для страницы (необязательно)",
+        "certification": "Добавить сертификат (необязательно)"
+      },
+      "specialties": {
+        "plastic-surgery": "Пластическая хирургия",
+        "dermatology": "Дерматология",
+        "dental": "Стоматология",
+        "health-checkup": "Медосмотр",
+        "fertility": "Лечение бесплодия",
+        "hair-transplant": "Пересадка волос",
+        "ophthalmology": "Офтальмология",
+        "orthopedics": "Ортопедия",
+        "general-medical": "Общая медицина"
+      },
+      "locales": {
+        "en": "Английский",
+        "ko": "Корейский",
+        "ja": "Японский",
+        "zh-TW": "Китайский (традиционный)",
+        "zh-CN": "Китайский (упрощённый)",
+        "th": "Тайский",
+        "mn": "Монгольский",
+        "ru": "Русский"
+      },
+      "messengers": {
+        "whatsapp": "WhatsApp",
+        "line": "LINE",
+        "wechat": "WeChat",
+        "kakao": "KakaoTalk"
+      },
+      "proficiency": {
+        "native": "Носитель",
+        "fluent": "Свободно",
+        "conversational": "Разговорный"
+      },
+      "actions": {
+        "view": "Просмотр",
+        "edit": "Редактировать",
+        "delete": "Удалить",
+        "cancel": "Отмена",
+        "save": "Сохранить изменения",
+        "create": "Создать переводчика",
+        "removePhoto": "Удалить фото"
+      },
+      "messages": {
+        "saveSuccess": "Успешно сохранено",
+        "saveFailed": "Ошибка сохранения",
+        "deleteFailed": "Не удалось удалить",
+        "atLeastOneLanguage": "Пожалуйста, добавьте хотя бы один язык с именем",
+        "imageUploaded": "Изображение загружено",
+        "uploadFailed": "Ошибка загрузки",
+        "updated": "Информация о переводчике обновлена",
+        "created": "Переводчик успешно создан",
+        "addLanguagePrompt": "Добавьте язык"
+      },
+      "upload": {
+        "click": "Нажмите для загрузки"
+      }
+    },
+    "upload": {
+      "dragDrop": "Нажмите или перетащите изображение сюда",
+      "uploading": "Загрузка...",
+      "fileLimit": "PNG, JPG, WebP, GIF до 5МБ",
+      "orUseUrl": "Или используйте URL"
+    }
   }
 }

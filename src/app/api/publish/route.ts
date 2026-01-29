@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     // 상태별 포스트 조회
     const statusArray = status.split(',').map(s => s.trim());
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: posts, error } = await (supabase
       .from('blog_posts') as any)
       .select('id, title, slug, locale, status, created_at, updated_at, cover_image_url')
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
 
       if (result.success && revalidateSecret) {
         // 포스트 정보 조회
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: post } = await (supabase
           .from('blog_posts') as any)
           .select('slug, locale')
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
       if (revalidateSecret) {
         for (const publishResult of result.results) {
           if (publishResult.success) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const { data: post } = await (supabase
               .from('blog_posts') as any)
               .select('slug, locale')

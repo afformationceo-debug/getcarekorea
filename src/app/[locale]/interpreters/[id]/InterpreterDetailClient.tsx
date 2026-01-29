@@ -57,8 +57,6 @@ interface Interpreter {
   languages: Language[];
   specialties: string[];
   bio: string;
-  hourly_rate: number;
-  daily_rate: number;
   avg_rating: number;
   review_count: number;
   total_bookings: number;
@@ -99,11 +97,11 @@ export function InterpreterDetailClient({
       >
         <div className="container py-3">
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href={`/${locale}`} className="hover:text-foreground transition-colors">
+            <Link href="/" className="hover:text-foreground transition-colors">
               Home
             </Link>
             <ChevronRight className="h-4 w-4" />
-            <Link href={`/${locale}/interpreters`} className="hover:text-foreground transition-colors">
+            <Link href={`/interpreters`} className="hover:text-foreground transition-colors">
               Interpreters
             </Link>
             <ChevronRight className="h-4 w-4" />
@@ -147,8 +145,10 @@ export function InterpreterDetailClient({
                   src={interpreter.photo_url}
                   alt={interpreter.name}
                   fill
+                  sizes="(max-width: 1024px) 256px, 320px"
                   className="object-cover"
                   priority
+                  unoptimized={interpreter.photo_url?.includes('.svg') || interpreter.photo_url?.includes('dicebear')}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
 
@@ -273,19 +273,6 @@ export function InterpreterDetailClient({
                 </div>
               </div>
 
-              {/* Pricing */}
-              <div className="mb-6 flex flex-wrap items-center justify-center gap-6 lg:justify-start">
-                <div>
-                  <span className="text-3xl font-bold text-violet-600">
-                    ${interpreter.hourly_rate}
-                  </span>
-                  <span className="text-muted-foreground">/hour</span>
-                </div>
-                <div className="text-muted-foreground">
-                  or <span className="font-semibold text-foreground">${interpreter.daily_rate}</span>/day
-                </div>
-              </div>
-
               {/* Action buttons */}
               <div className="flex flex-wrap justify-center gap-3 lg:justify-start">
                 <Button
@@ -293,7 +280,7 @@ export function InterpreterDetailClient({
                   className="gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-8 hover:opacity-90"
                   asChild
                 >
-                  <Link href={`/${locale}/inquiry?interpreter=${interpreter.id}`}>
+                  <Link href={`/inquiry?interpreter=${interpreter.id}`}>
                     <MessageCircle className="h-5 w-5" />
                     Book Now
                   </Link>
@@ -499,68 +486,6 @@ function ServicesSection({ interpreter }: { interpreter: Interpreter }) {
         </CardContent>
       </Card>
 
-      {/* Pricing */}
-      <Card className="overflow-hidden border-0 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-violet-500/5 to-purple-500/10">
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-violet-500" />
-            Pricing
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="rounded-2xl border-2 border-violet-200 bg-violet-50/50 p-6 dark:border-violet-800 dark:bg-violet-950/30"
-            >
-              <div className="mb-2 text-sm font-medium text-muted-foreground">Hourly Rate</div>
-              <div className="mb-4">
-                <span className="text-4xl font-bold text-violet-600">${interpreter.hourly_rate}</span>
-                <span className="text-muted-foreground">/hour</span>
-              </div>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
-                  Minimum 2 hours
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
-                  Medical terminology
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
-                  Written summary included
-                </li>
-              </ul>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="rounded-2xl border-2 border-purple-200 bg-purple-50/50 p-6 dark:border-purple-800 dark:bg-purple-950/30"
-            >
-              <Badge className="mb-2 bg-purple-500">Best Value</Badge>
-              <div className="mb-2 text-sm font-medium text-muted-foreground">Daily Rate</div>
-              <div className="mb-4">
-                <span className="text-4xl font-bold text-purple-600">${interpreter.daily_rate}</span>
-                <span className="text-muted-foreground">/day</span>
-              </div>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
-                  Up to 8 hours
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
-                  Transportation included
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
-                  Hospital coordination
-                </li>
-              </ul>
-            </motion.div>
-          </div>
-        </CardContent>
-      </Card>
     </motion.div>
   );
 }
@@ -697,7 +622,7 @@ function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; loc
               className="w-full gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 py-6 text-lg hover:opacity-90"
               asChild
             >
-              <Link href={`/${locale}/inquiry?interpreter=${interpreter.id}`}>
+              <Link href={`/inquiry?interpreter=${interpreter.id}`}>
                 <MessageCircle className="h-5 w-5" />
                 Book Now
               </Link>
@@ -707,7 +632,7 @@ function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; loc
               className="w-full gap-2 rounded-xl border-2 py-6 text-lg"
               asChild
             >
-              <Link href={`/${locale}/inquiry?interpreter=${interpreter.id}&type=inquiry`}>
+              <Link href={`/inquiry?interpreter=${interpreter.id}&type=inquiry`}>
                 <Mail className="h-5 w-5" />
                 Send Message
               </Link>

@@ -15,10 +15,10 @@ import {
   Calendar,
   FileText,
   Eye,
-  Loader2,
   Filter,
   Download,
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -462,7 +462,7 @@ export default function FeedbackPage() {
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <LoadingSpinner size="lg" color="muted" />
             </div>
           ) : feedbackList.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">

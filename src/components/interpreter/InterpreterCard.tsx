@@ -38,7 +38,9 @@ export function InterpreterCard({ interpreter, locale }: InterpreterCardProps) {
                   src={interpreter.photo_url}
                   alt={interpreter.profile?.full_name || 'Interpreter'}
                   fill
+                  sizes="64px"
                   className="object-cover"
+                  unoptimized={interpreter.photo_url?.includes('.svg') || interpreter.photo_url?.includes('dicebear')}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-muted text-xl font-semibold">
@@ -126,24 +128,7 @@ export function InterpreterCard({ interpreter, locale }: InterpreterCardProps) {
           )}
         </div>
 
-        {/* Pricing */}
-        <div className="mb-4 flex items-baseline justify-between">
-          <div>
-            {interpreter.hourly_rate && (
-              <p className="text-lg font-semibold text-primary">
-                ${interpreter.hourly_rate}
-                <span className="text-sm font-normal text-muted-foreground">/hour</span>
-              </p>
-            )}
-          </div>
-          {interpreter.daily_rate && (
-            <p className="text-sm text-muted-foreground">
-              ${interpreter.daily_rate}/day
-            </p>
-          )}
-        </div>
-
-        {/* Availability & Actions */}
+        {/* Actions */}
         <div className="flex gap-2">
           <Button className="flex-1" asChild>
             <Link href={`/interpreters/${interpreter.id}`}>View Profile</Link>
