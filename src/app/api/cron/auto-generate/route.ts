@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
     // 1. Get cron settings
     const { data: settingsData } = await (supabase.from('system_settings') as any)
       .select('value')
-      .eq('key', 'auto_generate_settings')
+      .eq('key', 'cron_auto_generate')
       .single();
 
     const settings: CronSettings = settingsData?.value || {
