@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -86,6 +86,11 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
   const currentLocale = (params.locale as string) || 'en';
 
   const [keywords, setKeywords] = useState<Keyword[]>(initialKeywords);
+
+  // Sync keywords state when initialKeywords prop changes (e.g., page refresh, revalidation)
+  useEffect(() => {
+    setKeywords(initialKeywords);
+  }, [initialKeywords]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
