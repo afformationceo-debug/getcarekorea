@@ -1014,5 +1014,129 @@
       "fileLimit": "PNG, JPG, WebP, GIF up to 5MB",
       "orUseUrl": "Or use URL"
     }
+  },
+  "faq": {
+    "hero": {
+      "badge": "Help Center",
+      "title": "Frequently Asked Questions",
+      "subtitle": "Find answers to common questions about medical tourism in Korea"
+    },
+    "search": {
+      "placeholder": "Search for answers..."
+    },
+    "categories": {
+      "all": "All Questions",
+      "general": {
+        "title": "General",
+        "items": {
+          "1": {
+            "question": "What is medical tourism?",
+            "answer": "Medical tourism is when patients travel to another country to receive medical treatment. Korea is a top destination known for advanced healthcare facilities and competitive prices."
+          },
+          "2": {
+            "question": "Why choose Korea for medical treatment?",
+            "answer": "Korea offers world-class medical facilities, highly trained doctors, advanced technology, and competitive prices. Many hospitals are JCI-accredited and offer services in multiple languages."
+          },
+          "3": {
+            "question": "Do I need a visa for medical treatment in Korea?",
+            "answer": "Many countries have visa-free agreements with Korea for short stays. For longer treatments, you may need a medical tourism visa (C-3-3 or G-1-10). We can assist with visa-related documentation."
+          }
+        }
+      },
+      "booking": {
+        "title": "Booking",
+        "items": {
+          "1": {
+            "question": "How do I book a consultation?",
+            "answer": "You can request a free consultation through our website. Fill out the inquiry form with your medical needs, and our team will connect you with suitable hospitals within 24 hours."
+          },
+          "2": {
+            "question": "Can I communicate with doctors in my language?",
+            "answer": "Yes! We provide professional medical interpreters who speak your language. They will assist you throughout your medical journey, from consultation to aftercare."
+          },
+          "3": {
+            "question": "How far in advance should I book?",
+            "answer": "We recommend booking at least 2-4 weeks in advance for most procedures. Complex surgeries may require more planning time. Our team can help you plan the optimal timeline."
+          }
+        }
+      },
+      "payment": {
+        "title": "Payment",
+        "items": {
+          "1": {
+            "question": "What payment methods are accepted?",
+            "answer": "Most hospitals accept major credit cards (Visa, MasterCard), bank transfers, and cash. Some procedures may require a deposit before confirmation."
+          },
+          "2": {
+            "question": "Are there any hidden fees?",
+            "answer": "No hidden fees. We provide transparent pricing that includes all medical costs. Additional services like accommodation and transportation are quoted separately."
+          },
+          "3": {
+            "question": "Can I get a refund if I cancel?",
+            "answer": "Cancellation policies vary by hospital and procedure. Generally, cancellations made 7+ days before the appointment are fully refundable. Please check specific policies when booking."
+          }
+        }
+      }
+    },
+    "noResults": "No questions found matching your search",
+    "clearFilters": "Clear filters",
+    "cta": {
+      "title": "Still have questions?",
+      "subtitle": "Our team is here to help you 24/7",
+      "button": "Contact Us"
+    }
+  },
+  "contact": {
+    "hero": {
+      "badge": "Get in Touch",
+      "title": "Contact Us",
+      "subtitle": "We're here to help you with your medical journey in Korea"
+    },
+    "methods": {
+      "email": {
+        "title": "Email"
+      },
+      "kakao": {
+        "title": "KakaoTalk"
+      },
+      "line": {
+        "title": "LINE"
+      },
+      "whatsapp": {
+        "title": "WhatsApp"
+      }
+    },
+    "form": {
+      "title": "Send us a message",
+      "name": "Your Name",
+      "namePlaceholder": "Enter your full name",
+      "email": "Email Address",
+      "emailPlaceholder": "your@email.com",
+      "subject": "Subject",
+      "subjectPlaceholder": "How can we help you?",
+      "message": "Message",
+      "messagePlaceholder": "Tell us about your inquiry...",
+      "submit": "Send Message",
+      "sending": "Sending...",
+      "successTitle": "Message Sent!",
+      "successMessage": "Thank you for contacting us. We'll get back to you within 24 hours.",
+      "sendAnother": "Send another message"
+    },
+    "info": {
+      "hours": {
+        "title": "Business Hours",
+        "weekday": "Monday - Friday: 9:00 AM - 6:00 PM",
+        "weekend": "Saturday: 10:00 AM - 4:00 PM",
+        "timezone": "Korea Standard Time (KST, UTC+9)"
+      },
+      "location": {
+        "title": "Office Location",
+        "address": "Gangnam District"
+      },
+      "response": {
+        "title": "Quick Response",
+        "description": "We typically respond to inquiries within 24 hours. For urgent matters, please contact us via KakaoTalk or WhatsApp."
+      }
+    }
   }
 }
