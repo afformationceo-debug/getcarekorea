@@ -663,7 +663,7 @@ function ScheduleSelector({
             <SelectContent>
               {[0, 15, 30, 45].map((i) => (
                 <SelectItem key={i} value={i.toString()}>
-                  {t('schedule.everyHourAt')} :{i.toString().padStart(2, '0')}
+                  {t('schedule.everyHourAt')} {i.toString().padStart(2, '0')}{t('schedule.minuteUnit')}
                 </SelectItem>
               ))}
             </SelectContent>
