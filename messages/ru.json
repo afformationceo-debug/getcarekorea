@@ -955,6 +955,12 @@
         "hair-transplant": "Пересадка волос",
         "ophthalmology": "Офтальмология",
         "orthopedics": "Ортопедия",
+        "oncology": "Онкология",
+        "weight-loss": "Снижение веса",
+        "cardiology": "Кардиология",
+        "traditional-medicine": "Традиционная медицина",
+        "wellness": "Велнес",
+        "general": "Общее",
         "general-medical": "Общая медицина"
       },
       "locales": {

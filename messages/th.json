@@ -955,6 +955,12 @@
         "hair-transplant": "ปลูกผม",
         "ophthalmology": "จักษุ",
         "orthopedics": "กระดูก",
+        "oncology": "มะเร็งวิทยา",
+        "weight-loss": "ลดน้ำหนัก",
+        "cardiology": "โรคหัวใจ",
+        "traditional-medicine": "แพทย์แผนโบราณ",
+        "wellness": "สุขภาพ",
+        "general": "ทั่วไป",
         "general-medical": "แพทย์ทั่วไป"
       },
       "locales": {

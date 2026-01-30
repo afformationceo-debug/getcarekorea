@@ -955,6 +955,12 @@
         "hair-transplant": "Үс суулгах",
         "ophthalmology": "Нүдний эмнэлэг",
         "orthopedics": "Ортопеди",
+        "oncology": "Хавдар судлал",
+        "weight-loss": "Жин хасах",
+        "cardiology": "Зүрх судлал",
+        "traditional-medicine": "Уламжлалт анагаах",
+        "wellness": "Эрүүл амьдрал",
+        "general": "Ерөнхий",
         "general-medical": "Ерөнхий эмнэлэг"
       },
       "locales": {

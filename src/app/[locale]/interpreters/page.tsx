@@ -82,7 +82,7 @@ function generateInterpretersSchema(locale: Locale, interpreterCount: number) {
 // Type for localized JSONB fields
 type LocalizedField = Record<string, string>;
 
-// Get localized value from JSONB field with smart fallback
+// Get localized value from JSONB field with fallback to English only
 function getLocalizedValue(field: unknown, locale: string): string {
   const data = field as LocalizedField | null;
   if (!data) return '';
@@ -93,9 +93,8 @@ function getLocalizedValue(field: unknown, locale: string): string {
   // 2. Try English as fallback
   if (data['en']) return data['en'];
 
-  // 3. Return first available value
-  const values = Object.values(data).filter(v => v && typeof v === 'string');
-  return values[0] || '';
+  // 3. Return empty (don't show content in unknown language)
+  return '';
 }
 
 // Format specialty slug to display name
@@ -213,14 +212,9 @@ async function fetchInterpreters(locale: string) {
       return [];
     }
 
-    // Transform and filter by locale
-    // Only show interpreters who speak the language of the current page locale
+    // Transform all interpreters (no locale filtering - user can filter by language in UI)
     const interpreters = (data || [])
-      .map((persona) => transformToInterpreter(persona, locale))
-      .filter((interpreter) => {
-        // Show interpreter if they speak this locale's language
-        return interpreter.language_codes.includes(locale);
-      });
+      .map((persona) => transformToInterpreter(persona, locale));
 
     return interpreters;
   } catch (error) {

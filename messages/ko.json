@@ -955,6 +955,12 @@
         "hair-transplant": "모발이식",
         "ophthalmology": "안과",
         "orthopedics": "정형외과",
+        "oncology": "종양내과",
+        "weight-loss": "체중감량",
+        "cardiology": "심장내과",
+        "traditional-medicine": "한의학",
+        "wellness": "웰니스",
+        "general": "일반",
         "general-medical": "일반 의료"
       },
       "locales": {

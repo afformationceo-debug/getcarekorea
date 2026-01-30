@@ -955,6 +955,12 @@
         "hair-transplant": "植发",
         "ophthalmology": "眼科",
         "orthopedics": "骨科",
+        "oncology": "肿瘤科",
+        "weight-loss": "减重",
+        "cardiology": "心脏内科",
+        "traditional-medicine": "中医",
+        "wellness": "健康管理",
+        "general": "一般",
         "general-medical": "一般医疗"
       },
       "locales": {

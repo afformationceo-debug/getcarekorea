@@ -1066,6 +1066,7 @@ export default function ContentPage() {
       {/* Full Screen Blog-Style Preview Modal */}
       <Dialog open={!!previewPost} onOpenChange={() => setPreviewPost(null)}>
         <DialogContent className="max-w-[100vw] w-full h-[100vh] max-h-[100vh] p-0 m-0 rounded-none">
+          <DialogTitle className="sr-only">Content Preview</DialogTitle>
           {previewPost && (
             <div className="h-full overflow-y-auto bg-background">
               {/* Preview Header Bar */}

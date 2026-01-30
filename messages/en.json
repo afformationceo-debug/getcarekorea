@@ -955,6 +955,12 @@
         "hair-transplant": "Hair Transplant",
         "ophthalmology": "Ophthalmology",
         "orthopedics": "Orthopedics",
+        "oncology": "Oncology",
+        "weight-loss": "Weight Loss",
+        "cardiology": "Cardiology",
+        "traditional-medicine": "Traditional Medicine",
+        "wellness": "Wellness",
+        "general": "General",
         "general-medical": "General Medical"
       },
       "locales": {

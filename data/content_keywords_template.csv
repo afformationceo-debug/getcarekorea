@@ -1,0 +1,15 @@
+,"locale 허용값  : en, ko, ja, zh-CN, zh-TW, th, mn, ru","category 허용 값 : plastic-surgery - 성형외과
+dermatology - 피부과
+dental - 치과
+ophthalmology - 안과
+hair-transplant - 모발이식
+health-checkup - 건강검진
+orthopedics - 정형외과
+fertility - 난임치료
+weight-loss - 체중감량
+cardiology - 심장내과
+oncology - 종양
+traditional-medicine - 한의학
+wellness - 웰니스
+general - 일반 (기본값)",,,
+keyword,locale,category,search_volume,competition,priority

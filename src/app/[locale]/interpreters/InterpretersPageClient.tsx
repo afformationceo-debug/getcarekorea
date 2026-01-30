@@ -106,14 +106,14 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const languages = [
-    'English',
-    'Chinese',
-    'Japanese',
-    'Thai',
-    'Russian',
-    'Mongolian',
-    'Vietnamese',
-    'Arabic',
+    { code: 'en', name: 'English' },
+    { code: 'ko', name: 'Korean' },
+    { code: 'zh-CN', name: 'Chinese (Simplified)' },
+    { code: 'zh-TW', name: 'Chinese (Traditional)' },
+    { code: 'ja', name: 'Japanese' },
+    { code: 'th', name: 'Thai' },
+    { code: 'ru', name: 'Russian' },
+    { code: 'mn', name: 'Mongolian' },
   ];
 
   const specialties = [
@@ -133,7 +133,7 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
       interpreter.bio.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesLanguage =
       selectedLanguage === 'all' ||
-      interpreter.languages.some((l) => l.name.toLowerCase() === selectedLanguage.toLowerCase());
+      interpreter.languages.some((l) => l.code === selectedLanguage);
     const matchesSpecialty =
       selectedSpecialty === 'all' ||
       interpreter.specialties.some((s) => s.toLowerCase().includes(selectedSpecialty.toLowerCase()));
@@ -301,15 +301,15 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
               {/* Filters */}
               <div className="flex flex-wrap items-center gap-3">
                 <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                  <SelectTrigger className="h-12 w-[150px] rounded-xl border-2 border-primary/20 bg-white dark:bg-gray-800">
+                  <SelectTrigger className="h-12 w-[180px] rounded-xl border-2 border-primary/20 bg-white dark:bg-gray-800">
                     <Globe className="mr-2 h-4 w-4 text-primary" />
                     <SelectValue placeholder="Language" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Languages</SelectItem>
                     {languages.map((lang) => (
-                      <SelectItem key={lang} value={lang.toLowerCase()}>
-                        {lang}
+                      <SelectItem key={lang.code} value={lang.code}>
+                        {lang.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -506,7 +506,7 @@ function InterpreterCard3D({
       style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}
       className="group"
     >
-      <div className="relative h-full overflow-hidden rounded-3xl border border-white/20 bg-white shadow-xl transition-shadow duration-500 hover:shadow-2xl dark:bg-gray-900">
+      <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/20 bg-white shadow-xl transition-shadow duration-500 hover:shadow-2xl dark:bg-gray-900">
         {/* Gradient overlay on hover */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -587,7 +587,7 @@ function InterpreterCard3D({
         </div>
 
         {/* Content */}
-        <div className="p-5">
+        <div className="flex flex-1 flex-col p-5">
           {/* Rating & Experience */}
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 dark:bg-amber-900/30">
@@ -639,8 +639,8 @@ function InterpreterCard3D({
             ))}
           </div>
 
-          {/* CTA */}
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          {/* CTA - Always at bottom */}
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="mt-auto pt-2">
             <Button
               className="h-12 w-full gap-2 rounded-xl bg-gradient-to-r from-primary to-violet-600 text-base font-semibold shadow-lg hover:shadow-xl"
               asChild
