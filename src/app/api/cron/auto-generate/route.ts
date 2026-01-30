@@ -121,11 +121,19 @@ function matchesCronField(field: string, value: number, min: number, max: number
  */
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
+  const cronId = `cron-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+  console.log(`\n${'='.repeat(60)}`);
+  console.log(`🟠 [AUTO-GENERATE CRON] ID: ${cronId}`);
+  console.log(`   Timestamp: ${new Date().toISOString()}`);
+  console.log(`   Source: Vercel Cron Job (15-min interval)`);
+  console.log(`${'='.repeat(60)}`);
 
   try {
     // Cron 인증 확인
     const authHeader = request.headers.get('authorization');
     if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
+      console.log(`❌ [${cronId}] Unauthorized - invalid CRON_SECRET`);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -148,9 +156,11 @@ export async function GET(request: NextRequest) {
       priority_threshold: 0,
     };
 
+    console.log(`📋 [${cronId}] Settings: enabled=${settings.enabled}, schedule="${settings.schedule}", batch=${settings.batch_size}`);
+
     // 0-1. 비활성화 체크
     if (!settings.enabled) {
-      console.log('🔕 Auto-generate is disabled');
+      console.log(`🔕 [${cronId}] SKIPPED - Auto-generate is disabled in settings`);
       return NextResponse.json({
         success: true,
         data: { skipped: true, reason: 'Auto-generate is disabled' },
@@ -158,15 +168,18 @@ export async function GET(request: NextRequest) {
     }
 
     // 0-2. 스케줄 체크 (현재 시간이 설정된 스케줄에 맞는지)
+    const now = new Date();
+    console.log(`⏰ [${cronId}] Current time: ${now.getHours()}:${now.getMinutes()} (schedule: ${settings.schedule})`);
+
     if (!shouldRunNow(settings.schedule)) {
-      console.log(`⏭️ Skipping: Current time does not match schedule (${settings.schedule})`);
+      console.log(`⏭️ [${cronId}] SKIPPED - Current time does not match schedule`);
       return NextResponse.json({
         success: true,
         data: { skipped: true, reason: 'Not scheduled to run at this time', schedule: settings.schedule },
       });
     }
 
-    console.log(`\n🚀 Auto-generate cron: Schedule matched (${settings.schedule})`);
+    console.log(`✅ [${cronId}] Schedule MATCHED - proceeding with generation`);
 
     // 사용할 배치 크기
     const batchSize = settings.batch_size || DEFAULT_BATCH_SIZE;
@@ -439,6 +452,8 @@ export async function GET(request: NextRequest) {
         //   blogPostData.scheduled_at = kw.target_publish_date;
         // }
 
+        console.log(`   💾 [${cronId}] Saving to blog_posts...`);
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: savedPost, error: saveError } = await (supabase.from('blog_posts') as any)
           .insert(blogPostData)
@@ -446,8 +461,15 @@ export async function GET(request: NextRequest) {
           .single();
 
         if (saveError) {
-          throw new Error(`DB save failed: ${saveError.message}`);
+          console.error(`   ❌ [${cronId}] DB save FAILED for "${kw.keyword}"`);
+          console.error(`      Code: ${saveError.code}`);
+          console.error(`      Message: ${saveError.message}`);
+          console.error(`      Details: ${JSON.stringify(saveError.details)}`);
+          console.error(`      Hint: ${saveError.hint}`);
+          throw new Error(`DB save failed: ${saveError.message} (code: ${saveError.code})`);
         }
+
+        console.log(`   ✅ [${cronId}] Saved to blog_posts: ${savedPost.id}`);
 
         // 2-6. 키워드 상태 업데이트
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -460,7 +482,7 @@ export async function GET(request: NextRequest) {
           .eq('id', kw.id);
 
         const kwDuration = ((Date.now() - kwStartTime) / 1000).toFixed(1);
-        console.log(`   ✅ Generated in ${kwDuration}s, saved as ${savedPost.id}`);
+        console.log(`   ✅ [${cronId}] Keyword "${kw.keyword}" completed in ${kwDuration}s`);
 
         // 2-7. Author의 total_posts 업데이트 (직접 증가)
         if (authorPersonaId) {

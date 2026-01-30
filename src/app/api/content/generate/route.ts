@@ -32,6 +32,12 @@ export const maxDuration = 300; // 5 minutes (increased for image generation)
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
+  const requestId = `manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+  console.log(`\n${'='.repeat(60)}`);
+  console.log(`🔵 [MANUAL GENERATE] Request ID: ${requestId}`);
+  console.log(`   Timestamp: ${new Date().toISOString()}`);
+  console.log(`${'='.repeat(60)}`);
 
   try {
     const supabase = await createClient();
@@ -43,6 +49,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.log(`❌ [${requestId}] Auth failed: ${authError?.message || 'No user'}`);
       return NextResponse.json(
         {
           error: 'Authentication required',
@@ -51,6 +58,8 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    console.log(`✅ [${requestId}] User: ${user.email}`);
 
     // 2. Parse and validate request
     const body = await request.json();
@@ -64,6 +73,8 @@ export async function POST(request: NextRequest) {
       autoSave = true,
       additionalInstructions,
     } = body;
+
+    console.log(`📝 [${requestId}] Params: keyword="${keyword}", locale="${locale}", category="${category}"`);
 
     // Validation
     if (!keyword || typeof keyword !== 'string') {
@@ -308,6 +319,9 @@ export async function POST(request: NextRequest) {
           internalLinks: generatedContent.internalLinks || [],
         },
       };
+      console.log(`💾 [${requestId}] Saving to blog_posts...`);
+      console.log(`   Insert data keys: ${Object.keys(blogPostData).join(', ')}`);
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: draft, error: saveError } = await (adminClient.from('blog_posts') as any)
         .insert(blogPostData)
@@ -315,28 +329,31 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (saveError) {
-        console.error(`   ❌ Database save failed:`, saveError.message);
+        console.error(`❌ [${requestId}] Database save FAILED!`);
+        console.error(`   Error code: ${saveError.code}`);
+        console.error(`   Error message: ${saveError.message}`);
+        console.error(`   Error details: ${JSON.stringify(saveError.details)}`);
+        console.error(`   Error hint: ${saveError.hint}`);
 
-        // Don't fail the entire request if save fails
-        // Return success with warning
+        // Return error - don't pretend success
         return NextResponse.json(
           {
-            success: true,
-            warning: 'Content generated but failed to save to database',
+            success: false,
+            error: 'Database save failed',
+            errorDetails: {
+              code: saveError.code,
+              message: saveError.message,
+              hint: saveError.hint,
+            },
             content: generatedContent,
             saved: false,
-            meta: {
-              estimatedCost: generatedContent.estimatedCost,
-              generationTime: `${((Date.now() - startTime) / 1000).toFixed(1)}s`,
-              generatedAt: generatedContent.generationTimestamp,
-            }
           },
-          { status: 200 }
+          { status: 500 }
         );
       }
 
       savedDraft = draft;
-      console.log(`   ✅ Saved to database: ${draft.id}`);
+      console.log(`✅ [${requestId}] Saved to blog_posts: ${draft.id}`);
 
       // Update keyword status and link to blog post (use admin client for RLS bypass)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
