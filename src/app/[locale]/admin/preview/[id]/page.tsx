@@ -54,6 +54,7 @@ interface ContentDraft {
   tags: string[];
   faq_schema: { question: string; answer: string }[];
   images: { url: string; alt: string; placeholder?: string }[];
+  cover_image_url: string | null;
   status: string;
   hreflang_group: string;
   created_at: string;

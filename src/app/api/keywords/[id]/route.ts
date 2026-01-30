@@ -7,7 +7,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import {
   createSuccessResponse,
   createErrorResponse,
@@ -68,6 +68,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
     const supabase = await createClient();
+    const adminClient = await createAdminClient();
     const { searchParams } = new URL(request.url);
     const locale = searchParams.get('locale') || 'en';
 
@@ -78,20 +79,25 @@ export async function PUT(request: NextRequest, { params }: Params) {
       throw new APIError(ErrorCode.UNAUTHORIZED);
     }
 
-    // Check admin role
+    // Check admin role (use adminClient to bypass RLS on profiles table)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (supabase.from('profiles') as any)
+    const { data: profile, error: profileError } = await (adminClient.from('profiles') as any)
       .select('role')
       .eq('id', user.id)
       .single();
 
+    if (profileError) {
+      secureLog('error', 'Profile fetch error', { userId: user.id, error: profileError.message });
+    }
+
     if (!profile || profile.role !== 'admin') {
+      secureLog('warn', 'Admin access denied', { userId: user.id, role: profile?.role });
       throw new APIError(ErrorCode.FORBIDDEN);
     }
 
     // Get existing keyword
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: existing, error: fetchError } = await (supabase.from('content_keywords') as any)
+    const { data: existing, error: fetchError } = await (adminClient.from('content_keywords') as any)
       .select('id')
       .eq('id', id)
       .single();
@@ -120,9 +126,9 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
     updateData.updated_at = new Date().toISOString();
 
-    // Update keyword
+    // Update keyword with admin client (bypasses RLS)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: updated, error: updateError } = await (supabase.from('content_keywords') as any)
+    const { data: updated, error: updateError } = await (adminClient.from('content_keywords') as any)
       .update(updateData)
       .eq('id', id)
       .select()
@@ -149,6 +155,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
     const supabase = await createClient();
+    const adminClient = await createAdminClient();
     const { searchParams } = new URL(request.url);
     const locale = searchParams.get('locale') || 'en';
 
@@ -159,20 +166,25 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       throw new APIError(ErrorCode.UNAUTHORIZED);
     }
 
-    // Check admin role
+    // Check admin role (use adminClient to bypass RLS on profiles table)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (supabase.from('profiles') as any)
+    const { data: profile, error: profileError } = await (adminClient.from('profiles') as any)
       .select('role')
       .eq('id', user.id)
       .single();
 
+    if (profileError) {
+      secureLog('error', 'Profile fetch error', { userId: user.id, error: profileError.message });
+    }
+
     if (!profile || profile.role !== 'admin') {
+      secureLog('warn', 'Admin access denied', { userId: user.id, role: profile?.role });
       throw new APIError(ErrorCode.FORBIDDEN);
     }
 
     // Get existing keyword
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: existing, error: fetchError } = await (supabase.from('content_keywords') as any)
+    const { data: existing, error: fetchError } = await (adminClient.from('content_keywords') as any)
       .select('id, blog_post_id')
       .eq('id', id)
       .single();
@@ -191,9 +203,9 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       );
     }
 
-    // Delete keyword
+    // Delete keyword with admin client (bypasses RLS)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: deleteError } = await (supabase.from('content_keywords') as any)
+    const { error: deleteError } = await (adminClient.from('content_keywords') as any)
       .delete()
       .eq('id', id);
 

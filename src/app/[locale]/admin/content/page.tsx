@@ -92,44 +92,27 @@ import Image from 'next/image';
 interface BlogPost {
   id: string;
   slug: string;
-  title_en: string | null;
-  title_ko: string | null;
-  title_zh_tw: string | null;
-  title_zh_cn: string | null;
-  title_ja: string | null;
-  title_th: string | null;
-  title_mn: string | null;
-  title_ru: string | null;
-  excerpt_en: string | null;
-  excerpt_ko: string | null;
-  excerpt_zh_tw: string | null;
-  excerpt_zh_cn: string | null;
-  excerpt_ja: string | null;
-  excerpt_th: string | null;
-  excerpt_mn: string | null;
-  excerpt_ru: string | null;
-  content_en: string | null;
-  content_ko: string | null;
-  content_zh_tw: string | null;
-  content_zh_cn: string | null;
-  content_ja: string | null;
-  content_th: string | null;
-  content_mn: string | null;
-  content_ru: string | null;
-  meta_title_en: string | null;
-  meta_description_en: string | null;
+  locale: string;
+  title: string;
+  excerpt: string | null;
+  content: string | null;
+  seo_meta: {
+    meta_title?: string;
+    meta_description?: string;
+    meta_keywords?: string;
+    meta_author?: string;
+  } | null;
   category: string | null;
   tags: string[];
   status: 'draft' | 'review' | 'published' | 'archived';
   cover_image_url: string | null;
+  cover_image_alt: string | null;
+  author_persona_id: string | null;
   view_count: number;
   published_at: string | null;
   created_at: string;
   updated_at: string;
   generation_metadata: Record<string, unknown> | null;
-  // Keyword info from join
-  keyword?: string | null;
-  keyword_locale?: string | null;
 }
 
 interface Stats {
@@ -306,33 +289,23 @@ export default function ContentPage() {
     }
   };
 
-  const getPostTitle = (post: BlogPost, locale: string = 'en'): string => {
-    const localeKey = `title_${locale.replace('-', '_').toLowerCase()}` as keyof BlogPost;
-    return (post[localeKey] as string) || post.title_en || 'Untitled';
+  // Simplified schema: single title/content/excerpt with locale field
+  // locale parameter is kept for backward compatibility but ignored
+  const getPostTitle = (post: BlogPost, _locale?: string): string => {
+    return post.title || 'Untitled';
   };
 
-  const getPostContent = (post: BlogPost, locale: string = 'en'): string => {
-    const localeKey = `content_${locale.replace('-', '_').toLowerCase()}` as keyof BlogPost;
-    return (post[localeKey] as string) || post.content_en || '';
+  const getPostContent = (post: BlogPost, _locale?: string): string => {
+    return post.content || '';
   };
 
-  const getPostExcerpt = (post: BlogPost, locale: string = 'en'): string => {
-    const localeKey = `excerpt_${locale.replace('-', '_').toLowerCase()}` as keyof BlogPost;
-    return (post[localeKey] as string) || post.excerpt_en || '';
+  const getPostExcerpt = (post: BlogPost, _locale?: string): string => {
+    return post.excerpt || '';
   };
 
   const getAvailableLocales = (post: BlogPost): string[] => {
-    const locales: string[] = [];
-    const localeKeys = ['en', 'ko', 'zh_tw', 'zh_cn', 'ja', 'th', 'mn', 'ru'];
-
-    for (const locale of localeKeys) {
-      const contentKey = `content_${locale}` as keyof BlogPost;
-      if (post[contentKey]) {
-        locales.push(locale.replace('_', '-'));
-      }
-    }
-
-    return locales;
+    // Each post now has a single locale
+    return post.locale ? [post.locale] : ['en'];
   };
 
   const getQualityScore = (post: BlogPost): number => {
@@ -1396,27 +1369,27 @@ export default function ContentPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium">Title (English)</label>
+                <label className="text-sm font-medium">Title</label>
                 <Input
-                  value={editPost.title_en || ''}
-                  onChange={(e) => setEditPost({ ...editPost, title_en: e.target.value })}
+                  value={editPost.title || ''}
+                  onChange={(e) => setEditPost({ ...editPost, title: e.target.value })}
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium">Excerpt (English)</label>
+                <label className="text-sm font-medium">Excerpt</label>
                 <Textarea
-                  value={editPost.excerpt_en || ''}
-                  onChange={(e) => setEditPost({ ...editPost, excerpt_en: e.target.value })}
+                  value={editPost.excerpt || ''}
+                  onChange={(e) => setEditPost({ ...editPost, excerpt: e.target.value })}
                   rows={2}
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium">Content (English)</label>
+                <label className="text-sm font-medium">Content</label>
                 <Textarea
-                  value={editPost.content_en || ''}
-                  onChange={(e) => setEditPost({ ...editPost, content_en: e.target.value })}
+                  value={editPost.content || ''}
+                  onChange={(e) => setEditPost({ ...editPost, content: e.target.value })}
                   rows={15}
                   className="font-mono text-sm"
                 />

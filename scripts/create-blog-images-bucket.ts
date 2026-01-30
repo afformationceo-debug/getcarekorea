@@ -2,7 +2,13 @@ import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+// Try .env.local first, then .env
+const envPath = path.resolve(process.cwd(), '.env.local');
+const envPathAlt = path.resolve(process.cwd(), '.env');
+const result = dotenv.config({ path: envPath });
+if (result.error) {
+  dotenv.config({ path: envPathAlt });
+}
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;

@@ -566,8 +566,13 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
         if (!response.ok) {
           throw new Error('Failed to fetch post');
         }
-        const data = await response.json();
-        setPost(data);
+        const result = await response.json();
+        // API returns { success: true, data: {...} }
+        if (result.success && result.data) {
+          setPost(result.data);
+        } else {
+          setError(t('notFound'));
+        }
       } catch {
         setError(t('error'));
       } finally {
@@ -672,21 +677,59 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
     || post.generatedAuthor?.specialties
     || DEFAULT_AUTHOR.specialties;
 
-  const authorLanguages = post.authorPersona?.languages?.map(l => l.code)
+  const authorLanguages = post.authorPersona?.languages?.map((l: { code: string }) => l.code)
     || post.generatedAuthor?.languages
     || DEFAULT_AUTHOR.languages;
 
-  const authorCertifications = post.authorPersona?.certifications
-    || post.generatedAuthor?.certifications
-    || DEFAULT_AUTHOR.certifications;
+  // certifications is now JSONB: {"en": [...], "ko": [...]}
+  const personaCerts = post.authorPersona?.certifications as Record<string, string[]> | string[] | undefined;
+  const authorCertifications: string[] = Array.isArray(personaCerts)
+    ? personaCerts
+    : ((personaCerts as Record<string, string[]>)?.[locale] || (personaCerts as Record<string, string[]>)?.en || post.generatedAuthor?.certifications || DEFAULT_AUTHOR.certifications || []);
 
   const isVerified = post.authorPersona?.is_verified || false;
+
+  // Check if content is HTML (starts with < or contains HTML tags)
+  const isHtmlContent = (content: string): boolean => {
+    const trimmed = content.trim();
+    return trimmed.startsWith('<') || /<(article|section|div|p|h[1-6]|ul|ol|table|figure)[^>]*>/i.test(trimmed);
+  };
 
   // Render content with in-content CTA
   const renderContentWithCTA = () => {
     if (!post.content) return null;
 
-    // Split markdown content roughly in half (by number of lines)
+    // If content is HTML, render directly with dangerouslySetInnerHTML
+    if (isHtmlContent(post.content)) {
+      return (
+        <div
+          className="prose prose-lg max-w-none dark:prose-invert
+            prose-headings:font-bold prose-headings:scroll-mt-24
+            prose-h1:text-3xl prose-h1:mt-8 prose-h1:mb-6
+            prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4
+            prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3
+            prose-h4:text-lg prose-h4:mt-4 prose-h4:mb-2
+            prose-p:mb-4 prose-p:leading-relaxed
+            prose-ul:list-disc prose-ul:ml-6 prose-ul:mb-4 prose-ul:space-y-2
+            prose-ol:list-decimal prose-ol:ml-6 prose-ol:mb-4 prose-ol:space-y-2
+            prose-li:mb-1
+            prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:my-4 prose-blockquote:bg-primary/5 prose-blockquote:rounded-r
+            prose-table:my-6 prose-table:w-full prose-table:border-collapse
+            prose-thead:bg-gray-50 dark:prose-thead:bg-gray-800
+            prose-th:px-4 prose-th:py-3 prose-th:text-left prose-th:font-semibold prose-th:border prose-th:border-gray-200 dark:prose-th:border-gray-700
+            prose-td:px-4 prose-td:py-3 prose-td:border prose-td:border-gray-200 dark:prose-td:border-gray-700
+            prose-a:text-primary prose-a:hover:underline
+            prose-img:rounded-xl prose-img:shadow-lg prose-img:my-8
+            prose-figure:my-8
+            prose-figcaption:text-center prose-figcaption:text-sm prose-figcaption:text-gray-500 prose-figcaption:mt-2 prose-figcaption:italic
+            prose-strong:font-bold prose-strong:text-foreground
+            prose-em:italic"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
+      );
+    }
+
+    // For markdown content, split and use ReactMarkdown
     const lines = post.content.split('\n');
     const midpoint = Math.floor(lines.length / 2);
 
@@ -1027,7 +1070,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
             </div>
             <div className="flex items-center gap-1">
               <Eye className="w-4 h-4" />
-              {post.view_count.toLocaleString()} {t('views')}
+              {(post.view_count ?? 0).toLocaleString()} {t('views')}
             </div>
           </div>
 

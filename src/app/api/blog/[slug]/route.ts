@@ -57,6 +57,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     const startTime = Date.now();
 
     // Get blog post (simplified schema)
+    // Filter by slug, locale, and published status
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: post, error } = await (supabase.from('blog_posts') as any)
       .select(`
@@ -66,6 +67,7 @@ export async function GET(request: NextRequest, { params }: Params) {
         seo_meta, generation_metadata, created_at, updated_at
       `)
       .eq('slug', slug)
+      .eq('locale', locale)
       .eq('status', 'published')
       .single() as { data: SimplifiedBlogPost | null; error: unknown };
 
@@ -110,20 +112,38 @@ export async function GET(request: NextRequest, { params }: Params) {
     // Fetch author info from author_personas
     if (post.author_persona_id) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: authorPersona } = await (supabase.from('author_personas') as any)
+      const { data: persona } = await (supabase.from('author_personas') as any)
         .select('*')
         .eq('id', post.author_persona_id)
         .single();
 
-      if (authorPersona) {
-        response.authorPersona = authorPersona;
+      if (persona) {
+        // Transform JSONB fields to match client interface
+        const nameObj = persona.name || {};
+        const bioShortObj = persona.bio_short || {};
+
+        response.authorPersona = {
+          ...persona,
+          // Map JSONB name to individual locale fields
+          name_en: nameObj.en || nameObj.ko || persona.slug,
+          name_ko: nameObj.ko || nameObj.en || persona.slug,
+          name_ja: nameObj.ja || nameObj.en || null,
+          name_zh_tw: nameObj['zh-TW'] || nameObj.zh || null,
+          name_zh_cn: nameObj['zh-CN'] || nameObj.zh || null,
+          name_th: nameObj.th || null,
+          name_mn: nameObj.mn || null,
+          name_ru: nameObj.ru || null,
+          // Map JSONB bio_short to individual locale fields
+          bio_short_en: bioShortObj.en || bioShortObj.ko || null,
+          bio_short_ko: bioShortObj.ko || bioShortObj.en || null,
+          bio_full_en: persona.bio_full?.en || persona.bio_full?.ko || null,
+        };
+
         // Also set legacy author for backward compatibility
-        // Schema uses JSONB: name = {"en": "...", "ko": "..."}
-        const nameObj = authorPersona.name || {};
         response.author = {
-          id: authorPersona.id,
-          full_name: nameObj.en || nameObj.ko || authorPersona.slug,
-          avatar_url: authorPersona.photo_url,
+          id: persona.id,
+          full_name: nameObj.en || nameObj.ko || persona.slug,
+          avatar_url: persona.photo_url,
         };
       }
     }

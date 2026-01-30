@@ -33,23 +33,59 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch draft
-    const { data: draft, error } = await supabase
-      .from('content_drafts')
-      .select('*')
+    // Fetch from blog_posts (content is saved there, not content_drafts)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: post, error } = await (supabase.from('blog_posts') as any)
+      .select(`
+        *,
+        author_personas (
+          id, slug, name, photo_url, bio_short,
+          years_of_experience, primary_specialty
+        )
+      `)
       .eq('id', id)
       .single();
 
-    if (error || !draft) {
+    if (error || !post) {
       return NextResponse.json(
-        { error: 'Draft not found' },
+        { error: 'Content not found' },
         { status: 404 }
       );
     }
 
+    // Transform to ContentDraft format expected by preview page
+    const seoMeta = post.seo_meta || {};
+    const genMeta = post.generation_metadata || {};
+    const authorPersona = post.author_personas;
+    const authorName = authorPersona?.name || {};
+
+    const content = {
+      id: post.id,
+      keyword_text: genMeta.keyword || '',
+      locale: post.locale,
+      category: post.category,
+      title: post.title,
+      excerpt: post.excerpt,
+      content: post.content,
+      meta_title: seoMeta.meta_title || post.title,
+      meta_description: seoMeta.meta_description || post.excerpt,
+      author_name: authorName.ko || authorName.en || 'GetCareKorea',
+      author_name_en: authorName.en || authorName.ko || 'GetCareKorea',
+      author_bio: authorPersona?.bio_short?.ko || authorPersona?.bio_short?.en || '',
+      author_years_experience: authorPersona?.years_of_experience || 0,
+      tags: post.tags || [],
+      faq_schema: genMeta.faqSchema || [],
+      images: genMeta.generatedImages || genMeta.images || [],
+      cover_image_url: post.cover_image_url,
+      status: post.status,
+      hreflang_group: post.slug?.split('-').slice(0, -1).join('-') || '',
+      created_at: post.created_at,
+      updated_at: post.updated_at,
+    };
+
     return NextResponse.json({
       success: true,
-      draft,
+      content,
     });
   } catch (error: unknown) {
     console.error('Failed to fetch draft:', error);
@@ -88,9 +124,9 @@ export async function PUT(
 
     const updates = await request.json();
 
-    // Update draft
+    // Update blog_posts (not content_drafts)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: draft, error } = await (supabase.from('content_drafts') as any)
+    const { data: post, error } = await (supabase.from('blog_posts') as any)
       .update({
         ...updates,
         updated_at: new Date().toISOString(),
@@ -105,7 +141,7 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      draft,
+      content: post,
     });
   } catch (error: unknown) {
     console.error('Failed to update draft:', error);
@@ -142,9 +178,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Delete draft
-    const { error } = await supabase
-      .from('content_drafts')
+    // Delete from blog_posts
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from('blog_posts') as any)
       .delete()
       .eq('id', id);
 

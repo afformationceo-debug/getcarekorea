@@ -7,10 +7,13 @@
  * Model: google/imagen-4 (via Replicate API)
  * Cost: ~$0.02 per image
  *
+ * Images are uploaded to Supabase Storage for permanent URLs.
+ *
  * @see https://replicate.com/google/imagen-4/api
  */
 
 import Replicate from 'replicate';
+import { createAdminClient } from '@/lib/supabase/server';
 
 // =====================================================
 // CONFIGURATION - DO NOT CHANGE
@@ -117,11 +120,74 @@ function enhancePrompt(basePrompt: string, keyword: string): string {
 }
 
 // =====================================================
+// SUPABASE STORAGE UPLOAD
+// =====================================================
+
+/**
+ * Upload image to Supabase Storage for permanent URL
+ */
+async function uploadToSupabaseStorage(
+  imageUrl: string,
+  fileName: string,
+  outputFormat: string
+): Promise<string> {
+  try {
+    console.log(`     📤 Uploading to Supabase Storage...`);
+
+    // Download image from Replicate
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to download image: ${response.status}`);
+    }
+
+    const imageBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(imageBuffer);
+
+    // Generate unique file path
+    const sanitizedFileName = fileName.replace(/[^a-z0-9-]/gi, '-').substring(0, 50);
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substring(2, 8);
+    const extension = outputFormat === 'jpg' ? 'jpg' : outputFormat === 'png' ? 'png' : 'webp';
+    const filePath = `generated/${timestamp}-${randomStr}-${sanitizedFileName}.${extension}`;
+
+    // Get admin client for storage access
+    const adminClient = await createAdminClient();
+
+    // Upload to Supabase Storage
+    const { error } = await adminClient.storage
+      .from('blog-images')
+      .upload(filePath, uint8Array, {
+        contentType: `image/${extension === 'jpg' ? 'jpeg' : extension}`,
+        upsert: true,
+      });
+
+    if (error) {
+      console.error(`     ❌ Storage upload error:`, error.message);
+      // Return original URL as fallback (note: Replicate URLs may expire)
+      return imageUrl;
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = adminClient.storage
+      .from('blog-images')
+      .getPublicUrl(filePath);
+
+    console.log(`     ✅ Uploaded to Storage: ${publicUrl.substring(0, 60)}...`);
+
+    return publicUrl;
+  } catch (error) {
+    console.error('     ❌ Storage upload failed:', error);
+    // Return original URL as fallback
+    return imageUrl;
+  }
+}
+
+// =====================================================
 // SINGLE IMAGE GENERATION
 // =====================================================
 
 /**
- * Generate a single image with Imagen 4
+ * Generate a single image with Imagen 4 and upload to Supabase Storage
  */
 async function generateSingleImage(
   metadata: ImageMetadata,
@@ -150,18 +216,25 @@ async function generateSingleImage(
     },
   });
 
-  // Extract URL from output
-  const imageUrl = typeof output === 'string' ? output :
+  // Extract URL from Replicate output
+  const replicateUrl = typeof output === 'string' ? output :
                    Array.isArray(output) ? String(output[0]) :
                    String(output);
 
-  if (!imageUrl || !imageUrl.startsWith('http')) {
-    throw new Error(`Invalid image URL returned: ${imageUrl}`);
+  if (!replicateUrl || !replicateUrl.startsWith('http')) {
+    throw new Error(`Invalid image URL returned: ${replicateUrl}`);
   }
+
+  // Upload to Supabase Storage for permanent URL
+  const permanentUrl = await uploadToSupabaseStorage(
+    replicateUrl,
+    `${options.keyword}-${metadata.position}`,
+    options.outputFormat
+  );
 
   return {
     placeholder: metadata.placeholder,
-    url: imageUrl,
+    url: permanentUrl,  // Use permanent Supabase Storage URL
     alt: metadata.alt,
     prompt: metadata.prompt,
     aspectRatio: options.aspectRatio,
@@ -315,6 +388,11 @@ export interface ImageForInsertion {
 /**
  * Insert images into HTML content at specified positions
  *
+ * Handles multiple placeholder formats:
+ * - Plain: [IMAGE_PLACEHOLDER_1]
+ * - In paragraph: <p>[IMAGE_PLACEHOLDER_1]</p>
+ * - In img tag: <img src="[IMAGE_PLACEHOLDER_1]" alt="..." />
+ *
  * @param content - HTML content with placeholders or headings
  * @param images - Generated images with their positions (only needs url, alt, placeholder)
  * @returns Updated HTML content with images
@@ -326,15 +404,47 @@ export function insertImagesIntoContent(
 ): string {
   let updatedContent = content;
 
-  // First, try to replace placeholders like [IMAGE_PLACEHOLDER_1]
+  console.log(`🖼️ Inserting ${images.length} images into content...`);
+
   for (const image of images) {
-    const placeholderRegex = new RegExp(
-      `\\[${image.placeholder.replace(/[[\]]/g, '')}\\]`,
+    // Get placeholder name without brackets
+    const placeholderName = image.placeholder.replace(/[[\]]/g, '');
+    const imageHtml = createImageHTML(image, captions?.[image.placeholder]);
+
+    // 1. Replace <p>[IMAGE_PLACEHOLDER_X]</p> pattern
+    const pWrapperRegex = new RegExp(
+      `<p>\\s*\\[${placeholderName}\\]\\s*</p>`,
       'gi'
     );
+    if (pWrapperRegex.test(updatedContent)) {
+      updatedContent = updatedContent.replace(pWrapperRegex, imageHtml);
+      console.log(`   ✅ Replaced <p>[${placeholderName}]</p>`);
+      continue;
+    }
 
-    const imageHtml = createImageHTML(image, captions?.[image.placeholder]);
-    updatedContent = updatedContent.replace(placeholderRegex, imageHtml);
+    // 2. Replace <img src="[IMAGE_PLACEHOLDER_X]" ... /> pattern
+    const imgTagRegex = new RegExp(
+      `<img[^>]*src=["']\\[${placeholderName}\\]["'][^>]*\\/?>`,
+      'gi'
+    );
+    if (imgTagRegex.test(updatedContent)) {
+      updatedContent = updatedContent.replace(imgTagRegex, imageHtml);
+      console.log(`   ✅ Replaced <img src="[${placeholderName}]" />`);
+      continue;
+    }
+
+    // 3. Replace plain [IMAGE_PLACEHOLDER_X] text
+    const plainRegex = new RegExp(
+      `\\[${placeholderName}\\]`,
+      'gi'
+    );
+    if (plainRegex.test(updatedContent)) {
+      updatedContent = updatedContent.replace(plainRegex, imageHtml);
+      console.log(`   ✅ Replaced [${placeholderName}]`);
+      continue;
+    }
+
+    console.log(`   ⚠️ Placeholder [${placeholderName}] not found in content`);
   }
 
   return updatedContent;

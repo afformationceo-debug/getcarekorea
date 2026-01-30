@@ -1,41 +1,33 @@
 /**
  * Auto Content Generation Cron Job
  *
- * GET /api/cron/auto-generate - 대기 중인 키워드로 자동 콘텐츠 생성
+ * GET /api/cron/auto-generate
  *
- * Vercel Cron: 15분마다 실행 (vercel.json)
- * DB 설정에 따라 실제 실행 여부 결정
+ * Automatically generates content for pending keywords using the unified pipeline.
+ * Triggered by Vercel Cron every 15 minutes.
  *
- * 동작 방식:
- * 1. system_settings에서 스케줄 설정 조회
- * 2. 현재 시간이 설정된 스케줄에 맞는지 확인
- * 3. 맞으면 content_keywords 테이블에서 status='pending' 인 키워드 조회
- * 4. 각 키워드에 대해 콘텐츠 생성
- * 5. 생성된 콘텐츠를 blog_posts에 저장 (draft 또는 published 상태)
- * 6. 키워드 상태를 'generated'로 업데이트
+ * Flow:
+ * 1. Check schedule settings from DB
+ * 2. Fetch pending keywords
+ * 3. Run content generation pipeline for each keyword
+ * 4. Update keyword status
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
-import { generateSingleLanguageContent } from '@/lib/content/single-content-generator';
-// ⚠️ IMPORTANT: Use Imagen 4 (NOT DALL-E)
 import {
-  generateImagen4Images,
-  insertImagesIntoContent,
-  type ImageMetadata,
-} from '@/lib/content/imagen4-helper';
+  runContentGenerationPipeline,
+  type ContentGenerationInput,
+} from '@/lib/content/content-generation-pipeline';
 import type { Locale } from '@/lib/content/multi-language-generator';
 
 export const runtime = 'nodejs';
-export const maxDuration = 300; // 5분 타임아웃
+export const maxDuration = 300; // 5 minutes
 
-// Cron 인증 키
+// Cron authentication
 const CRON_SECRET = process.env.CRON_SECRET;
 
-// 기본 배치 크기 (DB 설정으로 오버라이드)
-const DEFAULT_BATCH_SIZE = 3;
-
-// 지원 로케일
+// Valid locales
 const VALID_LOCALES: Locale[] = ['ko', 'en', 'ja', 'zh-CN', 'zh-TW', 'th', 'mn', 'ru'];
 
 // =====================================================
@@ -53,9 +45,6 @@ interface CronSettings {
   priority_threshold: number;
 }
 
-/**
- * Parse cron expression and check if current time matches
- */
 function shouldRunNow(cronExpression: string): boolean {
   const now = new Date();
   const currentMinute = now.getMinutes();
@@ -69,86 +58,93 @@ function shouldRunNow(cronExpression: string): boolean {
 
   const [minutePart, hourPart, dayPart, monthPart, dowPart] = parts;
 
-  // Check minute
   if (!matchesCronField(minutePart, currentMinute, 0, 59)) return false;
-
-  // Check hour
   if (!matchesCronField(hourPart, currentHour, 0, 23)) return false;
-
-  // Check day of month
   if (!matchesCronField(dayPart, currentDay, 1, 31)) return false;
-
-  // Check month
   if (!matchesCronField(monthPart, currentMonth, 1, 12)) return false;
-
-  // Check day of week
   if (!matchesCronField(dowPart, currentDow, 0, 6)) return false;
 
   return true;
 }
 
-/**
- * Check if a value matches a cron field
- */
 function matchesCronField(field: string, value: number, min: number, max: number): boolean {
   if (field === '*') return true;
 
-  // Step values: */15, */2, etc.
   if (field.startsWith('*/')) {
     const step = parseInt(field.slice(2));
     return (value - min) % step === 0;
   }
 
-  // Range: 1-5
-  if (field.includes('-') && !field.includes(',')) {
-    const [start, end] = field.split('-').map(n => parseInt(n));
-    return value >= start && value <= end;
-  }
-
-  // List: 1,3,5
   if (field.includes(',')) {
-    const values = field.split(',').map(n => parseInt(n.trim()));
+    const values = field.split(',').map(v => parseInt(v.trim()));
     return values.includes(value);
   }
 
-  // Exact value
+  if (field.includes('-')) {
+    const [start, end] = field.split('-').map(v => parseInt(v.trim()));
+    return value >= start && value <= end;
+  }
+
   return parseInt(field) === value;
 }
 
-/**
- * GET /api/cron/auto-generate
- * 대기 중인 키워드 자동 콘텐츠 생성
- */
+// =====================================================
+// CRON LOG HELPER
+// =====================================================
+
+async function logCronExecution(
+  supabase: any,
+  jobName: string,
+  status: 'success' | 'failed' | 'skipped',
+  details: Record<string, any>,
+  durationMs: number
+) {
+  try {
+    await supabase.from('cron_logs').insert({
+      job_name: jobName,
+      status,
+      details,
+      duration_ms: durationMs,
+      executed_at: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Failed to log cron execution:', error);
+  }
+}
+
+// =====================================================
+// MAIN HANDLER
+// =====================================================
+
 export async function GET(request: NextRequest) {
+  const cronId = `CRON-${Date.now().toString(36).toUpperCase()}`;
   const startTime = Date.now();
-  const cronId = `cron-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   console.log(`\n${'='.repeat(60)}`);
-  console.log(`🟠 [AUTO-GENERATE CRON] ID: ${cronId}`);
-  console.log(`   Timestamp: ${new Date().toISOString()}`);
-  console.log(`   Source: Vercel Cron Job (15-min interval)`);
+  console.log(`🟠 [${cronId}] AUTO-GENERATE CRON JOB STARTED`);
+  console.log(`   Time: ${new Date().toISOString()}`);
   console.log(`${'='.repeat(60)}`);
 
   try {
-    // Cron 인증 확인
+    // Verify cron secret (optional in development)
     const authHeader = request.headers.get('authorization');
     if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
-      console.log(`❌ [${cronId}] Unauthorized - invalid CRON_SECRET`);
+      console.log(`❌ [${cronId}] Unauthorized - invalid cron secret`);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const supabase = await createAdminClient();
 
-    // 0. 시스템 설정 조회
+    // 1. Get cron settings
     const { data: settingsData } = await (supabase.from('system_settings') as any)
       .select('value')
-      .eq('key', 'cron_auto_generate')
+      .eq('key', 'auto_generate_settings')
       .single();
 
     const settings: CronSettings = settingsData?.value || {
-      enabled: true,
-      batch_size: DEFAULT_BATCH_SIZE,
-      schedule: '0 9 * * *',
+      enabled: false,
+      batch_size: 3,
+      schedule: '0 9,21 * * *',
       include_rag: true,
       include_images: true,
       image_count: 3,
@@ -156,90 +152,73 @@ export async function GET(request: NextRequest) {
       priority_threshold: 0,
     };
 
-    console.log(`📋 [${cronId}] Settings: enabled=${settings.enabled}, schedule="${settings.schedule}", batch=${settings.batch_size}`);
+    console.log(`📋 [${cronId}] Settings:`, JSON.stringify(settings, null, 2));
 
-    // 0-1. 비활성화 체크
+    // Check if enabled
     if (!settings.enabled) {
-      console.log(`🔕 [${cronId}] SKIPPED - Auto-generate is disabled in settings`);
+      console.log(`⏭️ [${cronId}] SKIPPED - Auto-generation is disabled`);
+      await logCronExecution(supabase, 'auto-generate', 'skipped', {
+        reason: 'Auto-generation is disabled',
+      }, Date.now() - startTime);
+
       return NextResponse.json({
         success: true,
-        data: { skipped: true, reason: 'Auto-generate is disabled' },
+        data: { skipped: true, reason: 'Auto-generation is disabled' },
       });
     }
 
-    // 0-2. 스케줄 체크 (현재 시간이 설정된 스케줄에 맞는지)
-    const now = new Date();
-    console.log(`⏰ [${cronId}] Current time: ${now.getHours()}:${now.getMinutes()} (schedule: ${settings.schedule})`);
-
+    // Check schedule
     if (!shouldRunNow(settings.schedule)) {
-      console.log(`⏭️ [${cronId}] SKIPPED - Current time does not match schedule`);
+      console.log(`⏭️ [${cronId}] SKIPPED - Current time does not match schedule: ${settings.schedule}`);
+      await logCronExecution(supabase, 'auto-generate', 'skipped', {
+        reason: 'Schedule not matched',
+        schedule: settings.schedule,
+        currentTime: new Date().toISOString(),
+      }, Date.now() - startTime);
+
       return NextResponse.json({
         success: true,
-        data: { skipped: true, reason: 'Not scheduled to run at this time', schedule: settings.schedule },
+        data: { skipped: true, reason: 'Schedule not matched' },
       });
     }
 
-    console.log(`✅ [${cronId}] Schedule MATCHED - proceeding with generation`);
-
-    // 사용할 배치 크기
-    const batchSize = settings.batch_size || DEFAULT_BATCH_SIZE;
-
-    // 1. 대기 중인 키워드 조회
-    // 우선순위: priority DESC → search_volume DESC → created_at ASC
+    // 2. Fetch pending keywords
     let query = (supabase.from('content_keywords') as any)
-      .select(`
-        id,
-        keyword,
-        locale,
-        category,
-        priority,
-        search_volume
-      `)
+      .select('id, keyword, locale, category, priority, search_volume')
       .eq('status', 'pending')
       .order('priority', { ascending: false })
       .order('search_volume', { ascending: false })
       .order('created_at', { ascending: true })
-      .limit(batchSize);
+      .limit(settings.batch_size);
 
-    // priority_threshold 적용
     if (settings.priority_threshold > 0) {
       query = query.gte('priority', settings.priority_threshold);
     }
 
     const { data: pendingKeywords, error: fetchError } = await query;
 
-    // 1-2. 모든 활성 통역사 조회 (author 매칭용)
-    // ⚠️ 콘텐츠 생성에 필요한 필드 모두 포함
-    // Schema uses JSONB: name, bio_short (not name_en/name_ko)
-    const { data: allPersonas } = await (supabase.from('author_personas') as any)
-      .select('id, slug, name, languages, primary_specialty, years_of_experience, total_posts, bio_short')
-      .eq('is_active', true);
-
     if (fetchError) {
-      console.error('Failed to fetch pending keywords:', fetchError);
+      console.error(`❌ [${cronId}] Failed to fetch pending keywords:`, fetchError);
       throw fetchError;
     }
 
     if (!pendingKeywords || pendingKeywords.length === 0) {
-      // 로그 기록
+      console.log(`✅ [${cronId}] No pending keywords to process`);
       await logCronExecution(supabase, 'auto-generate', 'success', {
-        message: 'No pending keywords to process',
+        message: 'No pending keywords',
         processedCount: 0,
       }, Date.now() - startTime);
 
       return NextResponse.json({
         success: true,
-        data: {
-          generated: 0,
-          message: 'No pending keywords to process',
-        },
+        data: { generated: 0, message: 'No pending keywords to process' },
       });
     }
 
-    console.log(`\n🚀 Auto-generate cron: Processing ${pendingKeywords.length} keywords`);
+    console.log(`\n🚀 [${cronId}] Processing ${pendingKeywords.length} keywords`);
 
-    // 2. 각 키워드에 대해 콘텐츠 생성
-    const results: {
+    // 3. Process each keyword with the unified pipeline
+    const results: Array<{
       keywordId: string;
       keyword: string;
       locale: string;
@@ -247,373 +226,120 @@ export async function GET(request: NextRequest) {
       blogPostId?: string;
       authorSlug?: string;
       error?: string;
-      cost?: number;
-    }[] = [];
+    }> = [];
 
-    // Round Robin 배치 추적: 이번 배치에서 이미 배정된 통역사 ID
-    const assignedInBatch = new Map<string, number>(); // personaId -> 배정 횟수
+    // Track assigned personas in this batch for round-robin
+    const assignedInBatch = new Map<string, number>();
 
     for (const kw of pendingKeywords) {
-      const kwStartTime = Date.now();
-      console.log(`\n📝 Processing: ${kw.keyword} (${kw.locale})`);
+      console.log(`\n📝 [${cronId}] Processing: ${kw.keyword} (${kw.locale})`);
 
-      try {
-        // 로케일 검증
-        if (!VALID_LOCALES.includes(kw.locale as Locale)) {
-          throw new Error(`Invalid locale: ${kw.locale}`);
-        }
-
-        // 2-1. 키워드 상태를 'generating'으로 업데이트
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase.from('content_keywords') as any)
-          .update({ status: 'generating', updated_at: new Date().toISOString() })
-          .eq('id', kw.id);
-
-        // 2-2. Author 자동 매칭 (locale + specialty 기반 + Round Robin)
-        // ⚠️ 콘텐츠 생성 전에 Author를 먼저 선택해서 전달
-        let authorPersonaId: string | null = null;
-        let selectedPersonaSlug: string | null = null;
-        let dbAuthorForContent: {
-          id: string;
-          slug: string;
-          name_en: string;
-          name_ko: string;
-          years_of_experience: number;
-          primary_specialty: string;
-          languages: Array<{ code: string; proficiency: string }>;
-          bio_short_en?: string | null;
-          bio_short_ko?: string | null;
-        } | undefined = undefined;
-
-        if (allPersonas && allPersonas.length > 0) {
-          // Filter personas who speak this locale's language
-          const matchingPersonas = allPersonas.filter((p: { languages: Array<{ code: string }> }) => {
-            if (!p.languages || !Array.isArray(p.languages)) return false;
-            return p.languages.some((lang: { code: string }) => lang.code === kw.locale);
-          });
-
-          if (matchingPersonas.length > 0) {
-            // Round Robin: total_posts + 이번 배치에서 배정된 횟수를 합산하여 정렬
-            const personasWithBatchCount = matchingPersonas.map((p: { id: string; total_posts: number; primary_specialty: string; slug: string }) => ({
-              ...p,
-              effectivePosts: (p.total_posts || 0) + (assignedInBatch.get(p.id) || 0),
-            }));
-
-            // 1순위: specialty 매칭 + 가장 적은 posts
-            const specialtyMatched = personasWithBatchCount.filter(
-              (p: { primary_specialty: string }) => p.primary_specialty === (kw.category || 'general')
-            );
-
-            let candidates = specialtyMatched.length > 0 ? specialtyMatched : personasWithBatchCount;
-
-            // effectivePosts 기준 정렬 (Round Robin)
-            candidates.sort((a: { effectivePosts: number }, b: { effectivePosts: number }) =>
-              a.effectivePosts - b.effectivePosts
-            );
-
-            const selectedPersona = candidates[0];
-            authorPersonaId = selectedPersona.id;
-            selectedPersonaSlug = selectedPersona.slug;
-
-            // 배치 카운터 업데이트
-            assignedInBatch.set(selectedPersona.id, (assignedInBatch.get(selectedPersona.id) || 0) + 1);
-
-            // DB Author 정보를 콘텐츠 생성에 전달
-            // Schema uses JSONB: name = {"en": "...", "ko": "..."}, bio_short = {"en": "...", "ko": "..."}
-            const nameObj = selectedPersona.name || {};
-            const bioShortObj = selectedPersona.bio_short || {};
-            dbAuthorForContent = {
-              id: selectedPersona.id,
-              slug: selectedPersona.slug,
-              name_en: nameObj.en || nameObj.ko || selectedPersona.slug,
-              name_ko: nameObj.ko || nameObj.en || selectedPersona.slug,
-              years_of_experience: selectedPersona.years_of_experience || 5,
-              primary_specialty: selectedPersona.primary_specialty || 'general',
-              languages: selectedPersona.languages || [],
-              bio_short_en: bioShortObj.en,
-              bio_short_ko: bioShortObj.ko,
-            };
-
-            console.log(`   👤 Author: ${selectedPersona.slug} (posts: ${selectedPersona.total_posts}, batch: ${assignedInBatch.get(selectedPersona.id)})`);
-          }
-        }
-
-        // 2-3. 콘텐츠 생성 (DB Author 전달)
-        const generatedContent = await generateSingleLanguageContent({
-          keyword: kw.keyword,
-          locale: kw.locale as Locale,
-          category: kw.category || 'general',
-          includeRAG: settings.include_rag,
-          includeImages: settings.include_images,
-          imageCount: settings.image_count,
-          dbAuthorPersona: dbAuthorForContent, // ✅ 실제 통역사 정보 전달
-        });
-
-        // 2-4. 이미지 생성 (Google Imagen 4)
-        let finalContent = generatedContent.content;
-        let totalImageCost = 0;
-
-        if (settings.include_images && generatedContent.images && generatedContent.images.length > 0) {
-          try {
-            const imageMetadata: ImageMetadata[] = generatedContent.images.map(img => ({
-              position: img.position,
-              placeholder: img.placeholder,
-              prompt: img.prompt,
-              alt: img.alt,
-              caption: img.caption,
-            }));
-
-            // ⚠️ Imagen 4 사용 (DALL-E 사용 금지)
-            const imageResult = await generateImagen4Images({
-              images: imageMetadata,
-              keyword: kw.keyword,
-              locale: kw.locale,
-              aspectRatio: '16:9',
-              outputFormat: 'png',
-              outputQuality: 90,
-            });
-
-            if (imageResult.images.length > 0) {
-              // 캡션 맵 생성
-              const captions: Record<string, string> = {};
-              generatedContent.images.forEach(img => {
-                if (img.caption) {
-                  captions[img.placeholder] = img.caption;
-                }
-              });
-
-              finalContent = insertImagesIntoContent(generatedContent.content, imageResult.images, captions);
-              totalImageCost = imageResult.total_cost;
-              console.log(`   ✅ ${imageResult.images.length} images generated with Imagen 4`);
-            }
-
-            if (imageResult.errors.length > 0) {
-              console.warn(`   ⚠️  ${imageResult.errors.length} images failed`);
-            }
-          } catch (imageError: unknown) {
-            console.warn(`   ⚠️  Image generation failed:`, imageError instanceof Error ? imageError.message : 'Unknown error');
-          }
-        }
-
-        // 2-6. DB에 저장 (simplified schema)
-        const slug = `${kw.keyword.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')}-${Date.now()}`;
-
-        const blogPostData: Record<string, unknown> = {
-          slug,
-          locale: kw.locale, // Language code (en, ko, ja, zh-CN, etc.)
-
-          // Single locale content fields
-          title: generatedContent.title,
-          excerpt: generatedContent.excerpt,
-          content: finalContent, // With images injected
-
-          // SEO meta as JSONB (comprehensive SEO fields)
-          seo_meta: {
-            meta_title: generatedContent.metaTitle,
-            meta_description: generatedContent.metaDescription,
-            meta_keywords: generatedContent.tags?.join(', ') || '',
-            meta_author: dbAuthorForContent?.name_en || 'GetCareKorea',
-            robots: 'index, follow',
-            og_title: generatedContent.metaTitle || generatedContent.title,
-            og_description: generatedContent.metaDescription || generatedContent.excerpt,
-            og_type: 'article',
-            twitter_card: 'summary_large_image',
-            twitter_title: generatedContent.metaTitle || generatedContent.title,
-            twitter_description: generatedContent.metaDescription || generatedContent.excerpt,
-          },
-
-          // Common fields
-          category: kw.category || 'general',
-          tags: generatedContent.tags,
-          author_persona_id: authorPersonaId,
-          status: settings.auto_publish ? 'published' : 'draft',
-          published_at: settings.auto_publish ? new Date().toISOString() : null,
-
-          // Generation metadata (JSONB)
-          generation_metadata: {
-            keyword: kw.keyword,
-            locale: kw.locale,
-            estimatedCost: generatedContent.estimatedCost + totalImageCost,
-            generationTimestamp: generatedContent.generationTimestamp,
-            includeRAG: settings.include_rag,
-            includeImages: settings.include_images,
-            author: generatedContent.author,
-            faqSchema: generatedContent.faqSchema,
-            howToSchema: generatedContent.howToSchema,
-            images: generatedContent.images,
-            internalLinks: generatedContent.internalLinks || [],
-            cronGenerated: true,
-          },
-        };
-
-        // 예약 발행일이 있으면 scheduled 상태로 (target_publish_date 컬럼 추가 시 활성화)
-        // if (kw.target_publish_date) {
-        //   blogPostData.status = 'scheduled';
-        //   blogPostData.scheduled_at = kw.target_publish_date;
-        // }
-
-        console.log(`   💾 [${cronId}] Saving to blog_posts...`);
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: savedPost, error: saveError } = await (supabase.from('blog_posts') as any)
-          .insert(blogPostData)
-          .select('id')
-          .single();
-
-        if (saveError) {
-          console.error(`   ❌ [${cronId}] DB save FAILED for "${kw.keyword}"`);
-          console.error(`      Code: ${saveError.code}`);
-          console.error(`      Message: ${saveError.message}`);
-          console.error(`      Details: ${JSON.stringify(saveError.details)}`);
-          console.error(`      Hint: ${saveError.hint}`);
-          throw new Error(`DB save failed: ${saveError.message} (code: ${saveError.code})`);
-        }
-
-        console.log(`   ✅ [${cronId}] Saved to blog_posts: ${savedPost.id}`);
-
-        // 2-6. 키워드 상태 업데이트
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase.from('content_keywords') as any)
-          .update({
-            status: 'generated',
-            blog_post_id: savedPost.id,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', kw.id);
-
-        const kwDuration = ((Date.now() - kwStartTime) / 1000).toFixed(1);
-        console.log(`   ✅ [${cronId}] Keyword "${kw.keyword}" completed in ${kwDuration}s`);
-
-        // 2-7. Author의 total_posts 업데이트 (직접 증가)
-        if (authorPersonaId) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data: currentPersona } = await (supabase.from('author_personas') as any)
-            .select('total_posts')
-            .eq('id', authorPersonaId)
-            .single();
-          if (currentPersona) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await (supabase.from('author_personas') as any)
-              .update({ total_posts: (currentPersona.total_posts || 0) + 1 })
-              .eq('id', authorPersonaId);
-          }
-        }
-
-        results.push({
-          keywordId: kw.id,
-          keyword: kw.keyword,
-          locale: kw.locale,
-          success: true,
-          blogPostId: savedPost.id,
-          authorSlug: selectedPersonaSlug || undefined,
-          cost: generatedContent.estimatedCost + totalImageCost,
-        });
-
-      } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error(`   ❌ Failed: ${errorMessage}`);
-
-        // 키워드 상태를 'error'로 업데이트
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase.from('content_keywords') as any)
-          .update({
-            status: 'error',
-            error_message: errorMessage,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', kw.id);
-
+      // Validate locale
+      if (!VALID_LOCALES.includes(kw.locale as Locale)) {
+        console.warn(`   ⚠️ Invalid locale: ${kw.locale}, skipping`);
         results.push({
           keywordId: kw.id,
           keyword: kw.keyword,
           locale: kw.locale,
           success: false,
-          error: errorMessage,
+          error: `Invalid locale: ${kw.locale}`,
         });
+        continue;
       }
+
+      // Update keyword status to generating
+      await (supabase.from('content_keywords') as any)
+        .update({ status: 'generating', updated_at: new Date().toISOString() })
+        .eq('id', kw.id);
+
+      // Prepare pipeline input
+      const pipelineInput: ContentGenerationInput = {
+        keywordId: kw.id,
+        keyword: kw.keyword,
+        locale: kw.locale,
+        category: kw.category || 'general',
+        includeRAG: settings.include_rag,
+        includeImages: settings.include_images,
+        imageCount: settings.image_count,
+        autoPublish: settings.auto_publish,
+      };
+
+      // Run the unified pipeline
+      const result = await runContentGenerationPipeline(supabase, pipelineInput, {
+        requestId: `${cronId}-${kw.id.substring(0, 8)}`,
+        assignedInBatch,
+      });
+
+      // Track assigned persona for round-robin
+      if (result.authorPersonaId) {
+        assignedInBatch.set(
+          result.authorPersonaId,
+          (assignedInBatch.get(result.authorPersonaId) || 0) + 1
+        );
+      }
+
+      results.push({
+        keywordId: kw.id,
+        keyword: kw.keyword,
+        locale: kw.locale,
+        success: result.success,
+        blogPostId: result.blogPostId,
+        authorSlug: result.authorSlug,
+        error: result.error,
+      });
     }
 
-    // 3. 결과 요약
+    // 4. Summary
     const successCount = results.filter(r => r.success).length;
     const failedCount = results.filter(r => !r.success).length;
-    const totalCost = results.reduce((sum, r) => sum + (r.cost || 0), 0);
-    const totalTime = Date.now() - startTime;
+    const totalDuration = Date.now() - startTime;
 
-    // 로그 기록
-    await logCronExecution(supabase, 'auto-generate', failedCount === 0 ? 'success' : 'partial', {
-      total: pendingKeywords.length,
-      generated: successCount,
-      failed: failedCount,
-      totalCost,
-      results,
-    }, totalTime);
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`✅ [${cronId}] CRON JOB COMPLETE`);
+    console.log(`   Total: ${results.length}`);
+    console.log(`   Success: ${successCount}`);
+    console.log(`   Failed: ${failedCount}`);
+    console.log(`   Duration: ${(totalDuration / 1000).toFixed(1)}s`);
+    console.log(`${'='.repeat(60)}\n`);
 
-    console.log(`\n✅ Auto-generate completed: ${successCount}/${pendingKeywords.length} successful`);
-    console.log(`   Total cost: $${totalCost.toFixed(4)}`);
-    console.log(`   Total time: ${(totalTime / 1000).toFixed(1)}s`);
+    await logCronExecution(supabase, 'auto-generate', 'success', {
+      processedCount: results.length,
+      successCount,
+      failedCount,
+      results: results.map(r => ({
+        keyword: r.keyword,
+        success: r.success,
+        blogPostId: r.blogPostId,
+        error: r.error,
+      })),
+    }, totalDuration);
 
     return NextResponse.json({
       success: true,
       data: {
-        total: pendingKeywords.length,
         generated: successCount,
         failed: failedCount,
-        totalCost,
+        total: results.length,
         results,
+        durationMs: totalDuration,
       },
-      message: `Generated ${successCount}/${pendingKeywords.length} content items`,
     });
 
-  } catch (error: unknown) {
-    console.error('Auto-generate cron error:', error);
-    console.error('Error type:', typeof error);
-    console.error('Error JSON:', JSON.stringify(error, null, 2));
+  } catch (error) {
+    const totalDuration = Date.now() - startTime;
+    console.error(`\n❌ [${cronId}] CRON JOB FAILED:`, error instanceof Error ? error.message : error);
 
-    const errorMessage = error instanceof Error
-      ? error.message
-      : (typeof error === 'object' && error !== null)
-        ? JSON.stringify(error)
-        : String(error);
-    const errorStack = error instanceof Error ? error.stack : undefined;
-
-    // 에러 로그 기록
-    try {
-      const supabase = await createAdminClient();
-      await logCronExecution(supabase, 'auto-generate', 'error', {
-        error: errorMessage,
-      }, Date.now() - startTime);
-    } catch {
-      // 로그 기록 실패 무시
-    }
+    const supabase = await createAdminClient();
+    await logCronExecution(supabase, 'auto-generate', 'failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, totalDuration);
 
     return NextResponse.json(
-      { error: 'Failed to process auto-generation', details: errorMessage, stack: errorStack },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
-  }
-}
-
-/**
- * Cron 실행 로그 기록
- */
-async function logCronExecution(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
-  jobName: string,
-  status: 'success' | 'partial' | 'error',
-  details: Record<string, unknown>,
-  executionTimeMs: number
-) {
-  try {
-    await supabase.from('cron_logs').insert({
-      job_name: jobName,
-      status,
-      records_processed: (details.generated as number) || 0,
-      execution_time_ms: executionTimeMs,
-      details,
-      created_at: new Date().toISOString(),
-    });
-  } catch {
-    // cron_logs 테이블이 없어도 무시
   }
 }

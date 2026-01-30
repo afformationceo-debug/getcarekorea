@@ -184,19 +184,16 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
 
   // Generate content
   const handleGenerateContent = async (keyword: Keyword) => {
-    // 🔒 중복 요청 방지: 이미 생성 중이면 무시
+    // 🔒 중복 요청 방지: 동일 키워드가 이미 생성 중이면 무시
     if (generatingRef.current.has(keyword.id)) {
       console.log(`⚠️ Already generating: ${keyword.keyword}`);
       return;
     }
-    if (singleGenerating) {
-      console.log(`⚠️ Another generation in progress`);
-      return;
-    }
+    // 다른 키워드 생성 중이어도 허용 (동시 생성 가능)
 
     // 즉시 락 설정
     generatingRef.current.add(keyword.id);
-    setSingleGenerating(keyword.id);
+    setSingleGenerating(keyword.id); // 마지막 생성 중인 키워드 추적용
     setGeneratedPostId(null);
     setError(null);
 
@@ -206,9 +203,18 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
     ));
 
     try {
+      // Update DB status immediately (so other users/pages see the correct status)
+      await fetch(`/api/keywords/${keyword.id}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'generating' }),
+      });
+
       const response = await fetch('/api/content/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({
           keyword: keyword.keyword,
           locale: keyword.locale,
@@ -237,7 +243,18 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
       const errorMessage = err instanceof Error ? err.message : 'Generation failed';
       setError(errorMessage);
 
-      // Reset keyword status
+      // Reset keyword status in DB and UI
+      try {
+        await fetch(`/api/keywords/${keyword.id}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ status: 'pending' }),
+        });
+      } catch (resetErr) {
+        console.error('Failed to reset keyword status:', resetErr);
+      }
+
       setKeywords(prev => prev.map(k =>
         k.id === keyword.id ? { ...k, status: 'pending' as const } : k
       ));
@@ -697,7 +714,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                             e.stopPropagation();
                             handleGenerateContent(keyword);
                           }}
-                          disabled={singleGenerating !== null}
+                          disabled={singleGenerating === keyword.id}
                           className="gap-1 min-w-[100px]"
                         >
                           {singleGenerating === keyword.id ? (
@@ -719,7 +736,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                             e.stopPropagation();
                             handleGenerateContent(keyword);
                           }}
-                          disabled={singleGenerating !== null}
+                          disabled={singleGenerating === keyword.id}
                           className="gap-1 min-w-[100px]"
                         >
                           {singleGenerating === keyword.id ? (
