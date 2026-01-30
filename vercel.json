@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "src/app/api/cron/auto-generate/route.ts": {
-      "maxDuration": 900
+      "maxDuration": 800
     },
     "src/app/api/content/generate/route.ts": {
       "maxDuration": 300
