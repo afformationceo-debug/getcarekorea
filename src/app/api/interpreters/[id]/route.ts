@@ -139,7 +139,7 @@ function transformToInterpreter(persona: Record<string, unknown>, locale: string
     total_bookings: (persona.total_bookings as number) || 0,
     total_posts: (persona.total_posts as number) || 0,
     is_verified: (persona.is_verified as boolean) || false,
-    is_available: (persona.is_available as boolean) ?? true,
+    is_available: true, // is_available column removed - all active interpreters are available
     is_featured: (persona.is_featured as boolean) || false,
     video_url: persona.video_url as string | null,
     experience_years: (persona.years_of_experience as number) || 5,
@@ -147,7 +147,7 @@ function transformToInterpreter(persona: Record<string, unknown>, locale: string
     certifications: (persona.certifications as string[]) || [],
     preferred_messenger: persona.preferred_messenger as string | null,
     messenger_cta: ctaText,
-    target_locales: (persona.target_locales as string[]) || ['en'],
+    target_locales: ['en'], // target_locales column removed
     writing_tone: persona.writing_tone as string,
     writing_perspective: persona.writing_perspective as string,
     created_at: persona.created_at as string,

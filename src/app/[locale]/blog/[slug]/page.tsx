@@ -15,36 +15,22 @@ interface PageProps {
 }
 
 // =====================================================
-// DATA FETCHING
+// DATA FETCHING (Simplified Schema)
 // =====================================================
-
-// Helper to get localized field
-function getLocalizedField(post: Record<string, unknown>, fieldName: string, locale: Locale): string | null {
-  const localeMap: Record<Locale, string> = {
-    'ko': `${fieldName}_ko`,
-    'en': `${fieldName}_en`,
-    'ja': `${fieldName}_ja`,
-    'zh-TW': `${fieldName}_zh_tw`,
-    'zh-CN': `${fieldName}_zh_cn`,
-    'th': `${fieldName}_th`,
-    'ru': `${fieldName}_ru`,
-    'mn': `${fieldName}_mn`,
-  };
-
-  const localizedKey = localeMap[locale];
-  const englishKey = `${fieldName}_en`;
-
-  return (post[localizedKey] as string) || (post[englishKey] as string) || null;
-}
 
 async function getBlogPost(slug: string, locale: Locale): Promise<BlogPost | null> {
   try {
     const supabase = await createAdminClient();
 
-    // Fetch blog post - select all locale columns
+    // Fetch blog post (simplified schema: single title/content/excerpt with locale field)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: post, error } = await (supabase.from('blog_posts') as any)
-      .select('*')
+      .select(`
+        id, slug, locale, title, excerpt, content,
+        category, tags, cover_image_url, status,
+        published_at, view_count, author_persona_id,
+        seo_meta, generation_metadata
+      `)
       .eq('slug', slug)
       .eq('status', 'published')
       .single();
@@ -53,53 +39,55 @@ async function getBlogPost(slug: string, locale: Locale): Promise<BlogPost | nul
       return null;
     }
 
-    // Type assertion for dynamic access
-    const postData = post as Record<string, unknown>;
-
     // Fetch author persona if exists
     let authorPersona = null;
-    if (postData.author_persona_id) {
+    if (post.author_persona_id) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: persona } = await (supabase.from('author_personas') as any)
         .select('*')
-        .eq('id', postData.author_persona_id)
+        .eq('id', post.author_persona_id)
         .single();
       authorPersona = persona;
     }
 
-    // Fetch related posts
+    // Fetch related posts (same locale and category)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: relatedPosts } = await (supabase.from('blog_posts') as any)
-      .select('*')
+      .select('id, slug, title, cover_image_url, published_at, locale')
       .eq('status', 'published')
-      .eq('category', postData.category || '')
-      .neq('id', postData.id)
+      .eq('category', post.category || '')
+      .eq('locale', post.locale) // Same locale
+      .neq('id', post.id)
       .order('published_at', { ascending: false })
       .limit(3);
 
+    // Extract metadata from generation_metadata
+    const metadata = post.generation_metadata || {};
+    const seoMeta = post.seo_meta || {};
+
     return {
-      id: postData.id as string,
-      slug: postData.slug as string,
-      title: getLocalizedField(postData, 'title', locale) || '',
-      content: getLocalizedField(postData, 'content', locale) || '',
-      excerpt: getLocalizedField(postData, 'excerpt', locale),
-      metaTitle: getLocalizedField(postData, 'meta_title', locale) || getLocalizedField(postData, 'title', locale),
-      metaDescription: getLocalizedField(postData, 'meta_description', locale) || getLocalizedField(postData, 'excerpt', locale),
-      cover_image_url: postData.cover_image_url as string | null,
-      category: (postData.category as string) || 'General',
-      tags: postData.tags as string[] | null,
-      published_at: postData.published_at as string | null,
-      view_count: (postData.view_count as number) || 0,
-      aiSummary: postData.ai_summary as BlogPost['aiSummary'],
-      faqSchema: postData.faq_schema as BlogPost['faqSchema'],
+      id: post.id,
+      slug: post.slug,
+      title: post.title || '',
+      content: post.content || '',
+      excerpt: post.excerpt,
+      metaTitle: seoMeta.meta_title || post.title,
+      metaDescription: seoMeta.meta_description || post.excerpt,
+      cover_image_url: post.cover_image_url,
+      category: post.category || 'General',
+      tags: post.tags,
+      published_at: post.published_at,
+      view_count: post.view_count || 0,
+      aiSummary: metadata.aiSummary,
+      faqSchema: metadata.faqSchema,
       authorPersona: authorPersona,
-      generatedAuthor: postData.generated_author as BlogPost['generatedAuthor'],
-      relatedPosts: relatedPosts?.map((rp: Record<string, unknown>) => ({
-        id: rp.id as string,
-        slug: rp.slug as string,
-        title: getLocalizedField(rp, 'title', locale) || '',
-        cover_image_url: rp.cover_image_url as string | null,
-        published_at: rp.published_at as string | null,
+      generatedAuthor: metadata.author,
+      relatedPosts: relatedPosts?.map((rp: { id: string; slug: string; title: string; cover_image_url: string | null; published_at: string | null }) => ({
+        id: rp.id,
+        slug: rp.slug,
+        title: rp.title || '',
+        cover_image_url: rp.cover_image_url,
+        published_at: rp.published_at,
       })) || [],
     };
   } catch (error) {

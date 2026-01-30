@@ -34,11 +34,12 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit;
 
     // Validate sortBy to prevent SQL injection
-    const validSortColumns = ['created_at', 'updated_at', 'view_count', 'title_en', 'title'];
-    const safeSortBy = validSortColumns.includes(sortBy) ? (sortBy === 'title' ? 'title_en' : sortBy) : 'created_at';
+    // Simplified schema: single title column
+    const validSortColumns = ['created_at', 'updated_at', 'view_count', 'title'];
+    const safeSortBy = validSortColumns.includes(sortBy) ? sortBy : 'created_at';
     const ascending = sortOrder === 'asc';
 
-    // Build query
+    // Build query (simplified schema)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query = (adminSupabase.from('blog_posts') as any)
       .select('*', { count: 'exact' })
@@ -53,10 +54,9 @@ export async function GET(request: NextRequest) {
       query = query.eq('category', category);
     }
 
-    // Language filter - check if specific language content exists
+    // Language filter - use locale column (simplified schema)
     if (locale && locale !== 'all') {
-      const localeKey = `content_${locale.replace('-', '_').toLowerCase()}`;
-      query = query.not(localeKey, 'is', null);
+      query = query.eq('locale', locale);
     }
 
     // Date range filters
@@ -67,16 +67,13 @@ export async function GET(request: NextRequest) {
       query = query.lte('created_at', `${dateTo}T23:59:59.999Z`);
     }
 
-    // Enhanced search - search across multiple fields including keywords
+    // Search - simplified schema uses single title column
     if (search) {
       const searchLower = search.toLowerCase();
       query = query.or(
-        `title_en.ilike.%${searchLower}%,` +
-        `title_ko.ilike.%${searchLower}%,` +
-        `title_ja.ilike.%${searchLower}%,` +
-        `title_zh_cn.ilike.%${searchLower}%,` +
-        `title_zh_tw.ilike.%${searchLower}%,` +
+        `title.ilike.%${searchLower}%,` +
         `slug.ilike.%${searchLower}%,` +
+        `excerpt.ilike.%${searchLower}%,` +
         `tags.cs.{${search}}`
       );
     }

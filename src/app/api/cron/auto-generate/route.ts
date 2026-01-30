@@ -18,8 +18,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { generateSingleLanguageContent } from '@/lib/content/single-content-generator';
-import { generateImages, injectImagesIntoHTML } from '@/lib/content/image-helper';
-import type { ImageMetadata } from '@/lib/content/image-helper';
+// ⚠️ IMPORTANT: Use Imagen 4 (NOT DALL-E)
+import {
+  generateImagen4Images,
+  insertImagesIntoContent,
+  type ImageMetadata,
+} from '@/lib/content/imagen4-helper';
 import type { Locale } from '@/lib/content/multi-language-generator';
 
 export const runtime = 'nodejs';
@@ -154,31 +158,33 @@ export async function GET(request: NextRequest) {
     }
 
     // 0-2. 스케줄 체크 (현재 시간이 설정된 스케줄에 맞는지)
-    // TODO: 테스트 완료 후 주석 해제
-    // if (!shouldRunNow(settings.schedule)) {
-    //   console.log(`⏭️ Skipping: Current time does not match schedule (${settings.schedule})`);
-    //   return NextResponse.json({
-    //     success: true,
-    //     data: { skipped: true, reason: 'Not scheduled to run at this time', schedule: settings.schedule },
-    //   });
-    // }
+    if (!shouldRunNow(settings.schedule)) {
+      console.log(`⏭️ Skipping: Current time does not match schedule (${settings.schedule})`);
+      return NextResponse.json({
+        success: true,
+        data: { skipped: true, reason: 'Not scheduled to run at this time', schedule: settings.schedule },
+      });
+    }
 
     console.log(`\n🚀 Auto-generate cron: Schedule matched (${settings.schedule})`);
 
     // 사용할 배치 크기
     const batchSize = settings.batch_size || DEFAULT_BATCH_SIZE;
 
-    // 1. 대기 중인 키워드 조회 (우선순위: priority DESC, created_at ASC)
+    // 1. 대기 중인 키워드 조회
+    // 우선순위: priority DESC → search_volume DESC → created_at ASC
     let query = (supabase.from('content_keywords') as any)
       .select(`
         id,
         keyword,
         locale,
         category,
-        priority
+        priority,
+        search_volume
       `)
       .eq('status', 'pending')
       .order('priority', { ascending: false })
+      .order('search_volume', { ascending: false })
       .order('created_at', { ascending: true })
       .limit(batchSize);
 
@@ -190,10 +196,11 @@ export async function GET(request: NextRequest) {
     const { data: pendingKeywords, error: fetchError } = await query;
 
     // 1-2. 모든 활성 통역사 조회 (author 매칭용)
+    // ⚠️ 콘텐츠 생성에 필요한 필드 모두 포함
+    // Schema uses JSONB: name, bio_short (not name_en/name_ko)
     const { data: allPersonas } = await (supabase.from('author_personas') as any)
-      .select('id, slug, languages, primary_specialty, total_posts')
-      .eq('is_active', true)
-      .eq('is_available', true);
+      .select('id, slug, name, languages, primary_specialty, years_of_experience, total_posts, bio_short')
+      .eq('is_active', true);
 
     if (fetchError) {
       console.error('Failed to fetch pending keywords:', fetchError);
@@ -249,54 +256,21 @@ export async function GET(request: NextRequest) {
           .update({ status: 'generating', updated_at: new Date().toISOString() })
           .eq('id', kw.id);
 
-        // 2-2. 콘텐츠 생성
-        const generatedContent = await generateSingleLanguageContent({
-          keyword: kw.keyword,
-          locale: kw.locale as Locale,
-          category: kw.category || 'general',
-          includeRAG: settings.include_rag,
-          includeImages: settings.include_images,
-          imageCount: settings.image_count,
-        });
-
-        // 2-3. 이미지 생성 (선택적)
-        let finalContent = generatedContent.content;
-        let totalImageCost = 0;
-
-        if (generatedContent.images && generatedContent.images.length > 0) {
-          try {
-            const imageMetadata: ImageMetadata[] = generatedContent.images.map(img => ({
-              position: img.position,
-              placeholder: img.placeholder,
-              prompt: img.prompt,
-              alt: img.alt,
-              caption: img.caption,
-              contextBefore: img.contextBefore,
-              contextAfter: img.contextAfter,
-            }));
-
-            const imageResult = await generateImages({
-              images: imageMetadata,
-              keyword: kw.keyword,
-              locale: kw.locale,
-              size: '1024x1024',
-              quality: 'hd',
-              style: 'natural',
-            });
-
-            if (imageResult.images.length > 0) {
-              finalContent = injectImagesIntoHTML(generatedContent.content, imageResult.images);
-              totalImageCost = imageResult.total_cost;
-              console.log(`   ✅ ${imageResult.images.length} images generated`);
-            }
-          } catch (imageError: unknown) {
-            console.warn(`   ⚠️  Image generation failed:`, imageError instanceof Error ? imageError.message : 'Unknown error');
-          }
-        }
-
-        // 2-4. Author 자동 매칭 (locale + specialty 기반 + Round Robin)
+        // 2-2. Author 자동 매칭 (locale + specialty 기반 + Round Robin)
+        // ⚠️ 콘텐츠 생성 전에 Author를 먼저 선택해서 전달
         let authorPersonaId: string | null = null;
         let selectedPersonaSlug: string | null = null;
+        let dbAuthorForContent: {
+          id: string;
+          slug: string;
+          name_en: string;
+          name_ko: string;
+          years_of_experience: number;
+          primary_specialty: string;
+          languages: Array<{ code: string; proficiency: string }>;
+          bio_short_en?: string | null;
+          bio_short_ko?: string | null;
+        } | undefined = undefined;
 
         if (allPersonas && allPersonas.length > 0) {
           // Filter personas who speak this locale's language
@@ -331,28 +305,118 @@ export async function GET(request: NextRequest) {
             // 배치 카운터 업데이트
             assignedInBatch.set(selectedPersona.id, (assignedInBatch.get(selectedPersona.id) || 0) + 1);
 
+            // DB Author 정보를 콘텐츠 생성에 전달
+            // Schema uses JSONB: name = {"en": "...", "ko": "..."}, bio_short = {"en": "...", "ko": "..."}
+            const nameObj = selectedPersona.name || {};
+            const bioShortObj = selectedPersona.bio_short || {};
+            dbAuthorForContent = {
+              id: selectedPersona.id,
+              slug: selectedPersona.slug,
+              name_en: nameObj.en || nameObj.ko || selectedPersona.slug,
+              name_ko: nameObj.ko || nameObj.en || selectedPersona.slug,
+              years_of_experience: selectedPersona.years_of_experience || 5,
+              primary_specialty: selectedPersona.primary_specialty || 'general',
+              languages: selectedPersona.languages || [],
+              bio_short_en: bioShortObj.en,
+              bio_short_ko: bioShortObj.ko,
+            };
+
             console.log(`   👤 Author: ${selectedPersona.slug} (posts: ${selectedPersona.total_posts}, batch: ${assignedInBatch.get(selectedPersona.id)})`);
           }
         }
 
-        // 2-5. DB에 저장
+        // 2-3. 콘텐츠 생성 (DB Author 전달)
+        const generatedContent = await generateSingleLanguageContent({
+          keyword: kw.keyword,
+          locale: kw.locale as Locale,
+          category: kw.category || 'general',
+          includeRAG: settings.include_rag,
+          includeImages: settings.include_images,
+          imageCount: settings.image_count,
+          dbAuthorPersona: dbAuthorForContent, // ✅ 실제 통역사 정보 전달
+        });
+
+        // 2-4. 이미지 생성 (Google Imagen 4)
+        let finalContent = generatedContent.content;
+        let totalImageCost = 0;
+
+        if (settings.include_images && generatedContent.images && generatedContent.images.length > 0) {
+          try {
+            const imageMetadata: ImageMetadata[] = generatedContent.images.map(img => ({
+              position: img.position,
+              placeholder: img.placeholder,
+              prompt: img.prompt,
+              alt: img.alt,
+              caption: img.caption,
+            }));
+
+            // ⚠️ Imagen 4 사용 (DALL-E 사용 금지)
+            const imageResult = await generateImagen4Images({
+              images: imageMetadata,
+              keyword: kw.keyword,
+              locale: kw.locale,
+              aspectRatio: '16:9',
+              outputFormat: 'png',
+              outputQuality: 90,
+            });
+
+            if (imageResult.images.length > 0) {
+              // 캡션 맵 생성
+              const captions: Record<string, string> = {};
+              generatedContent.images.forEach(img => {
+                if (img.caption) {
+                  captions[img.placeholder] = img.caption;
+                }
+              });
+
+              finalContent = insertImagesIntoContent(generatedContent.content, imageResult.images, captions);
+              totalImageCost = imageResult.total_cost;
+              console.log(`   ✅ ${imageResult.images.length} images generated with Imagen 4`);
+            }
+
+            if (imageResult.errors.length > 0) {
+              console.warn(`   ⚠️  ${imageResult.errors.length} images failed`);
+            }
+          } catch (imageError: unknown) {
+            console.warn(`   ⚠️  Image generation failed:`, imageError instanceof Error ? imageError.message : 'Unknown error');
+          }
+        }
+
+        // 2-6. DB에 저장 (simplified schema)
         const slug = `${kw.keyword.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')}-${Date.now()}`;
-        const normalizedLocale = kw.locale.toLowerCase().replace(/-/g, '_');
-        const localeField = (base: string) => `${base}_${normalizedLocale}`;
 
         const blogPostData: Record<string, unknown> = {
           slug,
-          [localeField('title')]: generatedContent.title,
-          [localeField('excerpt')]: generatedContent.excerpt,
-          [localeField('content')]: finalContent,
-          [localeField('meta_title')]: generatedContent.metaTitle,
-          [localeField('meta_description')]: generatedContent.metaDescription,
-          title_en: normalizedLocale === 'en' ? generatedContent.title : generatedContent.title,
+          locale: kw.locale, // Language code (en, ko, ja, zh-CN, etc.)
+
+          // Single locale content fields
+          title: generatedContent.title,
+          excerpt: generatedContent.excerpt,
+          content: finalContent, // With images injected
+
+          // SEO meta as JSONB (comprehensive SEO fields)
+          seo_meta: {
+            meta_title: generatedContent.metaTitle,
+            meta_description: generatedContent.metaDescription,
+            meta_keywords: generatedContent.tags?.join(', ') || '',
+            meta_author: dbAuthorForContent?.name_en || 'GetCareKorea',
+            robots: 'index, follow',
+            og_title: generatedContent.metaTitle || generatedContent.title,
+            og_description: generatedContent.metaDescription || generatedContent.excerpt,
+            og_type: 'article',
+            twitter_card: 'summary_large_image',
+            twitter_title: generatedContent.metaTitle || generatedContent.title,
+            twitter_description: generatedContent.metaDescription || generatedContent.excerpt,
+          },
+
+          // Common fields
           category: kw.category || 'general',
           tags: generatedContent.tags,
           author_persona_id: authorPersonaId,
           status: settings.auto_publish ? 'published' : 'draft',
           published_at: settings.auto_publish ? new Date().toISOString() : null,
+
+          // Generation metadata (JSONB)
           generation_metadata: {
             keyword: kw.keyword,
             locale: kw.locale,

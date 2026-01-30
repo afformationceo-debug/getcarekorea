@@ -107,7 +107,77 @@ export async function POST(request: NextRequest) {
     console.log(`   Locale: ${locale}`);
     console.log(`   Category: ${category}`);
 
-    // 3. Generate content (single language only)
+    // 3. Select Author (DB 통역사 - Cron과 동일한 로직)
+    // Schema uses JSONB: name = {"en": "...", "ko": "..."}, bio_short = {"en": "...", "ko": "..."}
+    const adminClient = await createAdminClient();
+    let dbAuthorForContent: {
+      id: string;
+      slug: string;
+      name_en: string;
+      name_ko: string;
+      years_of_experience: number;
+      primary_specialty: string;
+      languages: Array<{ code: string; proficiency: string }>;
+      bio_short_en?: string | null;
+      bio_short_ko?: string | null;
+    } | undefined = undefined;
+    let authorPersonaId: string | null = null;
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: personas } = await (adminClient.from('author_personas') as any)
+        .select('id, slug, name, languages, primary_specialty, years_of_experience, total_posts, bio_short')
+        .eq('is_active', true);
+
+      if (personas && personas.length > 0) {
+        // Filter personas who speak this locale's language
+        const matchingPersonas = personas.filter((p: { languages: Array<{ code: string }> }) => {
+          if (!p.languages || !Array.isArray(p.languages)) return false;
+          return p.languages.some((lang: { code: string }) => lang.code === locale);
+        });
+
+        if (matchingPersonas.length > 0) {
+          // 1순위: specialty 매칭 + 가장 적은 posts
+          const specialtyMatched = matchingPersonas.filter(
+            (p: { primary_specialty: string }) => p.primary_specialty === category
+          );
+
+          let candidates = specialtyMatched.length > 0 ? specialtyMatched : matchingPersonas;
+
+          // total_posts 기준 정렬 (Round Robin)
+          candidates.sort(
+            (a: { total_posts: number }, b: { total_posts: number }) =>
+              (a.total_posts || 0) - (b.total_posts || 0)
+          );
+
+          const selectedPersona = candidates[0];
+          authorPersonaId = selectedPersona.id;
+
+          // Extract from JSONB fields
+          const nameObj = selectedPersona.name || {};
+          const bioShortObj = selectedPersona.bio_short || {};
+          dbAuthorForContent = {
+            id: selectedPersona.id,
+            slug: selectedPersona.slug,
+            name_en: nameObj.en || nameObj.ko || selectedPersona.slug,
+            name_ko: nameObj.ko || nameObj.en || selectedPersona.slug,
+            years_of_experience: selectedPersona.years_of_experience || 5,
+            primary_specialty: selectedPersona.primary_specialty || 'general',
+            languages: selectedPersona.languages || [],
+            bio_short_en: bioShortObj.en,
+            bio_short_ko: bioShortObj.ko,
+          };
+
+          console.log(`   ✅ Author (DB): ${selectedPersona.slug} (language: ${locale}, specialty: ${selectedPersona.primary_specialty})`);
+        } else {
+          console.warn(`   ⚠️  No author persona found for locale: ${locale}`);
+        }
+      }
+    } catch (personaError: unknown) {
+      console.warn(`   ⚠️  Could not find author persona:`, personaError instanceof Error ? personaError.message : 'Unknown error');
+    }
+
+    // 4. Generate content (single language only)
     const generatedContent = await generateSingleLanguageContent({
       keyword,
       locale: locale as Locale,
@@ -116,9 +186,10 @@ export async function POST(request: NextRequest) {
       includeImages,
       imageCount,
       additionalInstructions,
+      dbAuthorPersona: dbAuthorForContent, // ✅ 실제 통역사 정보 전달
     });
 
-    // 4. Generate images with Google Imagen 4 (via Replicate API)
+    // 5. Generate images with Google Imagen 4 (via Replicate API)
     // ⚠️ IMPORTANT: Always use Imagen 4 - DO NOT change to DALL-E or Flux
     let finalContent = generatedContent.content;
     let generatedImageResults: Array<{ url: string; alt: string; placeholder: string }> = [];
@@ -174,88 +245,51 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 5. Save to database if requested
+    // 6. Save to database if requested
     let savedDraft = null;
     const totalCost = generatedContent.estimatedCost + totalImageCost;
 
     if (autoSave) {
       console.log(`   💾 Saving to database...`);
 
-      // Use admin client to bypass RLS
-      const adminClient = await createAdminClient();
-
-      // Find matching author persona for this locale
-      // Uses 'languages' JSONB field: [{code: 'en', proficiency: 'native'}, ...]
-      let authorPersonaId: string | null = null;
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: personas } = await (adminClient.from('author_personas') as any)
-          .select('id, slug, languages, primary_specialty, total_posts')
-          .eq('is_active', true)
-          .eq('is_available', true);
-
-        if (personas && personas.length > 0) {
-          // Filter personas who speak this locale's language
-          const matchingPersonas = personas.filter((p: { languages: Array<{ code: string }> }) => {
-            if (!p.languages || !Array.isArray(p.languages)) return false;
-            return p.languages.some((lang: { code: string }) => lang.code === locale);
-          });
-
-          if (matchingPersonas.length > 0) {
-            // Try to find one with matching specialty first
-            let selectedPersona = matchingPersonas.find(
-              (p: { primary_specialty: string }) => p.primary_specialty === category
-            );
-
-            // If no specialty match, use round-robin (lowest total_posts)
-            if (!selectedPersona) {
-              selectedPersona = matchingPersonas.sort(
-                (a: { total_posts: number }, b: { total_posts: number }) =>
-                  (a.total_posts || 0) - (b.total_posts || 0)
-              )[0];
-            }
-
-            authorPersonaId = selectedPersona.id;
-            console.log(`   ✅ Matched author persona: ${selectedPersona.slug} (language: ${locale}, specialty: ${selectedPersona.primary_specialty})`);
-          } else {
-            console.warn(`   ⚠️  No author persona found for locale: ${locale}`);
-          }
-        }
-      } catch (personaError: unknown) {
-        console.warn(`   ⚠️  Could not find author persona:`, personaError instanceof Error ? personaError.message : 'Unknown error');
-      }
+      // ✅ Author는 이미 위에서 선택됨 (authorPersonaId, dbAuthorForContent)
 
       // Generate slug from keyword
       const slug = `${keyword.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')}-${Date.now()}`;
 
-      // Normalize locale for DB field names (zh-TW → zh_tw, zh-CN → zh_cn)
-      const normalizedLocale = locale.toLowerCase().replace(/-/g, '_');
-
-      // Build locale-specific field names
-      const localeField = (base: string) => `${base}_${normalizedLocale}`;
-
-      // Prepare blog_posts insert with locale-specific fields
-      // Use finalContent which has images injected
+      // Prepare blog_posts insert (simplified schema)
+      // Use single title/content/excerpt columns with locale field
       const blogPostData: Record<string, unknown> = {
         slug,
-        // Set locale-specific fields (use finalContent with injected images)
-        [localeField('title')]: generatedContent.title,
-        [localeField('excerpt')]: generatedContent.excerpt,
-        [localeField('content')]: finalContent,
-        [localeField('meta_title')]: generatedContent.metaTitle,
-        [localeField('meta_description')]: generatedContent.metaDescription,
+        locale, // Language code (en, ko, ja, zh-CN, etc.)
 
-        // Required field: title_en (use current title if not English)
-        title_en: normalizedLocale === 'en' ? generatedContent.title : generatedContent.title,
+        // Single locale content fields
+        title: generatedContent.title,
+        excerpt: generatedContent.excerpt,
+        content: finalContent, // With images injected
+
+        // SEO meta as JSONB (comprehensive SEO fields)
+        seo_meta: {
+          meta_title: generatedContent.metaTitle,
+          meta_description: generatedContent.metaDescription,
+          meta_keywords: generatedContent.tags?.join(', ') || '',
+          meta_author: dbAuthorForContent?.name_en || 'GetCareKorea',
+          robots: 'index, follow',
+          og_title: generatedContent.metaTitle || generatedContent.title,
+          og_description: generatedContent.metaDescription || generatedContent.excerpt,
+          og_type: 'article',
+          twitter_card: 'summary_large_image',
+          twitter_title: generatedContent.metaTitle || generatedContent.title,
+          twitter_description: generatedContent.metaDescription || generatedContent.excerpt,
+        },
 
         // Common fields
         category,
         tags: generatedContent.tags,
-        author_id: null, // Legacy field - use author_persona_id instead
-        author_persona_id: authorPersonaId, // Link to author_personas table
+        author_persona_id: authorPersonaId, // Link to author_personas (interpreter)
         status: 'draft',
 
-        // Metadata (stored as JSONB)
+        // Generation metadata (JSONB)
         generation_metadata: {
           keyword,
           locale,

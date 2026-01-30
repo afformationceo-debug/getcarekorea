@@ -20,7 +20,7 @@ interface Keyword {
   blog_posts?: {
     id: string;
     slug: string;
-    title_en: string;
+    title: string;
     status: string;
   } | null;
 }
@@ -28,6 +28,7 @@ interface Keyword {
 async function getKeywords(): Promise<{ keywords: Keyword[]; categories: string[] }> {
   const supabase = await createAdminClient();
 
+  // Simplified schema: use title instead of title_en
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase.from('content_keywords') as any)
     .select(`
@@ -35,7 +36,7 @@ async function getKeywords(): Promise<{ keywords: Keyword[]; categories: string[
       blog_posts (
         id,
         slug,
-        title_en,
+        title,
         status
       )
     `)

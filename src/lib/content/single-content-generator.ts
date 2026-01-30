@@ -84,6 +84,18 @@ export interface ContentGenerationOptions {
   includeImages?: boolean;      // default: true
   imageCount?: number;          // default: 3
   additionalInstructions?: string;
+  // DB에서 조회한 실제 통역사 정보 (author_personas 테이블)
+  dbAuthorPersona?: {
+    id: string;
+    slug: string;
+    name_en: string;
+    name_ko: string;
+    years_of_experience: number;
+    primary_specialty: string;
+    languages: Array<{ code: string; proficiency: string }>;
+    bio_short_en?: string | null;
+    bio_short_ko?: string | null;
+  };
 }
 
 // =====================================================
@@ -121,6 +133,7 @@ export async function generateSingleLanguageContent(
     includeImages = true,
     imageCount = 3,
     additionalInstructions,
+    dbAuthorPersona,
   } = options;
 
   console.log(`\n📝 Generating content for: ${keyword} (${locale})`);
@@ -132,9 +145,34 @@ export async function generateSingleLanguageContent(
   let estimatedCost = 0;
 
   try {
-    // 1. Get author persona
-    const author = getAuthorForKeyword(keyword, category);
-    console.log(`   ✅ Author: ${author.name} (${author.years_of_experience}년 경력)`);
+    // 1. Get author persona (DB 통역사 우선, 없으면 fallback)
+    let author: AuthorPersona;
+
+    if (dbAuthorPersona) {
+      // DB에서 조회한 실제 통역사 정보 사용
+      author = {
+        name: dbAuthorPersona.name_ko || dbAuthorPersona.name_en,
+        name_en: dbAuthorPersona.name_en,
+        name_local: {},
+        years_of_experience: dbAuthorPersona.years_of_experience,
+        specialties: [dbAuthorPersona.primary_specialty],
+        languages: dbAuthorPersona.languages.map(l => l.code),
+        certifications: [],
+        bio: dbAuthorPersona.bio_short_ko || dbAuthorPersona.bio_short_en || '',
+        bio_en: dbAuthorPersona.bio_short_en || '',
+        bio_local: {},
+        writing_style: {
+          tone: 'friendly',
+          perspective: 'first-person',
+          expertise_level: dbAuthorPersona.years_of_experience >= 10 ? 'expert' : 'intermediate',
+        },
+      };
+      console.log(`   ✅ Author (DB): ${author.name} / ${dbAuthorPersona.slug} (${author.years_of_experience}년 경력)`);
+    } else {
+      // Fallback: 랜덤 페르소나 생성 (레거시 지원)
+      author = getAuthorForKeyword(keyword, category);
+      console.log(`   ⚠️ Author (Generated): ${author.name} (${author.years_of_experience}년 경력)`);
+    }
 
     // 2. Build RAG context (if enabled)
     let ragContext: RAGContext | null = null;

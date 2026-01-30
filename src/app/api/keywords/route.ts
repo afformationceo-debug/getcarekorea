@@ -42,11 +42,12 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
 
     // Build query - use adminSupabase to bypass RLS
+    // Simplified schema: use title instead of title_en
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query = (adminSupabase.from('content_keywords') as any)
       .select(`
         *,
-        blog_posts (id, slug, title_en, status)
+        blog_posts (id, slug, title, status)
       `, { count: 'exact' });
 
     // Apply filters

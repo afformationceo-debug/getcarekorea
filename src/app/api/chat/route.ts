@@ -253,10 +253,10 @@ const searchInterpretersTool = tool({
       const supabase = await createClient();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // is_available column removed - all active interpreters are available
       let dbQuery = (supabase.from('author_personas') as any)
         .select('id, slug, name, languages, primary_specialty, secondary_specialties, avg_rating, review_count')
         .eq('is_active', true)
-        .eq('is_available', true)
         .order('avg_rating', { ascending: false })
         .limit(5);
 

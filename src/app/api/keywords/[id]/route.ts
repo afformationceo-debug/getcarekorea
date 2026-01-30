@@ -44,11 +44,12 @@ export async function GET(request: NextRequest, { params }: Params) {
     }
 
     // Get keyword with related blog post
+    // Simplified schema: use title, excerpt instead of title_en, excerpt_en
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: keyword, error } = await (supabase.from('content_keywords') as any)
       .select(`
         *,
-        blog_posts (id, slug, title_en, excerpt_en, status, created_at, published_at)
+        blog_posts (id, slug, title, excerpt, status, created_at, published_at)
       `)
       .eq('id', id)
       .single();

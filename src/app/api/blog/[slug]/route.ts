@@ -2,6 +2,8 @@
  * Blog Post Detail API
  *
  * GET /api/blog/[slug] - Get blog post by slug
+ *
+ * Simplified schema: single title/content/excerpt columns with locale field
  */
 
 import { NextRequest } from 'next/server';
@@ -13,42 +15,34 @@ import {
   ErrorCode,
   secureLog,
 } from '@/lib/api/error-handler';
-import type { BlogPost } from '@/types/database';
 
 // Cache blog posts for 60 seconds
 export const revalidate = 60;
 
 type Params = { params: Promise<{ slug: string }> };
 
-// Map locale to database field suffix
-const localeFieldMap: Record<string, string> = {
-  en: 'en',
-  ko: 'ko',
-  'zh-TW': 'zh_tw',
-  'zh-CN': 'zh_cn',
-  ja: 'ja',
-  th: 'th',
-  mn: 'mn',
-  ru: 'ru',
-};
-
-// Transform blog post to include localized fields
-function transformBlogPost(post: BlogPost, locale: string) {
-  const suffix = localeFieldMap[locale] || 'en';
-  const titleKey = `title_${suffix}` as keyof BlogPost;
-  const excerptKey = `excerpt_${suffix}` as keyof BlogPost;
-  const contentKey = `content_${suffix}` as keyof BlogPost;
-  const metaTitleKey = `meta_title_${suffix}` as keyof BlogPost;
-  const metaDescKey = `meta_description_${suffix}` as keyof BlogPost;
-
-  return {
-    ...post,
-    title: (post[titleKey] as string) || post.title_en,
-    excerpt: (post[excerptKey] as string | null) || post.excerpt_en,
-    content: (post[contentKey] as string | null) || post.content_en,
-    metaTitle: (post[metaTitleKey] as string | null) || post.meta_title_en,
-    metaDescription: (post[metaDescKey] as string | null) || post.meta_description_en,
-  };
+// Define simplified blog post type
+interface SimplifiedBlogPost {
+  id: string;
+  slug: string;
+  locale: string;
+  title: string;
+  excerpt: string | null;
+  content: string | null;
+  category: string | null;
+  tags: string[] | null;
+  cover_image_url: string | null;
+  status: string;
+  published_at: string | null;
+  view_count: number;
+  author_persona_id: string | null;
+  seo_meta: {
+    meta_title?: string;
+    meta_description?: string;
+  } | null;
+  generation_metadata: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export async function GET(request: NextRequest, { params }: Params) {
@@ -62,15 +56,18 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     const startTime = Date.now();
 
-    // Get blog post
+    // Get blog post (simplified schema)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: postData, error } = await (supabase.from('blog_posts') as any)
-      .select('*')
+    const { data: post, error } = await (supabase.from('blog_posts') as any)
+      .select(`
+        id, slug, locale, title, excerpt, content,
+        category, tags, cover_image_url, status,
+        published_at, view_count, author_persona_id,
+        seo_meta, generation_metadata, created_at, updated_at
+      `)
       .eq('slug', slug)
       .eq('status', 'published')
-      .single();
-
-    const post = postData as BlogPost | null;
+      .single() as { data: SimplifiedBlogPost | null; error: unknown };
 
     if (error || !post) {
       throw new APIError(ErrorCode.NOT_FOUND, 'Blog post not found', { slug }, locale);
@@ -86,26 +83,31 @@ export async function GET(request: NextRequest, { params }: Params) {
       });
 
     // Build response
-    const response: Record<string, unknown> = transformBlogPost(post, locale);
+    const response: Record<string, unknown> = {
+      ...post,
+      // Extract meta from seo_meta JSONB
+      metaTitle: post.seo_meta?.meta_title || post.title,
+      metaDescription: post.seo_meta?.meta_description || post.excerpt,
+      // Map cover_image_url to featured_image for frontend compatibility
+      featured_image: post.cover_image_url,
+    };
 
-    // Fetch related posts if requested
+    // Fetch related posts if requested (same locale and category)
     if (includeRelated && post.category) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: related } = await (supabase.from('blog_posts') as any)
-        .select('id, slug, title_en, cover_image_url, published_at')
+        .select('id, slug, title, cover_image_url, published_at, locale')
         .eq('status', 'published')
         .eq('category', post.category)
+        .eq('locale', post.locale) // Same locale
         .neq('id', post.id)
         .order('published_at', { ascending: false })
         .limit(3);
 
-      response.relatedPosts = (related || []).map((p: { id: string; slug: string; title_en: string; cover_image_url: string | null; published_at: string | null }) => ({
-        ...p,
-        title: p.title_en,
-      }));
+      response.relatedPosts = related || [];
     }
 
-    // Fetch author info if available (prefer author_persona over legacy author_id)
+    // Fetch author info from author_personas
     if (post.author_persona_id) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: authorPersona } = await (supabase.from('author_personas') as any)
@@ -116,21 +118,14 @@ export async function GET(request: NextRequest, { params }: Params) {
       if (authorPersona) {
         response.authorPersona = authorPersona;
         // Also set legacy author for backward compatibility
+        // Schema uses JSONB: name = {"en": "...", "ko": "..."}
+        const nameObj = authorPersona.name || {};
         response.author = {
           id: authorPersona.id,
-          full_name: authorPersona.name_en,
+          full_name: nameObj.en || nameObj.ko || authorPersona.slug,
           avatar_url: authorPersona.photo_url,
         };
       }
-    } else if (post.author_id) {
-      // Fallback to legacy author_id
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: author } = await (supabase.from('profiles') as any)
-        .select('id, full_name, avatar_url')
-        .eq('id', post.author_id)
-        .single();
-
-      response.author = author;
     }
 
     // Extract AI summary and author info from generation_metadata
@@ -149,6 +144,11 @@ export async function GET(request: NextRequest, { params }: Params) {
         response.faqSchema = metadata.faqSchema;
       }
 
+      // Include howTo schema if available
+      if (metadata.howToSchema) {
+        response.howToSchema = metadata.howToSchema;
+      }
+
       // Fallback author info for AI-generated content
       if (!response.authorPersona && metadata.author) {
         response.generatedAuthor = metadata.author;
@@ -158,6 +158,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     const responseTime = Date.now() - startTime;
     secureLog('info', 'Blog post fetched', {
       slug,
+      locale: post.locale,
       responseTimeMs: responseTime,
       viewCount: post.view_count,
     });

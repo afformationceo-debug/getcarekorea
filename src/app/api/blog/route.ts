@@ -2,6 +2,8 @@
  * Blog API
  *
  * GET /api/blog - List blog posts with filtering and pagination
+ *
+ * Simplified schema: single title/content/excerpt columns with locale field
  */
 
 import { NextRequest } from 'next/server';
@@ -13,40 +15,10 @@ import {
   ErrorCode,
   secureLog,
 } from '@/lib/api/error-handler';
-import type { BlogPost } from '@/types/database';
 
 // Enable edge runtime for faster cold starts
 export const runtime = 'nodejs';
 export const revalidate = 60; // Cache for 60 seconds
-
-// Map locale to database field suffix
-const localeFieldMap: Record<string, string> = {
-  en: 'en',
-  ko: 'ko',
-  'zh-TW': 'zh_tw',
-  'zh-CN': 'zh_cn',
-  ja: 'ja',
-  th: 'th',
-  mn: 'mn',
-  ru: 'ru',
-};
-
-// Transform blog post to include localized fields
-function transformBlogPost(post: BlogPost, locale: string) {
-  const suffix = localeFieldMap[locale] || 'en';
-  const titleKey = `title_${suffix}` as keyof BlogPost;
-  const excerptKey = `excerpt_${suffix}` as keyof BlogPost;
-  const contentKey = `content_${suffix}` as keyof BlogPost;
-
-  return {
-    ...post,
-    title: (post[titleKey] as string) || post.title_en,
-    excerpt: (post[excerptKey] as string | null) || post.excerpt_en,
-    content: (post[contentKey] as string | null) || post.content_en,
-    // Map cover_image_url to featured_image for frontend compatibility
-    featured_image: (post as Record<string, unknown>).cover_image_url || null,
-  };
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -62,36 +34,27 @@ export async function GET(request: NextRequest) {
     // Filter parameters
     const category = searchParams.get('category');
     const tag = searchParams.get('tag');
-    const featured = searchParams.get('featured');
     const search = searchParams.get('search');
 
     // Sort parameters
     const sortBy = searchParams.get('sortBy') || 'published_at';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
-    // Build query - select only required fields for list view (faster)
-    const selectFields = [
-      'id', 'slug', 'category', 'tags', 'author_id', 'cover_image_url',
-      'published_at', 'view_count', 'status',
-      'title_en', 'excerpt_en',
-      'title_ko', 'excerpt_ko',
-      'title_zh_tw', 'excerpt_zh_tw',
-      'title_zh_cn', 'excerpt_zh_cn',
-      'title_ja', 'excerpt_ja',
-      'title_th', 'excerpt_th',
-      'title_mn', 'excerpt_mn',
-      'title_ru', 'excerpt_ru',
-    ].join(',');
-
+    // Build query - simplified schema (single title/content/excerpt)
     let query = supabase
       .from('blog_posts')
-      .select(selectFields, { count: 'exact' })
+      .select(`
+        id, slug, locale, category, tags, cover_image_url,
+        published_at, view_count, status,
+        title, excerpt,
+        author_persona_id,
+        seo_meta
+      `, { count: 'exact' })
       .eq('status', 'published')
       .not('published_at', 'is', null);
 
-    // CRITICAL: Filter by target_locale to show only locale-specific posts
-    // This ensures US keywords show only in EN, Taiwan keywords only in zh-TW, etc.
-    query = query.eq('target_locale', locale);
+    // Filter by locale to show only posts in the requested language
+    query = query.eq('locale', locale);
 
     // Apply filters
     if (category) {
@@ -105,11 +68,11 @@ export async function GET(request: NextRequest) {
     // Text search
     if (search) {
       const searchPattern = `%${search}%`;
-      query = query.or(`title_en.ilike.${searchPattern},excerpt_en.ilike.${searchPattern}`);
+      query = query.or(`title.ilike.${searchPattern},excerpt.ilike.${searchPattern},slug.ilike.${searchPattern}`);
     }
 
     // Apply sorting
-    const validSortFields = ['published_at', 'view_count', 'title_en', 'created_at'];
+    const validSortFields = ['published_at', 'view_count', 'title', 'created_at'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'published_at';
     query = query.order(sortField, { ascending: sortOrder === 'asc', nullsFirst: false });
 
@@ -131,8 +94,31 @@ export async function GET(request: NextRequest) {
       throw new APIError(ErrorCode.DATABASE_ERROR, undefined, undefined, locale);
     }
 
-    // Transform data with locale-specific fields
-    const posts = (data || []).map(post => transformBlogPost(post, locale));
+    // Transform data for frontend compatibility
+    interface BlogPostRow {
+      id: string;
+      slug: string;
+      locale: string;
+      category: string | null;
+      tags: string[] | null;
+      cover_image_url: string | null;
+      published_at: string | null;
+      view_count: number;
+      status: string;
+      title: string;
+      excerpt: string | null;
+      author_persona_id: string | null;
+      seo_meta: { meta_title?: string; meta_description?: string } | null;
+    }
+
+    const posts = ((data || []) as BlogPostRow[]).map(post => ({
+      ...post,
+      // Map cover_image_url to featured_image for frontend compatibility
+      featured_image: post.cover_image_url || null,
+      // Extract meta from seo_meta JSONB
+      meta_title: post.seo_meta?.meta_title || post.title,
+      meta_description: post.seo_meta?.meta_description || post.excerpt,
+    }));
 
     return createSuccessResponse(posts, {
       page,

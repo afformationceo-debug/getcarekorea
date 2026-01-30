@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -58,7 +58,7 @@ interface Keyword {
   blog_posts?: {
     id: string;
     slug: string;
-    title_en: string;
+    title: string;
     status: string;
   } | null;
 }
@@ -147,6 +147,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
   const stats = useMemo(() => ({
     total: keywords.length,
     pending: keywords.filter(k => k.status === 'pending').length,
+    generating: keywords.filter(k => k.status === 'generating').length,
     generated: keywords.filter(k => k.status === 'generated').length,
     published: keywords.filter(k => k.status === 'published').length,
   }), [keywords]);
@@ -173,8 +174,23 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
     }
   }, []);
 
+  // 중복 요청 방지용 ref
+  const generatingRef = useRef<Set<string>>(new Set());
+
   // Generate content
   const handleGenerateContent = async (keyword: Keyword) => {
+    // 🔒 중복 요청 방지: 이미 생성 중이면 무시
+    if (generatingRef.current.has(keyword.id)) {
+      console.log(`⚠️ Already generating: ${keyword.keyword}`);
+      return;
+    }
+    if (singleGenerating) {
+      console.log(`⚠️ Another generation in progress`);
+      return;
+    }
+
+    // 즉시 락 설정
+    generatingRef.current.add(keyword.id);
     setSingleGenerating(keyword.id);
     setGeneratedPostId(null);
     setError(null);
@@ -207,7 +223,6 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
 
       if (data.saved && data.content?.id) {
         setGeneratedPostId(data.content.id);
-        setSingleGenerating(null);
         fetchKeywords();
       } else {
         throw new Error('Content generated but not saved');
@@ -216,14 +231,15 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Generation failed';
       setError(errorMessage);
-      setSingleGenerating(null);
 
       // Reset keyword status
       setKeywords(prev => prev.map(k =>
         k.id === keyword.id ? { ...k, status: 'pending' as const } : k
       ));
-
-      fetchKeywords();
+    } finally {
+      // 🔓 락 해제
+      generatingRef.current.delete(keyword.id);
+      setSingleGenerating(null);
     }
   };
 
@@ -554,7 +570,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="rounded-xl border bg-card p-4">
           <p className="text-sm text-muted-foreground">Total Keywords</p>
           <p className="text-3xl font-bold">{stats.total}</p>
@@ -562,6 +578,10 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
         <div className="rounded-xl border bg-card p-4">
           <p className="text-sm text-muted-foreground">Pending</p>
           <p className="text-3xl font-bold text-orange-600">{stats.pending}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-sm text-muted-foreground">Generating</p>
+          <p className="text-3xl font-bold text-blue-600">{stats.generating}</p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <p className="text-sm text-muted-foreground">Generated</p>
@@ -624,24 +644,24 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                       disabled={keyword.status !== 'pending'}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <span className="font-medium">{keyword.keyword}</span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <Badge variant="outline">{keyword.category}</Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <Badge variant="secondary">{keyword.locale.toUpperCase()}</Badge>
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
                     <Badge variant={keyword.priority >= 7 ? "default" : keyword.priority >= 4 ? "secondary" : "outline"}>
                       {keyword.priority}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     {keyword.search_volume?.toLocaleString() || '-'}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     {keyword.competition ? (
                       <div className="flex items-center justify-end gap-2">
                         <div className="h-2 w-16 overflow-hidden rounded-full bg-gray-200">
@@ -658,7 +678,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                       '-'
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <StatusBadge status={keyword.status} />
                   </TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -668,8 +688,11 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                         <Button
                           size="sm"
                           variant="default"
-                          onClick={() => handleGenerateContent(keyword)}
-                          disabled={singleGenerating === keyword.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGenerateContent(keyword);
+                          }}
+                          disabled={singleGenerating !== null}
                           className="gap-1 min-w-[100px]"
                         >
                           {singleGenerating === keyword.id ? (
@@ -687,8 +710,11 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleGenerateContent(keyword)}
-                          disabled={singleGenerating === keyword.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGenerateContent(keyword);
+                          }}
+                          disabled={singleGenerating !== null}
                           className="gap-1 min-w-[100px]"
                         >
                           {singleGenerating === keyword.id ? (

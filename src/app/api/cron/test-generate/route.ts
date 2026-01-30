@@ -111,10 +111,10 @@ export async function GET(request: NextRequest) {
     }
 
     // 5. Author 매칭 (optional)
+    // is_available column removed - all active interpreters are available
     const { data: allPersonas } = await (supabase.from('author_personas') as any)
       .select('id, slug, languages, primary_specialty, total_posts')
-      .eq('is_active', true)
-      .eq('is_available', true);
+      .eq('is_active', true);
 
     let authorPersonaId: string | null = null;
     let selectedPersonaSlug: string | null = null;
