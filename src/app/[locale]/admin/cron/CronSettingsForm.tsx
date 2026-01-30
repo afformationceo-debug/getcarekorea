@@ -640,7 +640,7 @@ function ScheduleSelector({
               <SelectContent>
                 {[0, 15, 30, 45].map((i) => (
                   <SelectItem key={i} value={i.toString()}>
-                    :{i.toString().padStart(2, '0')}
+                    {i.toString().padStart(2, '0')}{t('schedule.minuteUnit')}
                   </SelectItem>
                 ))}
               </SelectContent>
