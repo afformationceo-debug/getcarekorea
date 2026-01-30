@@ -110,9 +110,8 @@ async function getBlogPost(slug: string, locale: Locale): Promise<BlogPost | nul
           name_th: (nameObj.th || null) as string | null,
           name_mn: (nameObj.mn || null) as string | null,
           name_ru: (nameObj.ru || null) as string | null,
-          // Map JSONB bio_short to individual locale fields
+          // Map JSONB bio fields
           bio_short_en: (bioShortObj.en || bioShortObj.ko || null) as string | null,
-          bio_short_ko: (bioShortObj.ko || bioShortObj.en || null) as string | null,
           bio_full_en: (bioFullObj.en || bioFullObj.ko || null) as string | null,
         };
       }
