@@ -18,6 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Save, RefreshCw, Clock, Zap, Users, AlertCircle, CheckCircle, Calendar } from 'lucide-react';
+import { toast } from 'sonner';
 import type { SystemSettings } from './page';
 
 // =====================================================
@@ -858,6 +859,8 @@ export default function CronSettingsForm({ initialSettings }: Props) {
     setSaveStatus('idle');
     setErrorMessage('');
 
+    const toastId = toast.loading('설정을 저장하는 중...');
+
     try {
       for (const category of Object.keys(settings) as (keyof SystemSettings)[]) {
         const response = await fetch('/api/admin/settings', {
@@ -876,12 +879,21 @@ export default function CronSettingsForm({ initialSettings }: Props) {
       }
 
       setSaveStatus('success');
+      toast.success('모든 설정이 저장되었습니다', {
+        id: toastId,
+        description: '변경 사항이 적용되었습니다.',
+      });
       router.refresh();
       setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (error) {
       console.error('Save error:', error);
       setSaveStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : 'Failed to save');
+      const errorMsg = error instanceof Error ? error.message : 'Failed to save';
+      setErrorMessage(errorMsg);
+      toast.error('설정 저장 실패', {
+        id: toastId,
+        description: errorMsg,
+      });
     } finally {
       setSaving(false);
     }
