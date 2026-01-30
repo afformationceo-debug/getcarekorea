@@ -194,33 +194,55 @@ All content is written from the perspective of a **Medical Tourism Coordinator/I
 // =====================================================
 
 export const RAG_CONTEXT_PROMPT = `
-## 📚 USING RAG CONTEXT
+## 📚 USING REFERENCE DOCUMENTS (Long Context Best Practice)
 
-When RAG context is provided:
+Reference documents are provided in XML format at the TOP of your prompt.
+This structure follows Claude's recommended long-context optimization pattern.
 
-1. **High-Performance Content Reference**
-   - Study the writing patterns of top-performing content
-   - Adopt similar title structures that have proven successful
-   - Mirror the tone and depth that resonated with readers
-   - Use similar FAQ question formats that drove engagement
+### CRITICAL: Citation-First Approach
 
-2. **Learning from Success Patterns**
-   - Note keyword placement strategies that worked
-   - Observe the balance of technical vs accessible language
-   - Follow the content length patterns of high performers
-   - Adopt similar CTA placement and phrasing
+Before generating any content, you MUST:
 
-3. **Contextual Accuracy**
-   - Use real hospital/clinic information when available
-   - Reference actual procedures with accurate pricing
-   - Include genuine patient journey details
-   - Maintain consistency with existing site content
+1. **Read and Analyze** all <document> tags in <reference_documents>
+2. **Extract Citations** - Quote specific, relevant information you will use
+3. **Ground Your Response** - Every claim should trace back to a citation or your expertise
 
-4. **Integration Rules**
-   - RAG context supplements, not replaces, your expertise
-   - Verify any specific claims from context
-   - Adapt context information for the target locale
-   - Update outdated information if detected
+### Document Types and Their Use:
+
+| Document Source | How to Use |
+|-----------------|------------|
+| rag_context | Quote specific hospital names, prices, procedures |
+| high_performing_content | Adopt proven title structures, writing patterns |
+| observed_patterns | Mirror successful keyword placement, FAQ formats |
+| performance_recommendations | Follow data-driven suggestions |
+| category_knowledge | Include domain-specific expertise and facts |
+| locale_guidelines | Apply cultural and language nuances |
+
+### Citation Format:
+
+When referencing information from documents, use:
+- Direct quotes for specific data: "According to rag_context: '[exact quote]'"
+- Paraphrased insights: "Based on high-performing patterns, titles that include..."
+- Combined sources: "Category guidelines indicate X, which aligns with top performer data showing Y"
+
+### Integration Rules:
+
+1. **Specificity over Generality**
+   - ✅ "Gangnam clinics charge $2,000-$4,000 for rhinoplasty" (from context)
+   - ❌ "Korean clinics offer competitive pricing"
+
+2. **Verify Before Using**
+   - Cross-check data from multiple documents when possible
+   - Flag any conflicting information in your citations
+
+3. **Locale Adaptation**
+   - Translate concepts, not just words
+   - Adapt pricing to target locale's currency
+   - Apply cultural communication patterns from locale_guidelines
+
+4. **Freshness Priority**
+   - Use most recent data when timestamps differ
+   - Note if data might be outdated
 `;
 
 // =====================================================
@@ -262,8 +284,8 @@ export const QUALITY_CRITERIA = {
 // PROMPT VERSION MANAGEMENT
 // =====================================================
 
-export const PROMPT_VERSION = '3.0';
-export const PROMPT_LAST_UPDATED = '2026-01-22';
+export const PROMPT_VERSION = '3.1';
+export const PROMPT_LAST_UPDATED = '2026-01-30';
 
 export interface PromptMetadata {
   version: string;
@@ -282,5 +304,7 @@ export const PROMPT_METADATA: PromptMetadata = {
     'RAG context integration',
     'High-performer content learning',
     'Quality scoring system',
+    'Long context optimization (XML structure)',
+    'Citation-first approach for grounded responses',
   ],
 };

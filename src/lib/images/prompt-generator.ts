@@ -166,8 +166,22 @@ export async function generateImagePrompt(
   const categoryStyle = CATEGORY_STYLES[category] || CATEGORY_STYLES.general;
   const localePrefs = LOCALE_PREFERENCES[locale] || LOCALE_PREFERENCES.en;
 
+  // Long Context Optimized: 참조 데이터를 시스템 프롬프트에 포함
   const systemPrompt = `You are an expert at creating DALL-E 3 image generation prompts for medical tourism content.
-Your prompts should create professional, trustworthy, and visually appealing images for blog posts.
+
+<reference_data>
+<category_style>
+  <base_prompt>${categoryStyle.basePrompt}</base_prompt>
+  <elements>${categoryStyle.elements.join(', ')}</elements>
+  <atmosphere>${categoryStyle.atmosphere}</atmosphere>
+  <color_palette>${categoryStyle.colorPalette}</color_palette>
+</category_style>
+
+<locale_preferences>
+  <emphasis>${localePrefs.emphasis}</emphasis>
+  <cultural_elements>${localePrefs.culturalElements}</cultural_elements>
+</locale_preferences>
+</reference_data>
 
 CRITICAL GUIDELINES FOR DALL-E 3:
 1. Focus on environments, buildings, interiors - NOT people
@@ -178,23 +192,17 @@ CRITICAL GUIDELINES FOR DALL-E 3:
 6. Create prompts that result in professional blog header images
 7. Specify "no text, no logos, no watermarks" at the end
 
-Category Style Guide:
-- Base: ${categoryStyle.basePrompt}
-- Elements to include: ${categoryStyle.elements.join(', ')}
-- Atmosphere: ${categoryStyle.atmosphere}
-- Color palette: ${categoryStyle.colorPalette}
+Use the reference_data above to inform your prompt generation.`;
 
-Locale considerations:
-- Target audience emphasis: ${localePrefs.emphasis}
-- Cultural elements: ${localePrefs.culturalElements}`;
+  const userPrompt = `<content_context>
+  <title>${title}</title>
+  <excerpt>${excerpt}</excerpt>
+  <category>${category}</category>
+  <locale>${locale}</locale>
+  ${keyword ? `<keyword>${keyword}</keyword>` : ''}
+</content_context>
 
-  const userPrompt = `Create a DALL-E 3 image generation prompt for this blog post:
-
-Title: ${title}
-Excerpt: ${excerpt}
-Category: ${category}
-Target Locale: ${locale}
-${keyword ? `Main Keyword: ${keyword}` : ''}
+Based on the reference_data in the system prompt and the content_context above, create a DALL-E 3 image prompt.
 
 Respond ONLY in JSON format (no markdown):
 {

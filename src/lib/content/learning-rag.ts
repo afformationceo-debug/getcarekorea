@@ -443,27 +443,30 @@ export async function buildEnhancedRAGContext(
 }
 
 /**
- * 학습 컨텍스트 포맷팅
+ * 학습 컨텍스트 포맷팅 (XML 구조화 - Long Context Optimized)
  */
 function formatLearningContext(data: LearningData[]): string {
   if (data.length === 0) return '';
 
   const sections = data.map((d, i) => `
-### High-Performer #${i + 1} (Score: ${d.performance_score})
-- Category: ${d.category}
-- Locale: ${d.locale}
-- Source: ${d.source_type}
-
-**Excerpt:**
+<high_performer index="${i + 1}">
+  <performance_score>${d.performance_score}</performance_score>
+  <category>${d.category}</category>
+  <locale>${d.locale}</locale>
+  <source_type>${d.source_type}</source_type>
+  <content_excerpt>
 ${d.content_excerpt.substring(0, 500)}...
-`);
+  </content_excerpt>
+  <title_pattern>${d.title_pattern || 'standard'}</title_pattern>
+  <writing_style>${d.writing_style_notes || 'standard'}</writing_style>
+</high_performer>`);
 
   return `
-## 📊 LEARNING FROM HIGH-PERFORMERS
-
-The following content has performed exceptionally well. Study and adapt these patterns:
-
-${sections.join('\n')}
+<learning_data>
+  <description>High-performing content patterns to study and adapt</description>
+  <instruction>Cite specific elements from these examples that you will incorporate into your content</instruction>
+  ${sections.join('\n  ')}
+</learning_data>
 `.trim();
 }
 

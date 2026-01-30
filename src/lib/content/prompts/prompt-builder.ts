@@ -115,6 +115,11 @@ export function analyzeSearchIntent(keyword: string): string {
 
 /**
  * 통합 프롬프트 빌더
+ *
+ * Long Context Optimization (Claude Best Practice):
+ * - 긴 참조 데이터는 프롬프트 최상단에 배치 (성능 최대 30% 향상)
+ * - XML 태그로 문서 구조화
+ * - 인용 요청으로 응답 근거 제시
  */
 export async function buildPrompt(options: PromptBuildOptions): Promise<BuiltPrompt> {
   const {
@@ -138,60 +143,71 @@ export async function buildPrompt(options: PromptBuildOptions): Promise<BuiltPro
     systemPrompt += '\n\n' + RAG_CONTEXT_PROMPT;
   }
 
-  // 사용자 프롬프트 구성
+  // =====================================================
+  // 사용자 프롬프트 구성 (Long Context Optimized)
+  // 순서: 참조 데이터 → 메타데이터 → 지시사항
+  // =====================================================
   const userPromptParts: string[] = [];
 
-  // 1. 타겟 키워드
-  userPromptParts.push(`## 🎯 TARGET KEYWORD: "${keyword}"`);
+  // =====================================================
+  // SECTION 1: 참조 데이터 (최상단 배치 - Claude 권장사항)
+  // =====================================================
+  userPromptParts.push(`<reference_documents>`);
 
-  // 2. 카테고리 컨텍스트
-  userPromptParts.push(generateCategoryPrompt(category));
-
-  // 3. 로케일 & 언어
-  userPromptParts.push(generateLocalePrompt(locale));
-
-  // 4. 콘텐츠 스펙
-  userPromptParts.push(`
-## 📊 CONTENT SPECIFICATIONS
-
-- **Target Word Count**: ${targetWordCount}+ words
-- **Content Type**: ${getContentTypeDescription(contentType)}
-- **Primary Search Intent**: ${analyzeSearchIntent(keyword)}
-- **Prompt Version**: ${PROMPT_VERSION}
-`);
-
-  // 5. RAG 컨텍스트 (실제 데이터)
+  // 1-1. RAG 컨텍스트 (실제 데이터)
   if (includeRAG) {
     try {
       const ragContext = await buildRAGContext(keyword, locale);
       const contextString = formatRAGContextForPrompt(ragContext);
       if (contextString) {
-        userPromptParts.push(`## 📚 RAG CONTEXT (Use this real data)\n\n${contextString}`);
+        userPromptParts.push(`
+<document index="1">
+  <source>rag_context</source>
+  <description>Real hospital and procedure data from our database</description>
+  <content>
+${contextString}
+  </content>
+</document>`);
       }
     } catch (error) {
       console.error('Failed to build RAG context:', error);
     }
   }
 
-  // 6. 학습 데이터 컨텍스트
+  // 1-2. 학습 데이터 컨텍스트 (고성과 콘텐츠)
   if (includeLearning) {
     try {
       const learningContext = await buildEnhancedRAGContext(keyword, locale, category);
       if (learningContext.learningContext) {
-        userPromptParts.push(learningContext.learningContext);
+        userPromptParts.push(`
+<document index="2">
+  <source>high_performing_content</source>
+  <description>Content patterns from our top-performing articles</description>
+  <content>
+${learningContext.learningContext}
+  </content>
+</document>`);
 
         if (learningContext.patterns.length > 0) {
           userPromptParts.push(`
-### Observed Patterns from High-Performers:
+<document index="3">
+  <source>observed_patterns</source>
+  <description>Writing patterns extracted from successful content</description>
+  <content>
 ${learningContext.patterns.map(p => `- ${p}`).join('\n')}
-`);
+  </content>
+</document>`);
         }
 
         if (learningContext.recommendations.length > 0) {
           userPromptParts.push(`
-### Recommendations Based on Performance Data:
-${learningContext.recommendations.map(r => `✅ ${r}`).join('\n')}
-`);
+<document index="4">
+  <source>performance_recommendations</source>
+  <description>Data-driven recommendations for this content</description>
+  <content>
+${learningContext.recommendations.map(r => `- ${r}`).join('\n')}
+  </content>
+</document>`);
         }
       }
     } catch (error) {
@@ -199,12 +215,67 @@ ${learningContext.recommendations.map(r => `✅ ${r}`).join('\n')}
     }
   }
 
-  // 7. 생성 지침
-  userPromptParts.push(getGenerationInstructions(contentType, locale));
+  // 1-3. 카테고리 지식
+  userPromptParts.push(`
+<document index="5">
+  <source>category_knowledge</source>
+  <description>Domain expertise for ${category} procedures</description>
+  <content>
+${generateCategoryPrompt(category)}
+  </content>
+</document>`);
+
+  // 1-4. 로케일 가이드라인
+  userPromptParts.push(`
+<document index="6">
+  <source>locale_guidelines</source>
+  <description>Language and cultural guidelines for ${locale}</description>
+  <content>
+${generateLocalePrompt(locale)}
+  </content>
+</document>`);
+
+  userPromptParts.push(`</reference_documents>`);
+
+  // =====================================================
+  // SECTION 2: 작업 명세 (메타데이터)
+  // =====================================================
+  userPromptParts.push(`
+<task_specification>
+  <keyword>${keyword}</keyword>
+  <target_locale>${locale}</target_locale>
+  <category>${category}</category>
+  <content_type>${getContentTypeDescription(contentType)}</content_type>
+  <search_intent>${analyzeSearchIntent(keyword)}</search_intent>
+  <target_word_count>${targetWordCount}</target_word_count>
+  <prompt_version>${PROMPT_VERSION}</prompt_version>
+</task_specification>`);
+
+  // =====================================================
+  // SECTION 3: 생성 지침 (최하단 배치)
+  // =====================================================
+  userPromptParts.push(`
+<generation_instructions>
+## 📋 STEP 1: Reference Analysis (Required)
+
+Before writing, analyze the reference documents above and cite relevant information:
+
+<citations>
+1. From rag_context: [Quote specific hospital/procedure data you will use]
+2. From high_performing_content: [Quote writing patterns you will adopt]
+3. From category_knowledge: [Quote key facts for this procedure type]
+</citations>
+
+## 📋 STEP 2: Content Generation
+
+Based on your citations above, generate the content following these requirements:
+
+${getGenerationInstructions(contentType, locale)}
+</generation_instructions>`);
 
   return {
     systemPrompt,
-    userPrompt: userPromptParts.join('\n\n'),
+    userPrompt: userPromptParts.join('\n'),
     metadata: {
       version: PROMPT_VERSION,
       locale,
@@ -324,6 +395,7 @@ Return ONLY the JSON object. No markdown code blocks around it.`;
 
 /**
  * 동기식 간단 프롬프트 생성 (RAG 없이)
+ * Long Context Optimized: 참조 데이터 → 작업 명세 → 지시사항 순서
  */
 export function buildSimplePrompt(options: {
   keyword: string;
@@ -336,20 +408,36 @@ export function buildSimplePrompt(options: {
   const contentType = analyzeContentType(keyword);
   const ctaPlatform = LOCALE_PROMPT_CONFIGS[locale].ctaPlatform;
 
+  // Long Context Optimized: 참조 데이터를 최상단에 배치
   const userPrompt = `
-## 🎯 TARGET KEYWORD: "${keyword}"
-
+<reference_documents>
+<document index="1">
+  <source>category_knowledge</source>
+  <content>
 ${generateCategoryPrompt(category)}
-
+  </content>
+</document>
+<document index="2">
+  <source>locale_guidelines</source>
+  <content>
 ${generateLocalePrompt(locale)}
+  </content>
+</document>
+</reference_documents>
 
-## 📊 CONTENT SPECIFICATIONS
-- **Target Word Count**: ${targetWordCount}+ words
-- **Content Type**: ${getContentTypeDescription(contentType)}
-- **Search Intent**: ${analyzeSearchIntent(keyword)}
+<task_specification>
+  <keyword>${keyword}</keyword>
+  <target_locale>${locale}</target_locale>
+  <category>${category}</category>
+  <content_type>${getContentTypeDescription(contentType)}</content_type>
+  <search_intent>${analyzeSearchIntent(keyword)}</search_intent>
+  <target_word_count>${targetWordCount}</target_word_count>
+</task_specification>
 
-## 🎬 INSTRUCTIONS
-Create E-E-A-T optimized content with:
+<generation_instructions>
+First, cite relevant information from the reference documents above.
+
+Then create E-E-A-T optimized content with:
 1. Quick answer in first 50 words
 2. Comparison table (Korea vs others)
 3. 5+ FAQ items
@@ -357,6 +445,7 @@ Create E-E-A-T optimized content with:
 5. CTA using ${ctaPlatform}
 
 Return JSON only. No code blocks.
+</generation_instructions>
 `.trim();
 
   return {
