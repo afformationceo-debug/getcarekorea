@@ -468,9 +468,10 @@ async function generateAndSaveContent(
     console.log(`   ✅ [${requestId}] Blog post saved: ${savedPost.id}`);
 
     // Update keyword status and link to blog post
+    const keywordStatus = autoPublish ? 'published' : 'generated';
     const { error: keywordUpdateError } = await (supabase.from('content_keywords') as any)
       .update({
-        status: 'generated',
+        status: keywordStatus,
         blog_post_id: savedPost.id,
         updated_at: new Date().toISOString(),
       })
@@ -479,7 +480,7 @@ async function generateAndSaveContent(
     if (keywordUpdateError) {
       console.warn(`   ⚠️ [${requestId}] Failed to update keyword status:`, keywordUpdateError.message);
     } else {
-      console.log(`   ✅ [${requestId}] Keyword status updated to 'generated'`);
+      console.log(`   ✅ [${requestId}] Keyword status updated to '${keywordStatus}'`);
     }
 
     // Update author persona total_posts count
