@@ -7,7 +7,8 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,36 +40,24 @@ interface ScheduleConfig {
   selectedMonths: number[];    // 선택된 월 (1-12)
 }
 
-const INTERVAL_UNIT_OPTIONS: { value: IntervalUnit; label: string; maxValue: number; minValue: number; step: number }[] = [
-  { value: 'minutes', label: '분', maxValue: 45, minValue: 15, step: 15 },  // 15분 단위 (15, 30, 45)
-  { value: 'hours', label: '시간', maxValue: 23, minValue: 1, step: 1 },
-  { value: 'days', label: '일', maxValue: 31, minValue: 1, step: 1 },
-  { value: 'months', label: '월', maxValue: 12, minValue: 1, step: 1 },
+// These will be populated with translations in the component
+const INTERVAL_UNIT_CONFIG: { value: IntervalUnit; maxValue: number; minValue: number; step: number }[] = [
+  { value: 'minutes', maxValue: 45, minValue: 15, step: 15 },
+  { value: 'hours', maxValue: 23, minValue: 1, step: 1 },
+  { value: 'days', maxValue: 31, minValue: 1, step: 1 },
+  { value: 'months', maxValue: 12, minValue: 1, step: 1 },
 ];
 
-const DAY_OPTIONS = [
-  { value: 0, label: '일', short: '일' },
-  { value: 1, label: '월', short: '월' },
-  { value: 2, label: '화', short: '화' },
-  { value: 3, label: '수', short: '수' },
-  { value: 4, label: '목', short: '목' },
-  { value: 5, label: '금', short: '금' },
-  { value: 6, label: '토', short: '토' },
+const DAY_VALUES = [0, 1, 2, 3, 4, 5, 6]; // Sun-Sat
+
+const DAY_RESTRICTION_VALUES: { value: DayRestriction; days: number[] }[] = [
+  { value: 'all', days: [] },
+  { value: 'weekdays', days: [1, 2, 3, 4, 5] },
+  { value: 'weekends', days: [0, 6] },
+  { value: 'custom', days: [] },
 ];
 
-const DAY_RESTRICTION_OPTIONS: { value: DayRestriction; label: string; days: number[] }[] = [
-  { value: 'all', label: '매일', days: [] },
-  { value: 'weekdays', label: '평일만 (월-금)', days: [1, 2, 3, 4, 5] },
-  { value: 'weekends', label: '주말만 (토-일)', days: [0, 6] },
-  { value: 'custom', label: '특정 요일 선택', days: [] },
-];
-
-const MONTH_OPTIONS = [
-  { value: 1, label: '1월' }, { value: 2, label: '2월' }, { value: 3, label: '3월' },
-  { value: 4, label: '4월' }, { value: 5, label: '5월' }, { value: 6, label: '6월' },
-  { value: 7, label: '7월' }, { value: 8, label: '8월' }, { value: 9, label: '9월' },
-  { value: 10, label: '10월' }, { value: 11, label: '11월' }, { value: 12, label: '12월' },
-];
+const MONTH_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 /**
  * Generate cron expression from schedule config
@@ -299,58 +288,7 @@ function getNextCronRuns(cronExpression: string, count: number = 5): Date[] {
   return runs;
 }
 
-/**
- * Get description of schedule config
- */
-function getScheduleDescription(config: ScheduleConfig): string {
-  const { intervalValue, intervalUnit, hour, minute, dayRestriction, selectedDays, daysOfMonth, selectedMonths } = config;
-  const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-
-  const parts: string[] = [];
-
-  // Interval description
-  switch (intervalUnit) {
-    case 'minutes':
-      parts.push(intervalValue === 1 ? '매분' : `${intervalValue}분마다`);
-      break;
-    case 'hours':
-      parts.push(intervalValue === 1 ? `매시간 ${minute}분` : `${intervalValue}시간마다 ${minute}분`);
-      break;
-    case 'days':
-      if (intervalValue === 1) {
-        parts.push(`매일 ${timeStr}`);
-      } else {
-        parts.push(`${intervalValue}일마다 ${timeStr}`);
-      }
-      break;
-    case 'months':
-      const dayStr = daysOfMonth.length > 0 ? daysOfMonth.join(', ') + '일' : '1일';
-      if (intervalValue === 1) {
-        parts.push(`매월 ${dayStr} ${timeStr}`);
-      } else {
-        parts.push(`${intervalValue}개월마다 ${dayStr} ${timeStr}`);
-      }
-      break;
-  }
-
-  // Day restriction
-  if (dayRestriction === 'weekdays') {
-    parts.push('(평일만)');
-  } else if (dayRestriction === 'weekends') {
-    parts.push('(주말만)');
-  } else if (dayRestriction === 'custom' && selectedDays.length > 0 && selectedDays.length < 7) {
-    const dayNames = selectedDays.map(d => DAY_OPTIONS.find(opt => opt.value === d)?.short).join(', ');
-    parts.push(`(${dayNames}요일만)`);
-  }
-
-  // Month restriction
-  if (selectedMonths.length > 0 && selectedMonths.length < 12) {
-    const monthNames = selectedMonths.map(m => `${m}월`).join(', ');
-    parts.push(`[${monthNames}]`);
-  }
-
-  return parts.join(' ');
-}
+// Schedule description is now handled inside the component with translations
 
 /**
  * Day Selector Component (Toggle Buttons)
@@ -358,9 +296,11 @@ function getScheduleDescription(config: ScheduleConfig): string {
 function DayToggleSelector({
   selectedDays,
   onChange,
+  dayLabels,
 }: {
   selectedDays: number[];
   onChange: (days: number[]) => void;
+  dayLabels: string[];
 }) {
   const toggleDay = (day: number) => {
     if (selectedDays.includes(day)) {
@@ -372,18 +312,18 @@ function DayToggleSelector({
 
   return (
     <div className="flex gap-1">
-      {DAY_OPTIONS.map((opt) => (
+      {DAY_VALUES.map((value) => (
         <button
-          key={opt.value}
+          key={value}
           type="button"
-          onClick={() => toggleDay(opt.value)}
+          onClick={() => toggleDay(value)}
           className={`w-9 h-9 rounded-md text-sm font-medium transition-colors ${
-            selectedDays.includes(opt.value)
+            selectedDays.includes(value)
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted hover:bg-muted/80 text-muted-foreground'
           }`}
         >
-          {opt.short}
+          {dayLabels[value]}
         </button>
       ))}
     </div>
@@ -396,9 +336,13 @@ function DayToggleSelector({
 function DaysOfMonthSelector({
   selectedDays,
   onChange,
+  selectedDaysLabel,
+  everyDayLabel,
 }: {
   selectedDays: number[];
   onChange: (days: number[]) => void;
+  selectedDaysLabel: string;
+  everyDayLabel: string;
 }) {
   const toggleDay = (day: number) => {
     if (selectedDays.includes(day)) {
@@ -427,7 +371,7 @@ function DaysOfMonthSelector({
         ))}
       </div>
       <p className="text-xs text-muted-foreground">
-        선택한 날짜: {selectedDays.length > 0 ? selectedDays.join(', ') + '일' : '매일'}
+        {selectedDaysLabel}: {selectedDays.length > 0 ? selectedDays.join(', ') : everyDayLabel}
       </p>
     </div>
   );
@@ -439,9 +383,15 @@ function DaysOfMonthSelector({
 function MonthSelector({
   selectedMonths,
   onChange,
+  monthLabels,
+  selectedMonthsLabel,
+  everyMonthLabel,
 }: {
   selectedMonths: number[];
   onChange: (months: number[]) => void;
+  monthLabels: string[];
+  selectedMonthsLabel: string;
+  everyMonthLabel: string;
 }) {
   const toggleMonth = (month: number) => {
     if (selectedMonths.includes(month)) {
@@ -454,23 +404,23 @@ function MonthSelector({
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-6 gap-1">
-        {MONTH_OPTIONS.map((opt) => (
+        {MONTH_VALUES.map((value) => (
           <button
-            key={opt.value}
+            key={value}
             type="button"
-            onClick={() => toggleMonth(opt.value)}
+            onClick={() => toggleMonth(value)}
             className={`px-2 py-1.5 rounded text-xs font-medium transition-colors ${
-              selectedMonths.includes(opt.value)
+              selectedMonths.includes(value)
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted hover:bg-muted/80 text-muted-foreground'
             }`}
           >
-            {opt.label}
+            {monthLabels[value - 1]}
           </button>
         ))}
       </div>
       <p className="text-xs text-muted-foreground">
-        선택한 월: {selectedMonths.length > 0 && selectedMonths.length < 12 ? selectedMonths.map(m => `${m}월`).join(', ') : '매월'}
+        {selectedMonthsLabel}: {selectedMonths.length > 0 && selectedMonths.length < 12 ? selectedMonths.map(m => monthLabels[m - 1]).join(', ') : everyMonthLabel}
       </p>
     </div>
   );
@@ -482,12 +432,32 @@ function MonthSelector({
 function ScheduleSelector({
   value,
   onChange,
+  t,
 }: {
   value: string;
   onChange: (cron: string) => void;
+  t: (key: string) => string;
 }) {
   const [config, setConfig] = useState<ScheduleConfig>(() => parseCronExpression(value));
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // Translation helpers
+  const intervalLabels: Record<IntervalUnit, string> = {
+    minutes: t('schedule.minutes'),
+    hours: t('schedule.hours'),
+    days: t('schedule.days'),
+    months: t('schedule.months'),
+  };
+
+  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']; // Short day names
+  const monthLabels = Array.from({ length: 12 }, (_, i) => `${i + 1}`);
+
+  const dayRestrictionLabels: Record<DayRestriction, string> = {
+    all: t('schedule.everyday'),
+    weekdays: t('schedule.weekdaysOnly'),
+    weekends: t('schedule.weekendsOnly'),
+    custom: t('schedule.customDays'),
+  };
 
   // Update parent when config changes
   useEffect(() => {
@@ -501,7 +471,6 @@ function ScheduleSelector({
   useEffect(() => {
     const parsed = parseCronExpression(value);
     setConfig(parsed);
-    // Show advanced if non-default settings
     if (parsed.selectedMonths.length > 0 || parsed.daysOfMonth.length > 0) {
       setShowAdvanced(true);
     }
@@ -511,18 +480,38 @@ function ScheduleSelector({
     setConfig(prev => ({ ...prev, ...updates }));
   };
 
-  const currentUnit = INTERVAL_UNIT_OPTIONS.find(u => u.value === config.intervalUnit);
+  const currentUnit = INTERVAL_UNIT_CONFIG.find(u => u.value === config.intervalUnit);
   const showTimeSelect = ['days', 'months'].includes(config.intervalUnit);
   const showMinuteSelect = config.intervalUnit === 'hours';
   const showDayRestriction = ['hours', 'days'].includes(config.intervalUnit);
+
+  // Generate description
+  const getDescription = (): string => {
+    const { intervalValue, intervalUnit, hour, minute, dayRestriction, selectedDays, daysOfMonth, selectedMonths } = config;
+    const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    const parts: string[] = [];
+
+    parts.push(`${t('schedule.every')} ${intervalValue} ${intervalLabels[intervalUnit]}`);
+
+    if (showTimeSelect) {
+      parts.push(`@ ${timeStr}`);
+    } else if (showMinuteSelect) {
+      parts.push(`:${minute.toString().padStart(2, '0')}`);
+    }
+
+    if (dayRestriction !== 'all') {
+      parts.push(`(${dayRestrictionLabels[dayRestriction]})`);
+    }
+
+    return parts.join(' ');
+  };
 
   return (
     <div className="space-y-4">
       {/* Interval: Value + Unit */}
       <div className="grid gap-2">
-        <Label>실행 주기</Label>
+        <Label>{t('schedule.interval')}</Label>
         <div className="flex items-center gap-2">
-          {/* 분 단위는 드롭다운, 나머지는 숫자 입력 */}
           {config.intervalUnit === 'minutes' ? (
             <Select
               value={config.intervalValue.toString()}
@@ -557,7 +546,7 @@ function ScheduleSelector({
             value={config.intervalUnit}
             onValueChange={(val) => {
               const unit = val as IntervalUnit;
-              const unitOpt = INTERVAL_UNIT_OPTIONS.find(o => o.value === unit);
+              const unitOpt = INTERVAL_UNIT_CONFIG.find(o => o.value === unit);
               updateConfig({
                 intervalUnit: unit,
                 intervalValue: unitOpt?.minValue || 1,
@@ -570,28 +559,28 @@ function ScheduleSelector({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {INTERVAL_UNIT_OPTIONS.map((opt) => (
+              {INTERVAL_UNIT_CONFIG.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}마다
+                  {intervalLabels[opt.value]}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <p className="text-xs text-muted-foreground">
-          최소 실행 주기: 15분
+          {t('schedule.minInterval')}
         </p>
       </div>
 
-      {/* Day Restriction (for hours/days) */}
+      {/* Day Restriction */}
       {showDayRestriction && (
         <div className="grid gap-2">
-          <Label>실행 요일</Label>
+          <Label>{t('schedule.executionDays')}</Label>
           <Select
             value={config.dayRestriction}
             onValueChange={(val) => {
               const restriction = val as DayRestriction;
-              const preset = DAY_RESTRICTION_OPTIONS.find(o => o.value === restriction);
+              const preset = DAY_RESTRICTION_VALUES.find(o => o.value === restriction);
               updateConfig({
                 dayRestriction: restriction,
                 selectedDays: preset?.days || [],
@@ -602,28 +591,28 @@ function ScheduleSelector({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {DAY_RESTRICTION_OPTIONS.map((opt) => (
+              {DAY_RESTRICTION_VALUES.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {dayRestrictionLabels[opt.value]}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          {/* Custom day selector */}
           {config.dayRestriction === 'custom' && (
             <DayToggleSelector
               selectedDays={config.selectedDays}
               onChange={(days) => updateConfig({ selectedDays: days })}
+              dayLabels={dayLabels}
             />
           )}
         </div>
       )}
 
-      {/* Time (for days/months) */}
+      {/* Time */}
       {showTimeSelect && (
         <div className="grid gap-2">
-          <Label>실행 시간</Label>
+          <Label>{t('schedule.executionTime')}</Label>
           <div className="flex items-center gap-2">
             <Select
               value={config.hour.toString()}
@@ -635,7 +624,7 @@ function ScheduleSelector({
               <SelectContent>
                 {Array.from({ length: 24 }, (_, i) => (
                   <SelectItem key={i} value={i.toString()}>
-                    {i.toString().padStart(2, '0')}시
+                    {i.toString().padStart(2, '0')}:00
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -651,7 +640,7 @@ function ScheduleSelector({
               <SelectContent>
                 {[0, 15, 30, 45].map((i) => (
                   <SelectItem key={i} value={i.toString()}>
-                    {i.toString().padStart(2, '0')}분
+                    :{i.toString().padStart(2, '0')}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -660,10 +649,10 @@ function ScheduleSelector({
         </div>
       )}
 
-      {/* Minute offset (for hours) */}
+      {/* Minute offset */}
       {showMinuteSelect && (
         <div className="grid gap-2">
-          <Label>실행 시점 (분)</Label>
+          <Label>{t('schedule.executionMinute')}</Label>
           <Select
             value={config.minute.toString()}
             onValueChange={(val) => updateConfig({ minute: parseInt(val) })}
@@ -674,7 +663,7 @@ function ScheduleSelector({
             <SelectContent>
               {[0, 15, 30, 45].map((i) => (
                 <SelectItem key={i} value={i.toString()}>
-                  매 시 {i.toString().padStart(2, '0')}분
+                  {t('schedule.everyHourAt')} :{i.toString().padStart(2, '0')}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -688,29 +677,32 @@ function ScheduleSelector({
         onClick={() => setShowAdvanced(!showAdvanced)}
         className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
       >
-        {showAdvanced ? '▼' : '▶'} 고급 설정 (특정 날짜/월 지정)
+        {showAdvanced ? '▼' : '▶'} {t('schedule.advanced')}
       </button>
 
       {/* Advanced Options */}
       {showAdvanced && (
         <div className="space-y-4 pl-4 border-l-2 border-muted">
-          {/* Days of Month (for days/months) */}
           {['days', 'months'].includes(config.intervalUnit) && (
             <div className="grid gap-2">
-              <Label>특정 날짜만 실행 (선택 안하면 매일)</Label>
+              <Label>{t('schedule.specificDays')}</Label>
               <DaysOfMonthSelector
                 selectedDays={config.daysOfMonth}
                 onChange={(days) => updateConfig({ daysOfMonth: days })}
+                selectedDaysLabel={t('schedule.selectedDays')}
+                everyDayLabel={t('schedule.everyDay')}
               />
             </div>
           )}
 
-          {/* Month Selector */}
           <div className="grid gap-2">
-            <Label>특정 월만 실행 (선택 안하면 매월)</Label>
+            <Label>{t('schedule.specificMonths')}</Label>
             <MonthSelector
               selectedMonths={config.selectedMonths}
               onChange={(months) => updateConfig({ selectedMonths: months })}
+              monthLabels={monthLabels}
+              selectedMonthsLabel={t('schedule.selectedMonths')}
+              everyMonthLabel={t('schedule.everyMonth')}
             />
           </div>
         </div>
@@ -718,7 +710,7 @@ function ScheduleSelector({
 
       {/* Description */}
       <div className="text-sm font-medium text-primary bg-primary/5 p-2 rounded">
-        → {getScheduleDescription(config)}
+        → {getDescription()}
       </div>
     </div>
   );
@@ -727,13 +719,24 @@ function ScheduleSelector({
 /**
  * Cron Schedule Preview Component
  */
-function CronSchedulePreview({ schedule, enabled, batchSize }: { schedule: string; enabled: boolean; batchSize: number }) {
+function CronSchedulePreview({
+  schedule,
+  enabled,
+  batchSize,
+  t,
+  locale,
+}: {
+  schedule: string;
+  enabled: boolean;
+  batchSize: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: (key: string, values?: Record<string, any>) => string;
+  locale: string;
+}) {
   const nextRuns = useMemo(() => getNextCronRuns(schedule, 5), [schedule]);
-  const config = useMemo(() => parseCronExpression(schedule), [schedule]);
-  const description = useMemo(() => getScheduleDescription(config), [config]);
 
   const formatDate = (date: Date) => {
-    return date.toLocaleString('ko-KR', {
+    return date.toLocaleString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -743,78 +746,40 @@ function CronSchedulePreview({ schedule, enabled, batchSize }: { schedule: strin
     });
   };
 
-  // Calculate runs frequency info
-  const getRunsInfo = () => {
-    const { intervalValue, intervalUnit, dayRestriction, selectedDays } = config;
-    let base = '';
-
-    switch (intervalUnit) {
-      case 'minutes':
-        base = `하루 약 ${Math.floor(1440 / intervalValue)}회`;
-        break;
-      case 'hours':
-        base = `하루 약 ${Math.floor(24 / intervalValue)}회`;
-        break;
-      case 'days':
-        base = intervalValue === 1 ? '하루 1회' : `${intervalValue}일마다 1회`;
-        break;
-      case 'months':
-        base = intervalValue === 1 ? '월 1회' : `${intervalValue}개월마다 1회`;
-        break;
-      default:
-        return '';
-    }
-
-    // Add day restriction info
-    if (dayRestriction === 'weekdays') {
-      base += ' (평일)';
-    } else if (dayRestriction === 'weekends') {
-      base += ' (주말)';
-    } else if (dayRestriction === 'custom' && selectedDays.length > 0 && selectedDays.length < 7) {
-      base += ` (주 ${selectedDays.length}일)`;
-    }
-
-    return base;
-  };
-
   return (
     <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
       <div className="flex items-center gap-2">
         <Calendar className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium">실행 예정</span>
+        <span className="text-sm font-medium">{t('schedule.preview')}</span>
         <Badge variant={enabled ? 'default' : 'secondary'} className="ml-auto">
-          {enabled ? '활성' : '비활성'}
+          {enabled ? t('schedule.active') : t('schedule.disabled')}
         </Badge>
       </div>
 
       <div className="space-y-1">
-        <p className="text-sm">
-          <span className="font-medium text-foreground">{description}</span>
-        </p>
         <p className="text-xs text-muted-foreground">
-          {getRunsInfo()} • 최대 {batchSize}개 키워드/실행
+          {t('schedule.maxItems', { count: batchSize })}
         </p>
       </div>
 
       {enabled && nextRuns.length > 0 ? (
         <div className="space-y-1.5">
-          <p className="text-xs text-muted-foreground">다음 5회 실행 예정:</p>
+          <p className="text-xs text-muted-foreground">{t('schedule.nextRuns')}</p>
           <div className="grid gap-1">
             {nextRuns.map((run, idx) => (
               <div key={idx} className="text-xs font-mono bg-background/50 px-2 py-1 rounded flex justify-between">
                 <span>{formatDate(run)}</span>
-                <span className="text-muted-foreground">→ 최대 {batchSize}개</span>
+                <span className="text-muted-foreground">→ {t('schedule.maxItems', { count: batchSize })}</span>
               </div>
             ))}
           </div>
         </div>
       ) : !enabled ? (
-        <p className="text-xs text-muted-foreground">비활성화 상태입니다. 자동 생성이 실행되지 않습니다.</p>
+        <p className="text-xs text-muted-foreground">{t('schedule.disabledMessage')}</p>
       ) : (
-        <p className="text-xs text-destructive">유효하지 않은 스케줄입니다.</p>
+        <p className="text-xs text-destructive">{t('schedule.invalidSchedule')}</p>
       )}
 
-      {/* Show generated cron for reference */}
       <p className="text-[10px] text-muted-foreground/60 font-mono">
         cron: {schedule}
       </p>
@@ -832,6 +797,9 @@ interface Props {
 
 export default function CronSettingsForm({ initialSettings }: Props) {
   const router = useRouter();
+  const params = useParams();
+  const currentLocale = (params.locale as string) || 'en';
+  const t = useTranslations('admin.cron');
   const [settings, setSettings] = useState<SystemSettings>(initialSettings);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -859,7 +827,7 @@ export default function CronSettingsForm({ initialSettings }: Props) {
     setSaveStatus('idle');
     setErrorMessage('');
 
-    const toastId = toast.loading('설정을 저장하는 중...');
+    const toastId = toast.loading(t('saving'));
 
     try {
       for (const category of Object.keys(settings) as (keyof SystemSettings)[]) {
@@ -879,9 +847,8 @@ export default function CronSettingsForm({ initialSettings }: Props) {
       }
 
       setSaveStatus('success');
-      toast.success('모든 설정이 저장되었습니다', {
+      toast.success(t('saveSuccess'), {
         id: toastId,
-        description: '변경 사항이 적용되었습니다.',
       });
       router.refresh();
       setTimeout(() => setSaveStatus('idle'), 3000);
@@ -890,7 +857,7 @@ export default function CronSettingsForm({ initialSettings }: Props) {
       setSaveStatus('error');
       const errorMsg = error instanceof Error ? error.message : 'Failed to save';
       setErrorMessage(errorMsg);
-      toast.error('설정 저장 실패', {
+      toast.error(t('saveFailed'), {
         id: toastId,
         description: errorMsg,
       });
@@ -906,7 +873,7 @@ export default function CronSettingsForm({ initialSettings }: Props) {
         <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-700 dark:text-green-300">
-            설정이 저장되었습니다.
+            {t('saveSuccess')}
           </AlertDescription>
         </Alert>
       )}
@@ -924,23 +891,23 @@ export default function CronSettingsForm({ initialSettings }: Props) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-yellow-500" />
-              <CardTitle>자동 콘텐츠 생성</CardTitle>
+              <CardTitle>{t('autoGenerate.title')}</CardTitle>
             </div>
             <Badge variant={settings.cron_auto_generate.enabled ? 'default' : 'secondary'}>
-              {settings.cron_auto_generate.enabled ? 'Active' : 'Disabled'}
+              {settings.cron_auto_generate.enabled ? t('schedule.active') : t('schedule.disabled')}
             </Badge>
           </div>
           <CardDescription>
-            대기 중인 키워드를 자동으로 콘텐츠로 생성합니다.
+            {t('autoGenerate.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Enable Toggle */}
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="auto-generate-enabled">자동 생성 활성화</Label>
+              <Label htmlFor="auto-generate-enabled">{t('autoGenerate.enabled')}</Label>
               <p className="text-sm text-muted-foreground">
-                크론 작업 실행 시 자동으로 콘텐츠를 생성합니다.
+                {t('autoGenerate.enabledDescription')}
               </p>
             </div>
             <Switch
@@ -956,7 +923,7 @@ export default function CronSettingsForm({ initialSettings }: Props) {
 
           {/* Batch Size */}
           <div className="grid gap-2">
-            <Label htmlFor="batch-size">1회 실행당 생성 수</Label>
+            <Label htmlFor="batch-size">{t('autoGenerate.batchSize')}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="batch-size"
@@ -969,10 +936,10 @@ export default function CronSettingsForm({ initialSettings }: Props) {
                 }
                 className="w-24"
               />
-              <span className="text-sm text-muted-foreground">개의 키워드</span>
+              <span className="text-sm text-muted-foreground">{t('autoGenerate.keywords')}</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              크론 작업 1회 실행 시 처리할 키워드 수 (1-10)
+              {t('autoGenerate.batchSizeHint')}
             </p>
           </div>
 
@@ -980,11 +947,12 @@ export default function CronSettingsForm({ initialSettings }: Props) {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <Label>실행 스케줄</Label>
+              <Label>{t('schedule.title')}</Label>
             </div>
             <ScheduleSelector
               value={settings.cron_auto_generate.schedule}
               onChange={(cron) => updateSetting('cron_auto_generate', 'schedule', cron)}
+              t={t}
             />
           </div>
 
@@ -993,6 +961,8 @@ export default function CronSettingsForm({ initialSettings }: Props) {
             schedule={settings.cron_auto_generate.schedule}
             enabled={settings.cron_auto_generate.enabled}
             batchSize={settings.cron_auto_generate.batch_size}
+            t={t}
+            locale={currentLocale}
           />
 
           <Separator />
@@ -1000,9 +970,9 @@ export default function CronSettingsForm({ initialSettings }: Props) {
           {/* RAG Setting */}
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="include-rag">RAG 검색 포함</Label>
+              <Label htmlFor="include-rag">{t('options.includeRag')}</Label>
               <p className="text-sm text-muted-foreground">
-                벡터 DB에서 관련 컨텍스트를 검색하여 콘텐츠 품질을 높입니다.
+                {t('options.includeRagDescription')}
               </p>
             </div>
             <Switch
@@ -1017,9 +987,9 @@ export default function CronSettingsForm({ initialSettings }: Props) {
           {/* Image Setting */}
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="include-images">이미지 생성 포함</Label>
+              <Label htmlFor="include-images">{t('options.includeImages')}</Label>
               <p className="text-sm text-muted-foreground">
-                Google Imagen 4를 사용하여 이미지를 자동 생성합니다.
+                {t('options.includeImagesDescription')}
               </p>
             </div>
             <Switch
@@ -1034,7 +1004,7 @@ export default function CronSettingsForm({ initialSettings }: Props) {
           {/* Image Count */}
           {settings.cron_auto_generate.include_images && (
             <div className="grid gap-2 ml-4">
-              <Label htmlFor="image-count">이미지 수</Label>
+              <Label htmlFor="image-count">{t('options.imageCount')}</Label>
               <div className="flex items-center gap-2">
                 <Input
                   id="image-count"
@@ -1047,7 +1017,7 @@ export default function CronSettingsForm({ initialSettings }: Props) {
                   }
                   className="w-24"
                 />
-                <span className="text-sm text-muted-foreground">개/콘텐츠</span>
+                <span className="text-sm text-muted-foreground">{t('options.imagesPerContent')}</span>
               </div>
             </div>
           )}
@@ -1057,9 +1027,9 @@ export default function CronSettingsForm({ initialSettings }: Props) {
           {/* Auto Publish */}
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="auto-publish">생성 후 자동 발행</Label>
+              <Label htmlFor="auto-publish">{t('options.autoPublish')}</Label>
               <p className="text-sm text-muted-foreground">
-                콘텐츠 생성 직후 자동으로 발행합니다 (검토 없이).
+                {t('options.autoPublishDescription')}
               </p>
             </div>
             <Switch
@@ -1073,7 +1043,7 @@ export default function CronSettingsForm({ initialSettings }: Props) {
 
           {/* Priority Threshold */}
           <div className="grid gap-2">
-            <Label htmlFor="priority-threshold">최소 우선순위</Label>
+            <Label htmlFor="priority-threshold">{t('options.priorityThreshold')}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="priority-threshold"
@@ -1088,7 +1058,7 @@ export default function CronSettingsForm({ initialSettings }: Props) {
               />
             </div>
             <p className="text-sm text-muted-foreground">
-              이 값 이상의 priority를 가진 키워드만 처리 (0 = 모두 처리)
+              {t('options.priorityThresholdHint')}
             </p>
           </div>
         </CardContent>
@@ -1100,23 +1070,23 @@ export default function CronSettingsForm({ initialSettings }: Props) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <RefreshCw className="h-5 w-5 text-blue-500" />
-              <CardTitle>자동 발행</CardTitle>
+              <CardTitle>{t('autoPublish.title')}</CardTitle>
             </div>
             <Badge variant={settings.cron_auto_publish.enabled ? 'default' : 'secondary'}>
-              {settings.cron_auto_publish.enabled ? 'Active' : 'Disabled'}
+              {settings.cron_auto_publish.enabled ? t('schedule.active') : t('schedule.disabled')}
             </Badge>
           </div>
           <CardDescription>
-            Draft 상태의 콘텐츠를 자동으로 발행합니다.
+            {t('autoPublish.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Enable Toggle */}
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="auto-publish-enabled">자동 발행 활성화</Label>
+              <Label htmlFor="auto-publish-enabled">{t('autoPublish.enabled')}</Label>
               <p className="text-sm text-muted-foreground">
-                크론 작업 실행 시 draft 콘텐츠를 자동 발행합니다.
+                {t('autoPublish.enabledDescription')}
               </p>
             </div>
             <Switch
@@ -1134,11 +1104,12 @@ export default function CronSettingsForm({ initialSettings }: Props) {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <Label>실행 스케줄</Label>
+              <Label>{t('schedule.title')}</Label>
             </div>
             <ScheduleSelector
               value={settings.cron_auto_publish.schedule}
               onChange={(cron) => updateSetting('cron_auto_publish', 'schedule', cron)}
+              t={t}
             />
           </div>
 
@@ -1147,11 +1118,13 @@ export default function CronSettingsForm({ initialSettings }: Props) {
             schedule={settings.cron_auto_publish.schedule}
             enabled={settings.cron_auto_publish.enabled}
             batchSize={settings.cron_auto_publish.max_publish_per_run}
+            t={t}
+            locale={currentLocale}
           />
 
           {/* Max Publish */}
           <div className="grid gap-2">
-            <Label htmlFor="max-publish">1회 실행당 최대 발행 수</Label>
+            <Label htmlFor="max-publish">{t('autoPublish.maxPublish')}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="max-publish"
@@ -1164,7 +1137,7 @@ export default function CronSettingsForm({ initialSettings }: Props) {
                 }
                 className="w-24"
               />
-              <span className="text-sm text-muted-foreground">개의 콘텐츠</span>
+              <span className="text-sm text-muted-foreground">{t('autoPublish.contents')}</span>
             </div>
           </div>
         </CardContent>
@@ -1175,16 +1148,16 @@ export default function CronSettingsForm({ initialSettings }: Props) {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-purple-500" />
-            <CardTitle>통역사 배정</CardTitle>
+            <CardTitle>{t('authorAssignment.title')}</CardTitle>
           </div>
           <CardDescription>
-            콘텐츠 생성 시 통역사(Author) 자동 배정 방식을 설정합니다.
+            {t('authorAssignment.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Algorithm */}
           <div className="grid gap-2">
-            <Label htmlFor="algorithm">배정 알고리즘</Label>
+            <Label htmlFor="algorithm">{t('authorAssignment.algorithm')}</Label>
             <Select
               value={settings.author_assignment.algorithm}
               onValueChange={(value) =>
@@ -1195,13 +1168,13 @@ export default function CronSettingsForm({ initialSettings }: Props) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="round_robin">Round Robin (균등 배분)</SelectItem>
-                <SelectItem value="specialty_first">Specialty First (전문분야 우선)</SelectItem>
-                <SelectItem value="random">Random (무작위)</SelectItem>
+                <SelectItem value="round_robin">{t('authorAssignment.roundRobin')}</SelectItem>
+                <SelectItem value="specialty_first">{t('authorAssignment.specialtyFirst')}</SelectItem>
+                <SelectItem value="random">{t('authorAssignment.random')}</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-sm text-muted-foreground">
-              Round Robin: total_posts가 가장 적은 통역사에게 배정
+              {t('authorAssignment.algorithmHint')}
             </p>
           </div>
 
@@ -1210,9 +1183,9 @@ export default function CronSettingsForm({ initialSettings }: Props) {
           {/* Specialty Match */}
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="specialty-match">전문분야 우선 매칭</Label>
+              <Label htmlFor="specialty-match">{t('authorAssignment.specialtyMatch')}</Label>
               <p className="text-sm text-muted-foreground">
-                카테고리와 일치하는 전문분야의 통역사를 우선 배정합니다.
+                {t('authorAssignment.specialtyMatchDescription')}
               </p>
             </div>
             <Switch
@@ -1227,9 +1200,9 @@ export default function CronSettingsForm({ initialSettings }: Props) {
           {/* Fallback */}
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="fallback">Fallback 허용</Label>
+              <Label htmlFor="fallback">{t('authorAssignment.fallback')}</Label>
               <p className="text-sm text-muted-foreground">
-                전문분야 매칭 실패 시 언어만 맞으면 배정합니다.
+                {t('authorAssignment.fallbackDescription')}
               </p>
             </div>
             <Switch
@@ -1250,18 +1223,18 @@ export default function CronSettingsForm({ initialSettings }: Props) {
           onClick={() => router.refresh()}
           disabled={saving}
         >
-          초기화
+          {t('reset')}
         </Button>
         <Button onClick={handleSaveAll} disabled={saving}>
           {saving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              저장 중...
+              {t('saving')}
             </>
           ) : (
             <>
               <Save className="mr-2 h-4 w-4" />
-              모든 설정 저장
+              {t('saveAll')}
             </>
           )}
         </Button>

@@ -872,6 +872,7 @@
         "specialty": "ความเชี่ยวชาญ",
         "status": "สถานะ",
         "allStatus": "สถานะทั้งหมด",
+        "allLanguages": "ทุกภาษา",
         "active": "ใช้งาน",
         "inactive": "ไม่ใช้งาน",
         "featured": "แนะนำ",
@@ -984,6 +985,15 @@
         "fluent": "คล่อง",
         "conversational": "สนทนาได้"
       },
+      "languages": {
+        "en": "อังกฤษ",
+        "ko": "เกาหลี",
+        "zh": "จีน",
+        "ja": "ญี่ปุ่น",
+        "vi": "เวียดนาม",
+        "th": "ไทย",
+        "ru": "รัสเซีย"
+      },
       "actions": {
         "view": "ดู",
         "edit": "แก้ไข",
@@ -1013,6 +1023,278 @@
       "uploading": "กำลังอัปโหลด...",
       "fileLimit": "PNG, JPG, WebP, GIF สูงสุด 5MB",
       "orUseUrl": "หรือใช้ URL"
+    },
+    "keywords": {
+      "title": "จัดการคีย์เวิร์ด",
+      "subtitle": "จัดการคีย์เวิร์ด SEO และการสร้างเนื้อหา AI",
+      "addKeyword": "เพิ่มคีย์เวิร์ด",
+      "csvUpload": "อัปโหลด CSV",
+      "searchPlaceholder": "ค้นหาคีย์เวิร์ด...",
+      "noResults": "ไม่พบคีย์เวิร์ด",
+      "noResultsDescription": "เพิ่มคีย์เวิร์ดแรกเพื่อเริ่มสร้างเนื้อหา",
+      "stats": {
+        "total": "ทั้งหมด",
+        "pending": "รอดำเนินการ",
+        "generating": "กำลังสร้าง",
+        "generated": "สร้างแล้ว",
+        "published": "เผยแพร่แล้ว"
+      },
+      "filters": {
+        "status": "สถานะ",
+        "allStatus": "สถานะทั้งหมด",
+        "category": "หมวดหมู่",
+        "allCategories": "หมวดหมู่ทั้งหมด"
+      },
+      "table": {
+        "keyword": "คีย์เวิร์ด",
+        "category": "หมวดหมู่",
+        "locale": "ภาษา",
+        "priority": "ลำดับความสำคัญ",
+        "volume": "ปริมาณการค้นหา",
+        "status": "สถานะ",
+        "actions": "การดำเนินการ"
+      },
+      "actions": {
+        "generate": "สร้าง",
+        "regenerate": "สร้างใหม่",
+        "viewPost": "ดูบทความ"
+      },
+      "form": {
+        "title": "ข้อมูลคีย์เวิร์ด",
+        "description": "ป้อนรายละเอียดคีย์เวิร์ดสำหรับการสร้างเนื้อหา SEO",
+        "keyword": "คีย์เวิร์ด",
+        "keywordPlaceholder": "เช่น ศัลยกรรมเกาหลีที่ดีที่สุด",
+        "keywordHint": "คีย์เวิร์ดหลักสำหรับการสร้างเนื้อหา SEO",
+        "category": "หมวดหมู่",
+        "selectCategory": "เลือกหมวดหมู่",
+        "targetLocale": "ภาษาเป้าหมาย",
+        "selectLocale": "เลือกภาษา",
+        "seoMetrics": "ตัวชี้วัด SEO",
+        "seoMetricsDescription": "ตัวชี้วัดเสริมสำหรับการจัดลำดับความสำคัญ",
+        "searchVolume": "ปริมาณการค้นหา",
+        "monthlyVolume": "ปริมาณการค้นหารายเดือน",
+        "competition": "การแข่งขัน (0-1)",
+        "competitionHint": "0 = ต่ำ, 1 = สูง",
+        "priority": "ลำดับความสำคัญ (1-10)",
+        "priorityHint": "ยิ่งสูงยิ่งเร่งด่วน",
+        "status": "สถานะ",
+        "currentStatus": "สถานะปัจจุบัน",
+        "created": "สร้างเมื่อ",
+        "blogPost": "บทความบล็อก",
+        "linked": "เชื่อมโยงแล้ว",
+        "saveChanges": "บันทึกการเปลี่ยนแปลง",
+        "createKeyword": "สร้างคีย์เวิร์ด",
+        "cancel": "ยกเลิก",
+        "keywordRequired": "ต้องระบุคีย์เวิร์ด",
+        "keywordUpdated": "อัปเดตคีย์เวิร์ดแล้ว",
+        "keywordCreated": "สร้างคีย์เวิร์ดแล้ว",
+        "saveFailed": "บันทึกไม่สำเร็จ"
+      },
+      "categories": {
+        "plastic-surgery": "ศัลยกรรมตกแต่ง",
+        "dermatology": "ผิวหนัง",
+        "dental": "ทันตกรรม",
+        "health-checkup": "ตรวจสุขภาพ",
+        "ophthalmology": "จักษุ",
+        "orthopedics": "กระดูกและข้อ",
+        "medical-tourism": "ท่องเที่ยวเชิงการแพทย์",
+        "general": "ทั่วไป"
+      }
+    },
+    "content": {
+      "title": "จัดการเนื้อหา",
+      "subtitle": "จัดการบทความและบล็อกโพสต์ที่สร้างโดย AI",
+      "generateFromKeywords": "สร้างจากคีย์เวิร์ด",
+      "searchPlaceholder": "ค้นหาตามชื่อเรื่อง, slug, คีย์เวิร์ด...",
+      "noResults": "ไม่พบบทความ",
+      "noResultsDescription": "สร้างเนื้อหาจากหน้าคีย์เวิร์ดเพื่อเริ่มต้น",
+      "stats": {
+        "total": "ทั้งหมด",
+        "drafts": "ฉบับร่าง",
+        "review": "รอตรวจสอบ",
+        "published": "เผยแพร่แล้ว",
+        "views": "ยอดดู"
+      },
+      "filters": {
+        "status": "สถานะ",
+        "allStatus": "สถานะทั้งหมด",
+        "category": "หมวดหมู่",
+        "allCategories": "หมวดหมู่ทั้งหมด",
+        "language": "ภาษา",
+        "allLanguages": "ทุกภาษา",
+        "uncategorized": "ไม่มีหมวดหมู่"
+      },
+      "languages": {
+        "en": "อังกฤษ",
+        "ko": "เกาหลี",
+        "ja": "ญี่ปุ่น",
+        "zh-CN": "จีน (ตัวย่อ)",
+        "zh-TW": "จีน (ตัวเต็ม)",
+        "th": "ไทย",
+        "mn": "มองโกเลีย",
+        "ru": "รัสเซีย"
+      },
+      "status": {
+        "draft": "ฉบับร่าง",
+        "review": "รอตรวจสอบ",
+        "published": "เผยแพร่แล้ว",
+        "archived": "เก็บถาวรแล้ว"
+      },
+      "tabs": {
+        "all": "เนื้อหาทั้งหมด",
+        "needsReview": "ต้องตรวจสอบ",
+        "drafts": "ฉบับร่าง"
+      },
+      "table": {
+        "article": "บทความ",
+        "keyword": "คีย์เวิร์ด",
+        "category": "หมวดหมู่",
+        "language": "ภาษา",
+        "status": "สถานะ",
+        "publishedUrl": "URL ที่เผยแพร่",
+        "preview": "ดูตัวอย่าง",
+        "feedback": "ข้อเสนอแนะ",
+        "actions": "การดำเนินการ"
+      },
+      "actions": {
+        "preview": "ดูตัวอย่าง",
+        "edit": "แก้ไข",
+        "viewLive": "ดูแบบเผยแพร่",
+        "submitForReview": "ส่งตรวจสอบ",
+        "approvePublish": "อนุมัติและเผยแพร่",
+        "returnToDraft": "ส่งกลับเป็นฉบับร่าง",
+        "archive": "เก็บถาวร",
+        "delete": "ลบ",
+        "publish": "เผยแพร่"
+      },
+      "preview": {
+        "back": "กลับ",
+        "previewUrl": "URL ดูตัวอย่าง",
+        "readyToStart": "พร้อมเริ่มการเดินทางของคุณหรือยัง?",
+        "getConsultation": "รับคำปรึกษาฟรีจากผู้เชี่ยวชาญด้านการท่องเที่ยวเชิงการแพทย์ของเรา",
+        "getFreeQuote": "รับใบเสนอราคาฟรี"
+      },
+      "edit": {
+        "title": "แก้ไขบทความ",
+        "description": "ทำการเปลี่ยนแปลงเนื้อหาบทความ",
+        "slug": "Slug",
+        "articleTitle": "ชื่อเรื่อง",
+        "excerpt": "บทคัดย่อ",
+        "content": "เนื้อหา",
+        "category": "หมวดหมู่",
+        "status": "สถานะ",
+        "cancel": "ยกเลิก",
+        "saveChanges": "บันทึกการเปลี่ยนแปลง"
+      },
+      "delete": {
+        "title": "ลบบทความ",
+        "description": "คุณแน่ใจหรือไม่ว่าต้องการลบบทความนี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+      },
+      "feedback": {
+        "title": "ข้อเสนอแนะเนื้อหา",
+        "description": "ตรวจสอบเนื้อหาและให้ข้อเสนอแนะหรือเผยแพร่โดยตรง",
+        "fullPreview": "ดูตัวอย่างเต็ม",
+        "keywordLabel": "คีย์เวิร์ด",
+        "feedbackContent": "เนื้อหาข้อเสนอแนะ (ไม่บังคับ)",
+        "feedbackPlaceholder": "เขียนคำแนะนำปรับปรุงหรือคำขอแก้ไข...",
+        "feedbackHint": "ข้อเสนอแนะจะถูกใช้ในการเรียนรู้ของ AI",
+        "cancel": "ยกเลิก",
+        "regenerate": "สร้างใหม่ตามข้อเสนอแนะ",
+        "publishNow": "เผยแพร่ทันที",
+        "published": "เผยแพร่แล้ว"
+      },
+      "messages": {
+        "publishSuccess": "เผยแพร่สำเร็จ!",
+        "publishFailed": "เผยแพร่ไม่สำเร็จ",
+        "feedbackSuccess": "นำข้อเสนอแนะไปใช้และสร้างเนื้อหาใหม่แล้ว",
+        "feedbackFailed": "นำข้อเสนอแนะไปใช้ไม่สำเร็จ",
+        "noPendingReview": "ไม่มีบทความรอตรวจสอบ",
+        "noDrafts": "ไม่มีบทความฉบับร่าง"
+      }
+    },
+    "cron": {
+      "title": "การตั้งค่าตัวจัดตารางเวลา",
+      "subtitle": "จัดการการตั้งค่าการสร้างและเผยแพร่เนื้อหาอัตโนมัติ",
+      "loading": "กำลังโหลด...",
+      "saveSuccess": "บันทึกการตั้งค่าแล้ว",
+      "saveFailed": "บันทึกการตั้งค่าไม่สำเร็จ",
+      "saving": "กำลังบันทึก...",
+      "saveAll": "บันทึกการตั้งค่าทั้งหมด",
+      "reset": "รีเซ็ต",
+      "autoGenerate": {
+        "title": "สร้างเนื้อหาอัตโนมัติ",
+        "description": "สร้างเนื้อหาจากคีย์เวิร์ดที่รอดำเนินการโดยอัตโนมัติ",
+        "enabled": "เปิดใช้งานการสร้างอัตโนมัติ",
+        "enabledDescription": "สร้างเนื้อหาโดยอัตโนมัติเมื่อตัวจัดตารางเวลาทำงาน",
+        "batchSize": "จำนวนต่อการรัน",
+        "batchSizeHint": "จำนวนคีย์เวิร์ดที่ประมวลผลต่อการรันของตัวจัดตารางเวลา (1-10)",
+        "keywords": "คีย์เวิร์ด"
+      },
+      "autoPublish": {
+        "title": "เผยแพร่อัตโนมัติ",
+        "description": "เผยแพร่เนื้อหาฉบับร่างโดยอัตโนมัติ",
+        "enabled": "เปิดใช้งานการเผยแพร่อัตโนมัติ",
+        "enabledDescription": "เผยแพร่เนื้อหาฉบับร่างโดยอัตโนมัติเมื่อตัวจัดตารางเวลาทำงาน",
+        "maxPublish": "จำนวนเผยแพร่สูงสุดต่อการรัน",
+        "contents": "เนื้อหา"
+      },
+      "authorAssignment": {
+        "title": "การมอบหมายล่าม",
+        "description": "กำหนดค่าวิธีการมอบหมายล่าม (ผู้เขียน) ระหว่างการสร้างเนื้อหา",
+        "algorithm": "อัลกอริทึมการมอบหมาย",
+        "algorithmHint": "Round Robin: มอบหมายให้ล่ามที่มี total_posts น้อยที่สุด",
+        "roundRobin": "Round Robin (กระจายเท่ากัน)",
+        "specialtyFirst": "Specialty First (ความเชี่ยวชาญก่อน)",
+        "random": "Random (สุ่ม)",
+        "specialtyMatch": "จับคู่ความเชี่ยวชาญก่อน",
+        "specialtyMatchDescription": "มอบหมายให้ล่ามที่มีความเชี่ยวชาญตรงกับหมวดหมู่ก่อน",
+        "fallback": "อนุญาต Fallback",
+        "fallbackDescription": "หากจับคู่ความเชี่ยวชาญไม่สำเร็จ ให้มอบหมายตามภาษาที่ตรงกัน"
+      },
+      "schedule": {
+        "title": "ตารางการทำงาน",
+        "preview": "การรันที่กำหนดไว้",
+        "active": "ใช้งาน",
+        "disabled": "ปิดใช้งาน",
+        "nextRuns": "การรัน 5 ครั้งถัดไป:",
+        "maxItems": "สูงสุด {count}",
+        "disabledMessage": "ปิดใช้งานอยู่ การสร้างอัตโนมัติจะไม่ทำงาน",
+        "invalidSchedule": "ตารางเวลาไม่ถูกต้อง",
+        "interval": "ช่วงเวลา",
+        "every": "ทุก",
+        "minutes": "นาที",
+        "hours": "ชั่วโมง",
+        "days": "วัน",
+        "months": "เดือน",
+        "minInterval": "ช่วงเวลาขั้นต่ำ: 15 นาที",
+        "executionDays": "วันที่ทำงาน",
+        "everyday": "ทุกวัน",
+        "weekdaysOnly": "วันธรรมดาเท่านั้น (จันทร์-ศุกร์)",
+        "weekendsOnly": "วันหยุดสุดสัปดาห์เท่านั้น (เสาร์-อาทิตย์)",
+        "customDays": "เลือกวัน",
+        "executionTime": "เวลาทำงาน",
+        "executionMinute": "นาทีที่ทำงาน",
+        "everyHourAt": "ทุกชั่วโมงที่",
+        "advanced": "การตั้งค่าขั้นสูง (วันที่/เดือนเฉพาะ)",
+        "specificDays": "ทำงานเฉพาะวันที่ (เว้นว่างสำหรับทุกวัน)",
+        "selectedDays": "วันที่เลือก",
+        "everyDay": "ทุกวัน",
+        "specificMonths": "ทำงานเฉพาะเดือน (เว้นว่างสำหรับทุกเดือน)",
+        "selectedMonths": "เดือนที่เลือก",
+        "everyMonth": "ทุกเดือน"
+      },
+      "options": {
+        "includeRag": "รวม RAG Search",
+        "includeRagDescription": "ค้นหาบริบทที่เกี่ยวข้องจาก Vector DB เพื่อปรับปรุงคุณภาพเนื้อหา",
+        "includeImages": "รวมการสร้างภาพ",
+        "includeImagesDescription": "สร้างภาพโดยอัตโนมัติโดยใช้ Google Imagen 4",
+        "imageCount": "จำนวนภาพ",
+        "imagesPerContent": "ภาพ/เนื้อหา",
+        "autoPublish": "เผยแพร่อัตโนมัติหลังสร้าง",
+        "autoPublishDescription": "เผยแพร่เนื้อหาโดยอัตโนมัติหลังสร้าง (ไม่ต้องตรวจสอบ)",
+        "priorityThreshold": "ลำดับความสำคัญขั้นต่ำ",
+        "priorityThresholdHint": "ประมวลผลเฉพาะคีย์เวิร์ดที่มีลำดับความสำคัญนี้หรือสูงกว่า (0 = ประมวลผลทั้งหมด)"
+      }
     }
   }
 }

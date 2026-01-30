@@ -80,8 +80,8 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {/* Google Analytics 4 */}
         {GA_MEASUREMENT_ID && <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />}
-        {/* Vercel Analytics - debug disabled */}
-        <Analytics debug={false} />
+        {/* Vercel Analytics - production only */}
+        {process.env.NODE_ENV === 'production' && <Analytics />}
         {children}
       </body>
     </html>

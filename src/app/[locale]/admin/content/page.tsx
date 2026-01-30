@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useCallback } from 'react';
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import {
-  Search,
-  Plus,
   Eye,
   Edit,
   Trash2,
@@ -12,7 +13,6 @@ import {
   Globe,
   CheckCircle,
   Clock,
-  AlertCircle,
   Send,
   RefreshCw,
   X,
@@ -34,26 +34,12 @@ import {
   Monitor,
   Smartphone,
   Tablet,
-  Filter,
-  SortAsc,
-  SortDesc,
-  CalendarDays,
-  Languages,
-  ChevronDown,
-  Loader2,
+  Plus,
 } from 'lucide-react';
+import { DataTable, ColumnDef, FilterDef } from '@/components/ui/data-table';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,15 +67,10 @@ import { DeleteDialog } from '@/components/ui/confirm-dialog';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { useParams } from 'next/navigation';
-import Image from 'next/image';
 
+// Types
 interface BlogPost {
   id: string;
   slug: string;
@@ -97,18 +78,11 @@ interface BlogPost {
   title: string;
   excerpt: string | null;
   content: string | null;
-  seo_meta: {
-    meta_title?: string;
-    meta_description?: string;
-    meta_keywords?: string;
-    meta_author?: string;
-  } | null;
+  seo_meta: Record<string, unknown> | null;
   category: string | null;
   tags: string[];
   status: 'draft' | 'review' | 'published' | 'archived';
   cover_image_url: string | null;
-  cover_image_alt: string | null;
-  author_persona_id: string | null;
   view_count: number;
   published_at: string | null;
   created_at: string;
@@ -125,98 +99,22 @@ interface Stats {
   totalViews: number;
 }
 
-const LOCALE_LABELS: Record<string, string> = {
-  en: 'English',
-  ko: '한국어',
-  'zh-TW': '繁體中文',
-  'zh-CN': '简体中文',
-  ja: '日本語',
-  th: 'ภาษาไทย',
-  mn: 'Монгол',
-  ru: 'Русский',
-};
-
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200';
-
-// Constants
 const PAGE_SIZE = 40;
-
-interface FilterState {
-  search: string;
-  status: string;
-  category: string;
-  locale: string;
-  dateFrom: string;
-  dateTo: string;
-  sortBy: 'created_at' | 'updated_at' | 'view_count' | 'title';
-  sortOrder: 'asc' | 'desc';
-}
-
-const initialFilters: FilterState = {
-  search: '',
-  status: 'all',
-  category: 'all',
-  locale: 'all',
-  dateFrom: '',
-  dateTo: '',
-  sortBy: 'created_at',
-  sortOrder: 'desc',
-};
 
 export default function ContentPage() {
   const params = useParams();
   const currentLocale = params.locale as string || 'en';
+  const t = useTranslations('admin.content');
+  const tKeywords = useTranslations('admin.keywords');
 
-  // Data state
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  // Stats state
   const [stats, setStats] = useState<Stats>({
-    total: 0,
-    draft: 0,
-    review: 0,
-    published: 0,
-    archived: 0,
-    totalViews: 0,
+    total: 0, draft: 0, review: 0, published: 0, archived: 0, totalViews: 0,
   });
-  const [totalCount, setTotalCount] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
-  const [page, setPage] = useState(1);
 
-  // Loading states
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  // Temporary filter state (UI)
-  const [tempFilters, setTempFilters] = useState<FilterState>(initialFilters);
-
-  // Applied filter state (used for fetching)
-  const [appliedFilters, setAppliedFilters] = useState<FilterState>(initialFilters);
-
-  // Compatibility aliases for legacy code
-  const searchQuery = tempFilters.search;
-  const setSearchQuery = (v: string) => setTempFilters(prev => ({ ...prev, search: v }));
-  const statusFilter = tempFilters.status;
-  const setStatusFilter = (v: string) => setTempFilters(prev => ({ ...prev, status: v }));
-  const categoryFilter = tempFilters.category;
-  const setCategoryFilter = (v: string) => setTempFilters(prev => ({ ...prev, category: v }));
-  const localeFilter = tempFilters.locale;
-  const setLocaleFilter = (v: string) => setTempFilters(prev => ({ ...prev, locale: v }));
-  const dateFrom = tempFilters.dateFrom;
-  const setDateFrom = (v: string) => setTempFilters(prev => ({ ...prev, dateFrom: v }));
-  const dateTo = tempFilters.dateTo;
-  const setDateTo = (v: string) => setTempFilters(prev => ({ ...prev, dateTo: v }));
-  const sortBy = tempFilters.sortBy;
-  const setSortBy = (v: typeof tempFilters.sortBy) => setTempFilters(prev => ({ ...prev, sortBy: v }));
-  const sortOrder = tempFilters.sortOrder;
-  const setSortOrder = (v: typeof tempFilters.sortOrder) => setTempFilters(prev => ({ ...prev, sortOrder: v }));
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-
-  // Check if filters have changed
-  const filtersChanged = useMemo(() => {
-    return JSON.stringify(tempFilters) !== JSON.stringify(appliedFilters);
-  }, [tempFilters, appliedFilters]);
-
-  // Infinite scroll ref
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  // For tabs that show filtered data
+  const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
 
   // Modal states
   const [previewPost, setPreviewPost] = useState<BlogPost | null>(null);
@@ -226,100 +124,93 @@ export default function ContentPage() {
   const [previewLocale, setPreviewLocale] = useState('en');
   const [previewMode, setPreviewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
-  // Feedback state
+  // Action states
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [publishLoading, setPublishLoading] = useState<string | null>(null);
-
-  // Action states
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const fetchPosts = useCallback(async (pageNum: number = 1, append: boolean = false) => {
-    if (append) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
+  // Refresh trigger for DataTable
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Fetch function for DataTable
+  const fetchPosts = useCallback(async (page: number, filters: Record<string, string>) => {
+    const searchParams = new URLSearchParams();
+    searchParams.set('page', page.toString());
+    searchParams.set('limit', PAGE_SIZE.toString());
+
+    if (filters.search) searchParams.set('search', filters.search);
+    if (filters.status && filters.status !== 'all') searchParams.set('status', filters.status);
+    if (filters.category && filters.category !== 'all') searchParams.set('category', filters.category);
+    if (filters.locale && filters.locale !== 'all') searchParams.set('locale', filters.locale);
+
+    const response = await fetch(`/api/content?${searchParams.toString()}`);
+    const data = await response.json();
+
+    if (data.success) {
+      setStats(data.data.stats);
+      setAllPosts(data.data.posts);
+      return {
+        data: data.data.posts,
+        total: data.data.pagination?.total || data.data.posts.length,
+        hasMore: (data.data.pagination?.page || 1) < (data.data.pagination?.totalPages || 1),
+      };
     }
-    try {
-      const searchParams = new URLSearchParams();
-      searchParams.set('page', pageNum.toString());
-      searchParams.set('limit', PAGE_SIZE.toString());
-      if (appliedFilters.search) searchParams.set('search', appliedFilters.search);
-      if (appliedFilters.status !== 'all') searchParams.set('status', appliedFilters.status);
-      if (appliedFilters.category !== 'all') searchParams.set('category', appliedFilters.category);
-      if (appliedFilters.locale !== 'all') searchParams.set('locale', appliedFilters.locale);
-      if (appliedFilters.dateFrom) searchParams.set('dateFrom', appliedFilters.dateFrom);
-      if (appliedFilters.dateTo) searchParams.set('dateTo', appliedFilters.dateTo);
-      searchParams.set('sortBy', appliedFilters.sortBy);
-      searchParams.set('sortOrder', appliedFilters.sortOrder);
 
-      const response = await fetch(`/api/content?${searchParams.toString()}`);
-      const data = await response.json();
-
-      if (data.success) {
-        if (append) {
-          setPosts(prev => [...prev, ...data.data.posts]);
-        } else {
-          setPosts(data.data.posts);
-        }
-        setStats(data.data.stats);
-        setTotalCount(data.data.pagination?.total || data.data.posts.length);
-        setHasMore((data.data.pagination?.page || 1) < (data.data.pagination?.totalPages || 1));
-        setPage(pageNum);
-      }
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [appliedFilters]);
-
-  // Apply filters
-  const handleApplyFilters = useCallback(() => {
-    setAppliedFilters({ ...tempFilters });
-    setPage(1);
-    setPosts([]);
-  }, [tempFilters]);
-
-  // Clear filters
-  const handleClearFilters = useCallback(() => {
-    setTempFilters(initialFilters);
-    setAppliedFilters(initialFilters);
-    setPage(1);
-    setPosts([]);
+    return { data: [], total: 0, hasMore: false };
   }, []);
 
-  // Fetch when applied filters change
-  useEffect(() => {
-    fetchPosts(1, false);
-  }, [appliedFilters, fetchPosts]);
+  // Refresh data
+  const refreshData = () => setRefreshKey(k => k + 1);
 
-  // Infinite scroll observer
-  useEffect(() => {
-    const currentRef = loadMoreRef.current;
-    if (!currentRef) return;
+  // Helpers
+  const getPostTitle = (post: BlogPost): string => post.title || 'Untitled';
+  const getPostContent = (post: BlogPost): string => post.content || '';
+  const getPostExcerpt = (post: BlogPost): string => post.excerpt || '';
+  const getAvailableLocales = (post: BlogPost): string[] => post.locale ? [post.locale] : ['en'];
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && hasMore && !loading && !loadingMore) {
-          fetchPosts(page + 1, true);
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '100px',
-      }
-    );
+  const getKeywordInfo = (post: BlogPost): { keyword: string; locale: string } | null => {
+    const metadata = post.generation_metadata as { keyword?: string; locale?: string } | null;
+    return metadata?.keyword ? { keyword: metadata.keyword, locale: metadata.locale || 'en' } : null;
+  };
 
-    observer.observe(currentRef);
+  const getPublishedUrl = (post: BlogPost): string | null => {
+    if (post.status === 'published' && post.slug) {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      return `${baseUrl}/${currentLocale}/blog/${post.slug}`;
+    }
+    return null;
+  };
 
-    return () => {
-      observer.disconnect();
-    };
-  }, [hasMore, loading, loadingMore, page, fetchPosts]);
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString(currentLocale, {
+      year: 'numeric', month: 'long', day: 'numeric',
+    });
+  };
 
+  const formatCategoryName = (category: string): string => {
+    return category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
+  const getReadTime = (content: string | null): string => {
+    if (!content) return '1 min read';
+    const wordCount = content.split(/\s+/).length;
+    return `${Math.ceil(wordCount / 200)} min read`;
+  };
+
+  const renderContent = (content: string): string => {
+    return content
+      .replace(/\n/g, '<br />')
+      .replace(/#{3} (.*)/g, '<h3 class="text-xl font-bold mt-6 mb-3">$1</h3>')
+      .replace(/#{2} (.*)/g, '<h2 class="text-2xl font-bold mt-8 mb-4">$1</h2>')
+      .replace(/#{1} (.*)/g, '<h1 class="text-3xl font-bold mt-8 mb-4">$1</h1>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      || '<p>No content available.</p>';
+  };
+
+  // Actions
   const handleStatusChange = async (postId: string, newStatus: string) => {
     setActionLoading(postId);
     try {
@@ -328,16 +219,11 @@ export default function ContentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: postId, status: newStatus }),
       });
-
       const data = await response.json();
-      if (data.success) {
-        fetchPosts();
-      } else {
-        alert('Failed to update status: ' + data.error?.message);
-      }
+      if (data.success) refreshData();
+      else alert('Failed to update status: ' + data.error?.message);
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Failed to update status');
     } finally {
       setActionLoading(null);
     }
@@ -345,23 +231,18 @@ export default function ContentPage() {
 
   const handleDelete = async () => {
     if (!deletePost) return;
-
     setActionLoading(deletePost.id);
     try {
-      const response = await fetch(`/api/content?id=${deletePost.id}`, {
-        method: 'DELETE',
-      });
-
+      const response = await fetch(`/api/content?id=${deletePost.id}`, { method: 'DELETE' });
       const data = await response.json();
       if (data.success) {
         setDeletePost(null);
-        fetchPosts();
+        refreshData();
       } else {
         alert('Failed to delete: ' + data.error?.message);
       }
     } catch (error) {
       console.error('Error deleting:', error);
-      alert('Failed to delete');
     } finally {
       setActionLoading(null);
     }
@@ -369,7 +250,6 @@ export default function ContentPage() {
 
   const handleSaveEdit = async () => {
     if (!editPost) return;
-
     setActionLoading(editPost.id);
     try {
       const response = await fetch('/api/content', {
@@ -377,76 +257,52 @@ export default function ContentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editPost),
       });
-
       const data = await response.json();
       if (data.success) {
         setEditPost(null);
-        fetchPosts();
+        refreshData();
       } else {
         alert('Failed to save: ' + data.error?.message);
       }
     } catch (error) {
       console.error('Error saving:', error);
-      alert('Failed to save');
     } finally {
       setActionLoading(null);
     }
   };
 
-  // Simplified schema: single title/content/excerpt with locale field
-  // locale parameter is kept for backward compatibility but ignored
-  const getPostTitle = (post: BlogPost, _locale?: string): string => {
-    return post.title || 'Untitled';
-  };
-
-  const getPostContent = (post: BlogPost, _locale?: string): string => {
-    return post.content || '';
-  };
-
-  const getPostExcerpt = (post: BlogPost, _locale?: string): string => {
-    return post.excerpt || '';
-  };
-
-  const getAvailableLocales = (post: BlogPost): string[] => {
-    // Each post now has a single locale
-    return post.locale ? [post.locale] : ['en'];
-  };
-
-  const getQualityScore = (post: BlogPost): number => {
-    const metadata = post.generation_metadata as { qualityScore?: number } | null;
-    return metadata?.qualityScore || 0;
-  };
-
-  const getKeywordInfo = (post: BlogPost): { keyword: string; locale: string } | null => {
-    const metadata = post.generation_metadata as { keyword?: string; sourceLocale?: string; locale?: string } | null;
-    if (metadata?.keyword) {
-      return { keyword: metadata.keyword, locale: metadata.locale || metadata.sourceLocale || 'en' };
+  const handlePublish = async (postId: string) => {
+    setPublishLoading(postId);
+    try {
+      const response = await fetch('/api/content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: postId, status: 'published', published_at: new Date().toISOString() }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert(t('messages.publishSuccess'));
+        refreshData();
+      } else {
+        alert(t('messages.publishFailed') + ': ' + (data.error?.message || ''));
+      }
+    } catch (error) {
+      console.error('Publish error:', error);
+    } finally {
+      setPublishLoading(null);
     }
-    return null;
   };
 
-  // Get published URL
-  const getPublishedUrl = (post: BlogPost): string | null => {
-    if (post.status === 'published' && post.slug) {
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://getcarekorea.com';
-      return `${baseUrl}/${currentLocale}/blog/${post.slug}`;
-    }
-    return null;
-  };
-
-  // Handle feedback submission with regeneration
   const handleFeedbackSubmit = async (regenerate: boolean) => {
     if (!feedbackPost) return;
-
     if (regenerate && !feedbackText.trim()) {
-      alert('피드백 내용을 입력해주세요.');
+      alert(t('feedback.feedbackPlaceholder'));
       return;
     }
 
     setFeedbackLoading(true);
     try {
       if (regenerate) {
-        // Submit feedback and regenerate content
         const response = await fetch('/api/content/feedback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -457,645 +313,280 @@ export default function ContentPage() {
             regenerate: true,
           }),
         });
-
         const data = await response.json();
         if (data.success) {
-          alert('피드백이 반영되어 콘텐츠가 재생성되었습니다.');
+          alert(t('messages.feedbackSuccess'));
           setFeedbackPost(null);
           setFeedbackText('');
-          fetchPosts();
+          refreshData();
         } else {
-          alert('피드백 반영 실패: ' + (data.error || data.message));
+          alert(t('messages.feedbackFailed') + ': ' + (data.error || data.message));
         }
       } else {
-        // Direct publish without feedback
         await handlePublish(feedbackPost.id);
         setFeedbackPost(null);
         setFeedbackText('');
       }
     } catch (error) {
       console.error('Feedback error:', error);
-      alert('피드백 처리 중 오류가 발생했습니다.');
     } finally {
       setFeedbackLoading(false);
     }
   };
 
-  // Handle direct publish - Updates blog_posts table directly
-  const handlePublish = async (postId: string) => {
-    setPublishLoading(postId);
-    try {
-      // Update blog_posts status to 'published' using the existing content API
-      const response = await fetch('/api/content', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: postId,
-          status: 'published',
-          published_at: new Date().toISOString(),
-        }),
-      });
+  // Filter definitions
+  const filters: FilterDef[] = [
+    {
+      id: 'status',
+      label: t('filters.status'),
+      defaultValue: 'all',
+      options: [
+        { value: 'all', label: t('filters.allStatus') },
+        { value: 'draft', label: t('status.draft') },
+        { value: 'review', label: t('status.review') },
+        { value: 'published', label: t('status.published') },
+        { value: 'archived', label: t('status.archived') },
+      ],
+    },
+    {
+      id: 'category',
+      label: t('filters.category'),
+      defaultValue: 'all',
+      options: [
+        { value: 'all', label: t('filters.allCategories') },
+        { value: 'plastic-surgery', label: tKeywords('categories.plastic-surgery') },
+        { value: 'dermatology', label: tKeywords('categories.dermatology') },
+        { value: 'dental', label: tKeywords('categories.dental') },
+        { value: 'health-checkup', label: tKeywords('categories.health-checkup') },
+        { value: 'medical-tourism', label: tKeywords('categories.medical-tourism') },
+      ],
+    },
+    {
+      id: 'locale',
+      label: t('filters.language'),
+      defaultValue: 'all',
+      options: [
+        { value: 'all', label: t('filters.allLanguages') },
+        { value: 'en', label: t('languages.en') },
+        { value: 'ko', label: t('languages.ko') },
+        { value: 'ja', label: t('languages.ja') },
+        { value: 'zh-CN', label: t('languages.zh-CN') },
+        { value: 'zh-TW', label: t('languages.zh-TW') },
+        { value: 'th', label: t('languages.th') },
+        { value: 'mn', label: t('languages.mn') },
+        { value: 'ru', label: t('languages.ru') },
+      ],
+    },
+  ];
 
-      const data = await response.json();
-      if (data.success) {
-        const post = posts.find(p => p.id === postId);
-        const publishedUrl = post ? `${window.location.origin}/${currentLocale}/blog/${post.slug}` : '';
-        alert(`발행 완료!${publishedUrl ? `\n링크: ${publishedUrl}` : ''}`);
-        fetchPosts();
-      } else {
-        alert('발행 실패: ' + (data.error?.message || data.error || '알 수 없는 오류'));
-      }
-    } catch (error) {
-      console.error('Publish error:', error);
-      alert('발행 중 오류가 발생했습니다.');
-    } finally {
-      setPublishLoading(null);
-    }
-  };
-
-  // Format date
-  const formatDate = (dateString: string | null): string => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString(currentLocale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  // Format category name
-  const formatCategoryName = (category: string): string => {
-    return category
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  };
-
-  // Calculate read time
-  const getReadTime = (content: string | null): string => {
-    if (!content) return '1 min read';
-    const wordCount = content.split(/\s+/).length;
-    const minutes = Math.ceil(wordCount / 200);
-    return `${minutes} min read`;
-  };
-
-  // Render markdown content as HTML
-  const renderContent = (content: string): string => {
-    return content
-      .replace(/\n/g, '<br />')
-      .replace(/#{3} (.*)/g, '<h3 class="text-xl font-bold mt-6 mb-3">$1</h3>')
-      .replace(/#{2} (.*)/g, '<h2 class="text-2xl font-bold mt-8 mb-4">$1</h2>')
-      .replace(/#{1} (.*)/g, '<h1 class="text-3xl font-bold mt-8 mb-4">$1</h1>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/- (.*?)(<br \/>|$)/g, '<li class="ml-4">$1</li>')
-      || '<p>No content available.</p>';
-  };
+  // Column definitions
+  const columns: ColumnDef<BlogPost>[] = [
+    {
+      id: 'article',
+      header: t('table.article'),
+      cell: (row) => (
+        <div className="flex items-start gap-3">
+          <div className="rounded bg-muted p-2">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-medium truncate max-w-[250px]">{getPostTitle(row)}</p>
+            <p className="text-sm text-muted-foreground truncate max-w-[250px]">/{row.slug}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'keyword',
+      header: t('table.keyword'),
+      cell: (row) => {
+        const info = getKeywordInfo(row);
+        return info ? (
+          <div className="flex items-center gap-1">
+            <Key className="h-3 w-3 text-violet-500" />
+            <span className="text-sm font-medium text-violet-700 max-w-[100px] truncate">{info.keyword}</span>
+            <Badge variant="outline" className="text-xs ml-1">{info.locale.toUpperCase()}</Badge>
+          </div>
+        ) : <span className="text-sm text-muted-foreground">-</span>;
+      },
+    },
+    {
+      id: 'category',
+      header: t('table.category'),
+      cell: (row) => <Badge variant="outline">{row.category ? tKeywords(`categories.${row.category}`) : t('filters.uncategorized')}</Badge>,
+    },
+    {
+      id: 'locale',
+      header: t('table.language'),
+      cell: (row) => <Badge variant="secondary" className="text-xs">{row.locale ? t(`languages.${row.locale}`) : t('languages.en')}</Badge>,
+    },
+    {
+      id: 'status',
+      header: t('table.status'),
+      cell: (row) => <StatusBadge status={row.status} label={t(`status.${row.status}`)} />,
+    },
+    {
+      id: 'url',
+      header: t('table.publishedUrl'),
+      cell: (row) => {
+        const url = getPublishedUrl(row);
+        return url ? (
+          <a href={url} target="_blank" rel="noopener noreferrer"
+            className="text-violet-600 hover:text-violet-800 text-sm truncate max-w-[120px] flex items-center gap-1">
+            <LinkIcon className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{row.slug}</span>
+          </a>
+        ) : <span className="text-sm text-muted-foreground">-</span>;
+      },
+    },
+    {
+      id: 'preview',
+      header: t('table.preview'),
+      headerClassName: 'text-center',
+      cellClassName: 'text-center',
+      cell: (row) => (
+        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setPreviewPost(row); setPreviewLocale(row.locale || 'en'); }} className="gap-1">
+          <Eye className="h-3 w-3" />
+          {t('actions.preview')}
+        </Button>
+      ),
+    },
+    {
+      id: 'feedback',
+      header: t('table.feedback'),
+      headerClassName: 'text-center',
+      cellClassName: 'text-center',
+      cell: (row) => row.status !== 'published' ? (
+        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setFeedbackPost(row); }} className="gap-1">
+          <MessageSquare className="h-3 w-3" />
+          {t('table.feedback')}
+        </Button>
+      ) : <span className="text-sm text-muted-foreground">{t('feedback.published')}</span>,
+    },
+    {
+      id: 'actions',
+      header: t('table.actions'),
+      headerClassName: 'text-right',
+      cellClassName: 'text-right',
+      cell: (row) => (
+        <div onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" disabled={actionLoading === row.id}>
+                {actionLoading === row.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => { setPreviewPost(row); setPreviewLocale(row.locale || 'en'); }}>
+                <Eye className="mr-2 h-4 w-4" />{t('actions.preview')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setEditPost(row)}>
+                <Edit className="mr-2 h-4 w-4" />{t('actions.edit')}
+              </DropdownMenuItem>
+              {row.status === 'published' && (
+                <DropdownMenuItem onClick={() => window.open(`/${currentLocale}/blog/${row.slug}`, '_blank')}>
+                  <ExternalLink className="mr-2 h-4 w-4" />{t('actions.viewLive')}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              {row.status === 'draft' && (
+                <DropdownMenuItem onClick={() => handleStatusChange(row.id, 'review')}>
+                  <Send className="mr-2 h-4 w-4" />{t('actions.submitForReview')}
+                </DropdownMenuItem>
+              )}
+              {row.status === 'review' && (
+                <>
+                  <DropdownMenuItem onClick={() => handleStatusChange(row.id, 'published')} className="text-green-600">
+                    <CheckCircle className="mr-2 h-4 w-4" />{t('actions.approvePublish')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleStatusChange(row.id, 'draft')}>
+                    <Clock className="mr-2 h-4 w-4" />{t('actions.returnToDraft')}
+                  </DropdownMenuItem>
+                </>
+              )}
+              {row.status === 'published' && (
+                <DropdownMenuItem onClick={() => handleStatusChange(row.id, 'archived')}>
+                  <Archive className="mr-2 h-4 w-4" />{t('actions.archive')}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-600" onClick={() => setDeletePost(row)}>
+                <Trash2 className="mr-2 h-4 w-4" />{t('actions.delete')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Content Management</h1>
-          <p className="text-muted-foreground">
-            Manage AI-generated articles and blog posts
-          </p>
+          <h1 className="text-3xl font-bold">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => fetchPosts(1, false)} disabled={loading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button onClick={() => window.location.href = `/${currentLocale}/admin/keywords`}>
-            <Plus className="mr-2 h-4 w-4" />
-            Generate from Keywords
-          </Button>
-        </div>
+        <Button onClick={() => window.location.href = `/${currentLocale}/admin/keywords`}>
+          <Plus className="mr-2 h-4 w-4" />
+          {t('generateFromKeywords')}
+        </Button>
       </div>
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-5">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Articles
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Drafts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-500">{stats.draft}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Pending Review
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-500">{stats.review}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Published
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">{stats.published}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Views
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(stats.totalViews ?? 0).toLocaleString()}</div>
-          </CardContent>
-        </Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t('stats.total')}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{stats.total}</div></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t('stats.drafts')}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-gray-500">{stats.draft}</div></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t('stats.review')}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-yellow-500">{stats.review}</div></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t('stats.published')}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-green-500">{stats.published}</div></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{t('stats.views')}</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{(stats.totalViews ?? 0).toLocaleString()}</div></CardContent></Card>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="all">All Content ({stats.total})</TabsTrigger>
-          <TabsTrigger value="review" className="text-yellow-600">
-            Needs Review ({stats.review})
-          </TabsTrigger>
-          <TabsTrigger value="drafts">Drafts ({stats.draft})</TabsTrigger>
+          <TabsTrigger value="all">{t('tabs.all')} ({stats.total})</TabsTrigger>
+          <TabsTrigger value="review" className="text-yellow-600">{t('tabs.needsReview')} ({stats.review})</TabsTrigger>
+          <TabsTrigger value="drafts">{t('tabs.drafts')} ({stats.draft})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="space-y-4">
-          {/* Basic Filters */}
-          <div className="flex flex-wrap gap-4">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search articles by title, slug, keyword..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="review">Review</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="plastic-surgery">Plastic Surgery</SelectItem>
-                <SelectItem value="dermatology">Dermatology</SelectItem>
-                <SelectItem value="dental">Dental</SelectItem>
-                <SelectItem value="health-checkup">Health Checkup</SelectItem>
-                <SelectItem value="medical-tourism">Medical Tourism</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              onClick={handleApplyFilters}
-              disabled={!filtersChanged}
-              size="sm"
-            >
-              Apply
-            </Button>
-            <Button
-              variant={showAdvancedFilters ? 'secondary' : 'outline'}
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className="gap-2"
-            >
-              <Filter className="h-4 w-4" />
-              고급 필터
-              <ChevronDown className={`h-4 w-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
-            </Button>
-            {/* Result count */}
-            <div className="text-sm text-muted-foreground">
-              {posts.length} / {totalCount} articles
-            </div>
-          </div>
-
-          {/* Advanced Filters */}
-          {showAdvancedFilters && (
-            <Card className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Locale Filter */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Languages className="h-4 w-4" />
-                    Language
-                  </label>
-                  <Select value={localeFilter} onValueChange={setLocaleFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Languages" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Languages</SelectItem>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="ko">한국어</SelectItem>
-                      <SelectItem value="ja">日本語</SelectItem>
-                      <SelectItem value="zh-CN">简体中文</SelectItem>
-                      <SelectItem value="zh-TW">繁體中文</SelectItem>
-                      <SelectItem value="th">ภาษาไทย</SelectItem>
-                      <SelectItem value="mn">Монгол</SelectItem>
-                      <SelectItem value="ru">Русский</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Date Range */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4" />
-                    From Date
-                  </label>
-                  <Input
-                    type="date"
-                    value={dateFrom}
-                    onChange={(e) => setDateFrom(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4" />
-                    To Date
-                  </label>
-                  <Input
-                    type="date"
-                    value={dateTo}
-                    onChange={(e) => setDateTo(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* Sort Options */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
-                    Sort By
-                  </label>
-                  <div className="flex gap-2">
-                    <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                      <SelectTrigger className="flex-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="created_at">Created Date</SelectItem>
-                        <SelectItem value="updated_at">Updated Date</SelectItem>
-                        <SelectItem value="view_count">Views</SelectItem>
-                        <SelectItem value="title">Title</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                    >
-                      {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Active Filters & Reset */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <div className="flex flex-wrap gap-2">
-                  {localeFilter !== 'all' && (
-                    <Badge variant="secondary" className="gap-1">
-                      Language: {LOCALE_LABELS[localeFilter] || localeFilter}
-                      <X
-                        className="h-3 w-3 cursor-pointer"
-                        onClick={() => setLocaleFilter('all')}
-                      />
-                    </Badge>
-                  )}
-                  {dateFrom && (
-                    <Badge variant="secondary" className="gap-1">
-                      From: {dateFrom}
-                      <X
-                        className="h-3 w-3 cursor-pointer"
-                        onClick={() => setDateFrom('')}
-                      />
-                    </Badge>
-                  )}
-                  {dateTo && (
-                    <Badge variant="secondary" className="gap-1">
-                      To: {dateTo}
-                      <X
-                        className="h-3 w-3 cursor-pointer"
-                        onClick={() => setDateTo('')}
-                      />
-                    </Badge>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearFilters}
-                >
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Reset Filters
-                </Button>
-              </div>
-            </Card>
-          )}
-
-          {/* Articles Table */}
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Article</TableHead>
-                  <TableHead>Keyword</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Languages</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Published URL</TableHead>
-                  <TableHead className="text-center">Preview</TableHead>
-                  <TableHead className="text-center">Feedback</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : posts.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground">No articles found</p>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Generate content from the Keywords page to get started.
-                      </p>
-                      <Button
-                        variant="outline"
-                        className="mt-4"
-                        onClick={() => window.location.href = `/${currentLocale}/admin/keywords`}
-                      >
-                        Go to Keywords
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  posts.map((post) => (
-                    <TableRow key={post.id}>
-                      <TableCell>
-                        <div className="flex items-start gap-3">
-                          <div className="rounded bg-muted p-2">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium truncate max-w-[250px]">
-                              {getPostTitle(post)}
-                            </p>
-                            <p className="text-sm text-muted-foreground truncate max-w-[250px]">
-                              /{post.slug}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getKeywordInfo(post) ? (
-                          <div className="flex items-center gap-1">
-                            <Key className="h-3 w-3 text-violet-500" />
-                            <span className="text-sm font-medium text-violet-700 max-w-[120px] truncate">
-                              {getKeywordInfo(post)?.keyword}
-                            </span>
-                            <Badge variant="outline" className="text-xs ml-1">
-                              {getKeywordInfo(post)?.locale.toUpperCase()}
-                            </Badge>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{post.category || 'Uncategorized'}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {getAvailableLocales(post).map((locale) => (
-                            <Badge key={locale} variant="secondary" className="text-xs">
-                              {locale.toUpperCase()}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={post.status as 'draft' | 'review' | 'published' | 'archived'} />
-                      </TableCell>
-                      <TableCell>
-                        {getPublishedUrl(post) ? (
-                          <div className="flex items-center gap-1">
-                            <a
-                              href={getPublishedUrl(post)!}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-violet-600 hover:text-violet-800 text-sm truncate max-w-[150px] flex items-center gap-1"
-                            >
-                              <LinkIcon className="h-3 w-3 flex-shrink-0" />
-                              <span className="truncate">{post.slug}</span>
-                            </a>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setPreviewPost(post);
-                            setPreviewLocale(getAvailableLocales(post)[0] || 'en');
-                          }}
-                          className="gap-1"
-                        >
-                          <Eye className="h-3 w-3" />
-                          미리보기
-                        </Button>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {post.status !== 'published' ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setFeedbackPost(post);
-                              setPreviewLocale(getAvailableLocales(post)[0] || 'en');
-                            }}
-                            className="gap-1"
-                          >
-                            <MessageSquare className="h-3 w-3" />
-                            피드백
-                          </Button>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">발행됨</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              disabled={actionLoading === post.id}
-                            >
-                              {actionLoading === post.id ? (
-                                <RefreshCw className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <MoreHorizontal className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => {
-                              setPreviewPost(post);
-                              setPreviewLocale(getAvailableLocales(post)[0] || 'en');
-                            }}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Preview
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setEditPost(post)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            {post.status === 'published' && (
-                              <DropdownMenuItem onClick={() => window.open(`/${currentLocale}/blog/${post.slug}`, '_blank')}>
-                                <ExternalLink className="mr-2 h-4 w-4" />
-                                View Live
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            {post.status === 'draft' && (
-                              <DropdownMenuItem onClick={() => handleStatusChange(post.id, 'review')}>
-                                <Send className="mr-2 h-4 w-4" />
-                                Submit for Review
-                              </DropdownMenuItem>
-                            )}
-                            {post.status === 'review' && (
-                              <DropdownMenuItem
-                                onClick={() => handleStatusChange(post.id, 'published')}
-                                className="text-green-600"
-                              >
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Approve & Publish
-                              </DropdownMenuItem>
-                            )}
-                            {post.status === 'review' && (
-                              <DropdownMenuItem onClick={() => handleStatusChange(post.id, 'draft')}>
-                                <Clock className="mr-2 h-4 w-4" />
-                                Return to Draft
-                              </DropdownMenuItem>
-                            )}
-                            {post.status === 'published' && (
-                              <DropdownMenuItem onClick={() => handleStatusChange(post.id, 'archived')}>
-                                <Archive className="mr-2 h-4 w-4" />
-                                Archive
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => setDeletePost(post)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-
-            {/* Load More Trigger */}
-            <div ref={loadMoreRef} className="py-4 text-center">
-              {loadingMore && (
-                <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Loading more...</span>
-                </div>
-              )}
-              {!hasMore && posts.length > 0 && (
-                <p className="text-sm text-muted-foreground">All articles loaded</p>
-              )}
-            </div>
-          </Card>
+        <TabsContent value="all">
+          <DataTable<BlogPost>
+            key={refreshKey}
+            data={[]}
+            totalCount={0}
+            columns={columns}
+            getRowId={(row) => row.id}
+            fetchData={fetchPosts}
+            filters={filters}
+            searchPlaceholder={t('searchPlaceholder')}
+            showRefresh={false}
+            emptyIcon={<FileText className="h-12 w-12 text-muted-foreground" />}
+            emptyTitle={t('noResults')}
+            emptyDescription={t('noResultsDescription')}
+            pageSize={PAGE_SIZE}
+          />
         </TabsContent>
 
         <TabsContent value="review">
           <Card className="p-6">
-            {posts.filter(p => p.status === 'review').length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
-                No articles pending review
-              </p>
+            {allPosts.filter(p => p.status === 'review').length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">{t('messages.noPendingReview')}</p>
             ) : (
               <div className="space-y-4">
-                {posts.filter(p => p.status === 'review').map((post) => (
-                  <div
-                    key={post.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
+                {allPosts.filter(p => p.status === 'review').map((post) => (
+                  <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <p className="font-medium">{getPostTitle(post)}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Created {new Date(post.created_at).toLocaleDateString()}
-                      </p>
+                      <p className="text-sm text-muted-foreground">Created {new Date(post.created_at).toLocaleDateString()}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setPreviewPost(post);
-                          setPreviewLocale(getAvailableLocales(post)[0] || 'en');
-                        }}
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        Preview
+                      <Button variant="outline" size="sm" onClick={() => { setPreviewPost(post); setPreviewLocale(post.locale || 'en'); }}>
+                        <Eye className="mr-2 h-4 w-4" />{t('actions.preview')}
                       </Button>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleStatusChange(post.id, 'published')}
-                        disabled={actionLoading === post.id}
-                      >
-                        {actionLoading === post.id ? (
-                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                        )}
-                        Approve & Publish
+                      <Button variant="default" size="sm" onClick={() => handleStatusChange(post.id, 'published')} disabled={actionLoading === post.id}>
+                        {actionLoading === post.id ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
+                        {t('actions.approvePublish')}
                       </Button>
                     </div>
                   </div>
@@ -1107,44 +598,23 @@ export default function ContentPage() {
 
         <TabsContent value="drafts">
           <Card className="p-6">
-            {posts.filter(p => p.status === 'draft').length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
-                No draft articles
-              </p>
+            {allPosts.filter(p => p.status === 'draft').length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">{t('messages.noDrafts')}</p>
             ) : (
               <div className="space-y-4">
-                {posts.filter(p => p.status === 'draft').map((post) => (
-                  <div
-                    key={post.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
+                {allPosts.filter(p => p.status === 'draft').map((post) => (
+                  <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <p className="font-medium">{getPostTitle(post)}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Created {new Date(post.created_at).toLocaleDateString()}
-                      </p>
+                      <p className="text-sm text-muted-foreground">Created {new Date(post.created_at).toLocaleDateString()}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditPost(post)}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
+                      <Button variant="outline" size="sm" onClick={() => setEditPost(post)}>
+                        <Edit className="mr-2 h-4 w-4" />{t('actions.edit')}
                       </Button>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleStatusChange(post.id, 'review')}
-                        disabled={actionLoading === post.id}
-                      >
-                        {actionLoading === post.id ? (
-                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="mr-2 h-4 w-4" />
-                        )}
-                        Submit for Review
+                      <Button variant="default" size="sm" onClick={() => handleStatusChange(post.id, 'review')} disabled={actionLoading === post.id}>
+                        {actionLoading === post.id ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {t('actions.submitForReview')}
                       </Button>
                     </div>
                   </div>
@@ -1155,307 +625,116 @@ export default function ContentPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Full Screen Blog-Style Preview Modal */}
+      {/* Preview Modal */}
       <Dialog open={!!previewPost} onOpenChange={() => setPreviewPost(null)}>
         <DialogContent className="max-w-[100vw] w-full h-[100vh] max-h-[100vh] p-0 m-0 rounded-none">
           <DialogTitle className="sr-only">Content Preview</DialogTitle>
           {previewPost && (
             <div className="h-full overflow-y-auto bg-background">
-              {/* Preview Header Bar */}
-              <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+              {/* Preview Header */}
+              <div className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
                 <div className="container flex items-center justify-between h-14 px-4">
                   <div className="flex items-center gap-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setPreviewPost(null)}
-                    >
-                      <ArrowLeft className="mr-2 h-4 w-4" />
-                      Back to Content
+                    <Button variant="ghost" size="sm" onClick={() => setPreviewPost(null)}>
+                      <ArrowLeft className="mr-2 h-4 w-4" />Back
                     </Button>
                     <Separator orientation="vertical" className="h-6" />
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4 text-muted-foreground" />
                       <Select value={previewLocale} onValueChange={setPreviewLocale}>
-                        <SelectTrigger className="w-[160px] h-8">
-                          <SelectValue />
-                        </SelectTrigger>
+                        <SelectTrigger className="w-[140px] h-8"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {getAvailableLocales(previewPost).map((locale) => (
-                            <SelectItem key={locale} value={locale}>
-                              {LOCALE_LABELS[locale] || locale.toUpperCase()}
-                            </SelectItem>
+                          {getAvailableLocales(previewPost).map((loc) => (
+                            <SelectItem key={loc} value={loc}>{t(`languages.${loc}`)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                    {/* Responsive View Toggle */}
                     <Separator orientation="vertical" className="h-6" />
                     <div className="flex items-center gap-1 bg-muted rounded-md p-1">
-                      <Button
-                        variant={previewMode === 'desktop' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        className="h-7 px-2"
-                        onClick={() => setPreviewMode('desktop')}
-                        title="Desktop view"
-                      >
-                        <Monitor className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={previewMode === 'tablet' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        className="h-7 px-2"
-                        onClick={() => setPreviewMode('tablet')}
-                        title="Tablet view"
-                      >
-                        <Tablet className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={previewMode === 'mobile' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        className="h-7 px-2"
-                        onClick={() => setPreviewMode('mobile')}
-                        title="Mobile view"
-                      >
-                        <Smartphone className="h-4 w-4" />
-                      </Button>
+                      <Button variant={previewMode === 'desktop' ? 'secondary' : 'ghost'} size="sm" className="h-7 px-2" onClick={() => setPreviewMode('desktop')}><Monitor className="h-4 w-4" /></Button>
+                      <Button variant={previewMode === 'tablet' ? 'secondary' : 'ghost'} size="sm" className="h-7 px-2" onClick={() => setPreviewMode('tablet')}><Tablet className="h-4 w-4" /></Button>
+                      <Button variant={previewMode === 'mobile' ? 'secondary' : 'ghost'} size="sm" className="h-7 px-2" onClick={() => setPreviewMode('mobile')}><Smartphone className="h-4 w-4" /></Button>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <StatusBadge
-                      status={previewPost.status as 'draft' | 'review' | 'published' | 'archived'}
-                      label={previewPost.status.toUpperCase()}
-                      className="mr-2"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setEditPost(previewPost);
-                        setPreviewPost(null);
-                      }}
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
+                    <StatusBadge status={previewPost.status} />
+                    <Button variant="outline" size="sm" onClick={() => { setEditPost(previewPost); setPreviewPost(null); }}>
+                      <Edit className="mr-2 h-4 w-4" />Edit
                     </Button>
                     {previewPost.status !== 'published' && (
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          handleStatusChange(previewPost.id, 'published');
-                          setPreviewPost(null);
-                        }}
-                      >
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Publish
+                      <Button size="sm" onClick={() => { handleStatusChange(previewPost.id, 'published'); setPreviewPost(null); }}>
+                        <CheckCircle className="mr-2 h-4 w-4" />Publish
                       </Button>
                     )}
-                    {previewPost.status === 'published' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => window.open(`/${previewLocale}/blog/${previewPost.slug}`, '_blank')}
-                      >
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        View Live
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setPreviewPost(null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => setPreviewPost(null)}><X className="h-4 w-4" /></Button>
                   </div>
                 </div>
               </div>
 
-              {/* Blog Preview Content - Mimics actual blog page */}
-              <div
-                className={`min-h-screen bg-background mx-auto transition-all duration-300 ${
-                  previewMode === 'mobile'
-                    ? 'max-w-[375px] border-x shadow-lg'
-                    : previewMode === 'tablet'
-                    ? 'max-w-[768px] border-x shadow-lg'
-                    : 'max-w-full'
-                }`}
-                style={{
-                  minHeight: previewMode !== 'desktop' ? 'calc(100vh - 56px)' : undefined,
-                }}
-              >
-                {/* Hero Image */}
+              {/* Preview Content */}
+              <div className={`min-h-screen bg-background mx-auto transition-all duration-300 ${previewMode === 'mobile' ? 'max-w-[375px] border-x shadow-lg' : previewMode === 'tablet' ? 'max-w-[768px] border-x shadow-lg' : 'max-w-full'}`}>
                 <div className="relative h-[400px] lg:h-[500px]">
-                  <Image
-                    src={previewPost.cover_image_url || DEFAULT_IMAGE}
-                    alt={getPostTitle(previewPost, previewLocale)}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    priority
-                  />
+                  <Image src={previewPost.cover_image_url || DEFAULT_IMAGE} alt={getPostTitle(previewPost)} fill sizes="100vw" className="object-cover" priority />
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                 </div>
 
                 <div className="container relative -mt-32 pb-16">
                   <div className="mx-auto max-w-4xl">
-                    {/* Article Header */}
-                    <div className="mb-8">
-                      <Card className="overflow-hidden border-0 shadow-2xl">
-                        <CardContent className="p-8 lg:p-12">
-                          {/* URL Preview */}
-                          <div className="mb-4 p-3 bg-muted rounded-lg">
-                            <p className="text-sm text-muted-foreground">
-                              <span className="font-medium">Preview URL:</span>{' '}
-                              <code className="bg-background px-2 py-1 rounded text-violet-600">
-                                {typeof window !== 'undefined' ? window.location.origin : ''}/{previewLocale}/blog/{previewPost.slug}
-                              </code>
-                            </p>
-                          </div>
-
-                          {/* Category & Tags */}
-                          <div className="mb-4 flex flex-wrap items-center gap-2">
-                            {previewPost.category && (
-                              <Badge className="bg-violet-500 hover:bg-violet-600">
-                                {formatCategoryName(previewPost.category)}
-                              </Badge>
-                            )}
-                            {previewPost.tags?.slice(0, 3).map((tag) => (
-                              <Badge key={tag} variant="secondary">
-                                <Tag className="mr-1 h-3 w-3" />
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-
-                          {/* Title */}
-                          <h1 className="mb-6 text-3xl font-bold lg:text-4xl">
-                            {getPostTitle(previewPost, previewLocale)}
-                          </h1>
-
-                          {/* Excerpt */}
-                          {getPostExcerpt(previewPost, previewLocale) && (
-                            <p className="mb-6 text-lg text-muted-foreground">
-                              {getPostExcerpt(previewPost, previewLocale)}
-                            </p>
-                          )}
-
-                          {/* Meta Info */}
-                          <div className="mb-6 flex flex-wrap items-center gap-4 text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                                <User className="h-5 w-5 text-white" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-foreground">
-                                  GetCareKorea Team
-                                </p>
-                              </div>
-                            </div>
-                            <Separator orientation="vertical" className="h-8" />
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {formatDate(previewPost.published_at || previewPost.created_at)}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {getReadTime(getPostContent(previewPost, previewLocale))}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Eye className="h-4 w-4" />
-                              {(previewPost.view_count ?? 0).toLocaleString()} views
-                            </div>
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex flex-wrap items-center gap-3">
-                            <Button variant="outline" size="sm" className="rounded-full gap-2">
-                              <Heart className="h-4 w-4" />
-                              Like
-                            </Button>
-                            <Button variant="outline" size="sm" className="rounded-full gap-2">
-                              <Bookmark className="h-4 w-4" />
-                              Save
-                            </Button>
-                            <div className="ml-auto flex items-center gap-2">
-                              <span className="text-sm text-muted-foreground">Share:</span>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                                <Share2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {/* Article Content */}
-                    <Card className="overflow-hidden border-0 shadow-xl">
+                    <Card className="overflow-hidden border-0 shadow-2xl mb-8">
                       <CardContent className="p-8 lg:p-12">
-                        <div
-                          className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-bold prose-p:text-muted-foreground prose-li:text-muted-foreground prose-a:text-primary"
-                          dangerouslySetInnerHTML={{
-                            __html: renderContent(getPostContent(previewPost, previewLocale))
-                          }}
-                        />
+                        <div className="mb-4 p-3 bg-muted rounded-lg">
+                          <p className="text-sm text-muted-foreground">
+                            <span className="font-medium">Preview URL:</span> <code className="bg-background px-2 py-1 rounded text-violet-600">{typeof window !== 'undefined' ? window.location.origin : ''}/{previewLocale}/blog/{previewPost.slug}</code>
+                          </p>
+                        </div>
+                        <div className="mb-4 flex flex-wrap items-center gap-2">
+                          {previewPost.category && <Badge className="bg-violet-500 hover:bg-violet-600">{formatCategoryName(previewPost.category)}</Badge>}
+                          {previewPost.tags?.slice(0, 3).map((tag) => <Badge key={tag} variant="secondary"><Tag className="mr-1 h-3 w-3" />{tag}</Badge>)}
+                        </div>
+                        <h1 className="mb-6 text-3xl font-bold lg:text-4xl">{getPostTitle(previewPost)}</h1>
+                        {getPostExcerpt(previewPost) && <p className="mb-6 text-lg text-muted-foreground">{getPostExcerpt(previewPost)}</p>}
+                        <div className="mb-6 flex flex-wrap items-center gap-4 text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center"><User className="h-5 w-5 text-white" /></div>
+                            <p className="font-medium text-foreground">GetCareKorea Team</p>
+                          </div>
+                          <Separator orientation="vertical" className="h-8" />
+                          <div className="flex items-center gap-1"><Calendar className="h-4 w-4" />{formatDate(previewPost.published_at || previewPost.created_at)}</div>
+                          <div className="flex items-center gap-1"><Clock className="h-4 w-4" />{getReadTime(getPostContent(previewPost))}</div>
+                          <div className="flex items-center gap-1"><Eye className="h-4 w-4" />{(previewPost.view_count ?? 0).toLocaleString()} views</div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Button variant="outline" size="sm" className="rounded-full gap-2"><Heart className="h-4 w-4" />Like</Button>
+                          <Button variant="outline" size="sm" className="rounded-full gap-2"><Bookmark className="h-4 w-4" />Save</Button>
+                          <div className="ml-auto flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Share:</span>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full"><Share2 className="h-4 w-4" /></Button>
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
 
-                    {/* CTA */}
+                    <Card className="overflow-hidden border-0 shadow-xl">
+                      <CardContent className="p-8 lg:p-12">
+                        <div className="prose prose-lg max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: renderContent(getPostContent(previewPost)) }} />
+                      </CardContent>
+                    </Card>
+
                     <div className="mt-12">
                       <div className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-gradient-to-r from-violet-950/50 via-purple-900/50 to-violet-950/50 p-8">
                         <div className="absolute -left-10 -top-10 h-40 w-40 rounded-full bg-violet-500/20 blur-3xl" />
                         <div className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-cyan-500/20 blur-3xl" />
-
                         <div className="relative z-10 flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-                          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600">
-                            <Sparkles className="h-8 w-8 text-white" />
-                          </div>
+                          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600"><Sparkles className="h-8 w-8 text-white" /></div>
                           <div className="flex-1">
                             <h3 className="mb-1 text-xl font-bold text-white">Ready to Start Your Journey?</h3>
                             <p className="text-white/70">Get a free consultation with our medical tourism experts.</p>
                           </div>
-                          <Button
-                            size="lg"
-                            className="bg-gradient-to-r from-violet-600 to-purple-600 text-white"
-                          >
-                            Get Free Quote
-                            <ChevronRight className="ml-2 h-4 w-4" />
-                          </Button>
+                          <Button size="lg" className="bg-gradient-to-r from-violet-600 to-purple-600 text-white">Get Free Quote<ChevronRight className="ml-2 h-4 w-4" /></Button>
                         </div>
                       </div>
                     </div>
-
-                    {/* Quality Score Info */}
-                    {getQualityScore(previewPost) > 0 && (
-                      <div className="mt-8 p-4 bg-muted rounded-lg">
-                        <div className="flex items-center gap-4">
-                          <span className="text-sm font-medium">Quality Score:</span>
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-200">
-                              <div
-                                className={`h-full ${
-                                  getQualityScore(previewPost) >= 90
-                                    ? 'bg-green-500'
-                                    : getQualityScore(previewPost) >= 80
-                                    ? 'bg-yellow-500'
-                                    : 'bg-red-500'
-                                }`}
-                                style={{ width: `${getQualityScore(previewPost)}%` }}
-                              />
-                            </div>
-                            <span className="font-medium">{getQualityScore(previewPost)}%</span>
-                          </div>
-                          {getKeywordInfo(previewPost) && (
-                            <>
-                              <Separator orientation="vertical" className="h-6" />
-                              <span className="text-sm text-muted-foreground">
-                                Generated from keyword: <strong>{getKeywordInfo(previewPost)?.keyword}</strong>
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -1468,105 +747,46 @@ export default function ContentPage() {
       <Dialog open={!!editPost} onOpenChange={() => setEditPost(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Edit className="h-5 w-5" />
-              Edit Article
-            </DialogTitle>
-            <DialogDescription>
-              Make changes to the article content
-            </DialogDescription>
+            <DialogTitle className="flex items-center gap-2"><Edit className="h-5 w-5" />{t('edit.title')}</DialogTitle>
+            <DialogDescription>{t('edit.description')}</DialogDescription>
           </DialogHeader>
-
           {editPost && (
             <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Slug</label>
-                <Input
-                  value={editPost.slug}
-                  onChange={(e) => setEditPost({ ...editPost, slug: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Title</label>
-                <Input
-                  value={editPost.title || ''}
-                  onChange={(e) => setEditPost({ ...editPost, title: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Excerpt</label>
-                <Textarea
-                  value={editPost.excerpt || ''}
-                  onChange={(e) => setEditPost({ ...editPost, excerpt: e.target.value })}
-                  rows={2}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Content</label>
-                <Textarea
-                  value={editPost.content || ''}
-                  onChange={(e) => setEditPost({ ...editPost, content: e.target.value })}
-                  rows={15}
-                  className="font-mono text-sm"
-                />
-              </div>
-
+              <div><label className="text-sm font-medium">{t('edit.slug')}</label><Input value={editPost.slug} onChange={(e) => setEditPost({ ...editPost, slug: e.target.value })} /></div>
+              <div><label className="text-sm font-medium">{t('edit.articleTitle')}</label><Input value={editPost.title || ''} onChange={(e) => setEditPost({ ...editPost, title: e.target.value })} /></div>
+              <div><label className="text-sm font-medium">{t('edit.excerpt')}</label><Textarea value={editPost.excerpt || ''} onChange={(e) => setEditPost({ ...editPost, excerpt: e.target.value })} rows={2} /></div>
+              <div><label className="text-sm font-medium">{t('edit.content')}</label><Textarea value={editPost.content || ''} onChange={(e) => setEditPost({ ...editPost, content: e.target.value })} rows={15} className="font-mono text-sm" /></div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Category</label>
-                  <Select
-                    value={editPost.category || 'medical-tourism'}
-                    onValueChange={(value) => setEditPost({ ...editPost, category: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                  <label className="text-sm font-medium">{t('table.category')}</label>
+                  <Select value={editPost.category || 'medical-tourism'} onValueChange={(value) => setEditPost({ ...editPost, category: value })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="plastic-surgery">Plastic Surgery</SelectItem>
-                      <SelectItem value="dermatology">Dermatology</SelectItem>
-                      <SelectItem value="dental">Dental</SelectItem>
-                      <SelectItem value="health-checkup">Health Checkup</SelectItem>
-                      <SelectItem value="medical-tourism">Medical Tourism</SelectItem>
+                      <SelectItem value="plastic-surgery">{tKeywords('categories.plastic-surgery')}</SelectItem>
+                      <SelectItem value="dermatology">{tKeywords('categories.dermatology')}</SelectItem>
+                      <SelectItem value="dental">{tKeywords('categories.dental')}</SelectItem>
+                      <SelectItem value="health-checkup">{tKeywords('categories.health-checkup')}</SelectItem>
+                      <SelectItem value="medical-tourism">{tKeywords('categories.medical-tourism')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div>
-                  <label className="text-sm font-medium">Status</label>
-                  <Select
-                    value={editPost.status}
-                    onValueChange={(value) => setEditPost({ ...editPost, status: value as BlogPost['status'] })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                  <label className="text-sm font-medium">{t('table.status')}</label>
+                  <Select value={editPost.status} onValueChange={(value) => setEditPost({ ...editPost, status: value as BlogPost['status'] })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="review">Review</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                      <SelectItem value="archived">Archived</SelectItem>
+                      <SelectItem value="draft">{t('status.draft')}</SelectItem>
+                      <SelectItem value="review">{t('status.review')}</SelectItem>
+                      <SelectItem value="published">{t('status.published')}</SelectItem>
+                      <SelectItem value="archived">{t('status.archived')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-
               <DialogFooter>
-                <Button variant="outline" onClick={() => setEditPost(null)}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSaveEdit}
-                  disabled={actionLoading === editPost.id}
-                >
-                  {actionLoading === editPost.id ? (
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                  )}
-                  Save Changes
+                <Button variant="outline" onClick={() => setEditPost(null)}>{t('edit.cancel')}</Button>
+                <Button onClick={handleSaveEdit} disabled={actionLoading === editPost.id}>
+                  {actionLoading === editPost.id ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}{t('edit.saveChanges')}
                 </Button>
               </DialogFooter>
             </div>
@@ -1574,12 +794,12 @@ export default function ContentPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Modal */}
       <DeleteDialog
         open={!!deletePost}
         onOpenChange={() => setDeletePost(null)}
-        title="Delete Article"
-        description="Are you sure you want to delete this article? This action cannot be undone."
+        title={t('delete.title')}
+        description={t('delete.description')}
         itemName={deletePost ? getPostTitle(deletePost) : ''}
         itemDescription={deletePost ? `/${deletePost.slug}` : ''}
         onConfirm={handleDelete}
@@ -1590,106 +810,44 @@ export default function ContentPage() {
       <Dialog open={!!feedbackPost} onOpenChange={() => { setFeedbackPost(null); setFeedbackText(''); }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-violet-600" />
-              콘텐츠 피드백
-            </DialogTitle>
-            <DialogDescription>
-              콘텐츠를 검토하고 피드백을 제공하거나 바로 발행할 수 있습니다.
-            </DialogDescription>
+            <DialogTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-violet-600" />{t('feedback.title')}</DialogTitle>
+            <DialogDescription>{t('feedback.description')}</DialogDescription>
           </DialogHeader>
-
           {feedbackPost && (
             <div className="space-y-4">
-              {/* Content Preview Summary */}
               <div className="p-4 bg-muted rounded-lg space-y-2">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-medium text-lg">{getPostTitle(feedbackPost)}</p>
                     <p className="text-sm text-muted-foreground">/{feedbackPost.slug}</p>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setPreviewPost(feedbackPost);
-                      setFeedbackPost(null);
-                    }}
-                  >
-                    <Eye className="mr-2 h-4 w-4" />
-                    전체 미리보기
+                  <Button variant="outline" size="sm" onClick={() => { setPreviewPost(feedbackPost); setFeedbackPost(null); }}>
+                    <Eye className="mr-2 h-4 w-4" />{t('feedback.fullPreview')}
                   </Button>
                 </div>
-                {getPostExcerpt(feedbackPost, previewLocale) && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {getPostExcerpt(feedbackPost, previewLocale)}
-                  </p>
-                )}
+                {getPostExcerpt(feedbackPost) && <p className="text-sm text-muted-foreground line-clamp-2">{getPostExcerpt(feedbackPost)}</p>}
                 {getKeywordInfo(feedbackPost) && (
                   <div className="flex items-center gap-2 mt-2">
                     <Key className="h-3 w-3 text-violet-500" />
-                    <span className="text-sm text-violet-700">
-                      키워드: {getKeywordInfo(feedbackPost)?.keyword}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      {getKeywordInfo(feedbackPost)?.locale.toUpperCase()}
-                    </Badge>
+                    <span className="text-sm text-violet-700">{t('feedback.keywordLabel')}: {getKeywordInfo(feedbackPost)?.keyword}</span>
+                    <Badge variant="outline" className="text-xs">{getKeywordInfo(feedbackPost)?.locale.toUpperCase()}</Badge>
                   </div>
                 )}
               </div>
-
-              {/* Feedback Input */}
               <div>
-                <label className="text-sm font-medium mb-2 block">
-                  피드백 내용 (선택사항)
-                </label>
-                <Textarea
-                  placeholder="개선이 필요한 부분이나 수정 요청 사항을 작성해주세요...&#10;&#10;예시:&#10;- 도입부를 더 간결하게 수정해주세요&#10;- 가격 정보를 업데이트해주세요&#10;- 전문 용어 설명을 추가해주세요"
-                  value={feedbackText}
-                  onChange={(e) => setFeedbackText(e.target.value)}
-                  rows={5}
-                  className="resize-none"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  피드백은 AI 학습에 활용되어 향후 콘텐츠 품질 개선에 반영됩니다.
-                </p>
+                <label className="text-sm font-medium mb-2 block">{t('feedback.feedbackContent')}</label>
+                <Textarea placeholder={t('feedback.feedbackPlaceholder')} value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} rows={5} className="resize-none" />
+                <p className="text-xs text-muted-foreground mt-1">{t('feedback.feedbackHint')}</p>
               </div>
-
               <Separator />
-
               <DialogFooter className="flex-col sm:flex-row gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => { setFeedbackPost(null); setFeedbackText(''); }}
-                  disabled={feedbackLoading}
-                >
-                  취소
-                </Button>
+                <Button variant="outline" onClick={() => { setFeedbackPost(null); setFeedbackText(''); }} disabled={feedbackLoading}>{t('feedback.cancel')}</Button>
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleFeedbackSubmit(true)}
-                    disabled={feedbackLoading || !feedbackText.trim()}
-                    className="gap-2"
-                  >
-                    {feedbackLoading ? (
-                      <LoadingSpinner size="sm" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4" />
-                    )}
-                    피드백 반영 후 재생성
+                  <Button variant="outline" onClick={() => handleFeedbackSubmit(true)} disabled={feedbackLoading || !feedbackText.trim()} className="gap-2">
+                    {feedbackLoading ? <LoadingSpinner size="sm" /> : <RefreshCw className="h-4 w-4" />}{t('feedback.regenerate')}
                   </Button>
-                  <Button
-                    onClick={() => handleFeedbackSubmit(false)}
-                    disabled={feedbackLoading || publishLoading === feedbackPost.id}
-                    className="gap-2 bg-green-600 hover:bg-green-700"
-                  >
-                    {publishLoading === feedbackPost.id ? (
-                      <LoadingSpinner size="sm" color="white" />
-                    ) : (
-                      <Upload className="h-4 w-4" />
-                    )}
-                    바로 발행
+                  <Button onClick={() => handleFeedbackSubmit(false)} disabled={feedbackLoading || publishLoading === feedbackPost.id} className="gap-2 bg-green-600 hover:bg-green-700">
+                    {publishLoading === feedbackPost.id ? <LoadingSpinner size="sm" color="white" /> : <Upload className="h-4 w-4" />}{t('feedback.publishNow')}
                   </Button>
                 </div>
               </DialogFooter>

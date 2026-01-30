@@ -30,6 +30,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
+    // Fetch stats separately (count by status)
+    const [activeResult, featuredResult, verifiedResult] = await Promise.all([
+      supabase.from('author_personas').select('*', { count: 'exact', head: true }).eq('is_active', true),
+      supabase.from('author_personas').select('*', { count: 'exact', head: true }).eq('is_featured', true),
+      supabase.from('author_personas').select('*', { count: 'exact', head: true }).eq('is_verified', true),
+    ]);
+
     return NextResponse.json({
       success: true,
       data: data || [],
@@ -38,6 +45,12 @@ export async function GET(request: NextRequest) {
         limit,
         total: count || 0,
         hasMore: offset + limit < (count || 0),
+      },
+      stats: {
+        total: count || 0,
+        active: activeResult.count || 0,
+        featured: featuredResult.count || 0,
+        verified: verifiedResult.count || 0,
       },
     });
   } catch (error) {

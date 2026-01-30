@@ -45,6 +45,15 @@ interface CronSettings {
   priority_threshold: number;
 }
 
+interface PendingKeyword {
+  id: string;
+  keyword: string;
+  locale: string;
+  category: string | null;
+  priority: number;
+  search_volume: number | null;
+}
+
 // Get current time in Korea timezone (UTC+9)
 function getKoreaTime(): Date {
   const now = new Date();
@@ -209,14 +218,16 @@ export async function GET(request: NextRequest) {
       query = query.gte('priority', settings.priority_threshold);
     }
 
-    const { data: pendingKeywords, error: fetchError } = await query;
+    const { data: pendingKeywordsData, error: fetchError } = await query;
 
     if (fetchError) {
       console.error(`❌ [${cronId}] Failed to fetch pending keywords:`, fetchError);
       throw fetchError;
     }
 
-    if (!pendingKeywords || pendingKeywords.length === 0) {
+    const pendingKeywords = (pendingKeywordsData || []) as PendingKeyword[];
+
+    if (pendingKeywords.length === 0) {
       console.log(`✅ [${cronId}] No pending keywords to process`);
       await logCronExecution(supabase, 'auto-generate', 'success', {
         message: 'No pending keywords',
@@ -229,10 +240,103 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    console.log(`\n🚀 [${cronId}] Processing ${pendingKeywords.length} keywords`);
+    console.log(`\n🚀 [${cronId}] Processing ${pendingKeywords.length} keywords in PARALLEL`);
 
-    // 3. Process each keyword with the unified pipeline
-    const results: Array<{
+    // 3. Process each keyword with the unified pipeline (PARALLEL EXECUTION)
+
+    // First, filter valid keywords
+    const validKeywords = pendingKeywords.filter(kw => {
+      if (!VALID_LOCALES.includes(kw.locale as Locale)) {
+        console.warn(`   ⚠️ Invalid locale: ${kw.locale}, skipping ${kw.keyword}`);
+        return false;
+      }
+      return true;
+    });
+
+    // Pre-assign authors to prevent overlap in parallel execution
+    console.log(`\n👥 [${cronId}] Pre-assigning authors to prevent overlap...`);
+
+    // Fetch all active personas
+    const { data: allPersonas } = await (supabase.from('author_personas') as any)
+      .select('id, slug, target_locales, primary_specialty, total_posts')
+      .eq('is_active', true);
+
+    const personas = allPersonas || [];
+    const authorAssignments = new Map<string, string>(); // keywordId -> authorPersonaId
+
+    // Assign authors based on locale match and lowest total_posts (round-robin style)
+    const usedAuthors = new Map<string, number>(); // authorId -> times used in this batch
+
+    for (const kw of validKeywords) {
+      // Find matching personas for this keyword's locale
+      const matchingPersonas = personas.filter((p: any) => {
+        const targetLocales = p.target_locales || [];
+        return targetLocales.includes(kw.locale) || targetLocales.includes('*');
+      });
+
+      if (matchingPersonas.length > 0) {
+        // Sort by (total_posts + times used in batch) to distribute evenly
+        matchingPersonas.sort((a: any, b: any) => {
+          const aEffective = (a.total_posts || 0) + (usedAuthors.get(a.id) || 0);
+          const bEffective = (b.total_posts || 0) + (usedAuthors.get(b.id) || 0);
+          return aEffective - bEffective;
+        });
+
+        const selectedAuthor = matchingPersonas[0];
+        authorAssignments.set(kw.id, selectedAuthor.id);
+        usedAuthors.set(selectedAuthor.id, (usedAuthors.get(selectedAuthor.id) || 0) + 1);
+        console.log(`   📝 ${kw.keyword} (${kw.locale}) → ${selectedAuthor.slug}`);
+      }
+    }
+
+    // Update all keywords to generating status in parallel
+    await Promise.all(
+      validKeywords.map(kw =>
+        (supabase.from('content_keywords') as any)
+          .update({ status: 'generating', updated_at: new Date().toISOString() })
+          .eq('id', kw.id)
+      )
+    );
+
+    console.log(`\n📝 [${cronId}] Starting parallel generation for ${validKeywords.length} keywords...`);
+
+    // Process all keywords in parallel with pre-assigned authors
+    const parallelResults = await Promise.allSettled(
+      validKeywords.map(async (kw, index) => {
+        console.log(`\n📝 [${cronId}] [${index + 1}/${validKeywords.length}] Processing: ${kw.keyword} (${kw.locale})`);
+
+        // Prepare pipeline input
+        const pipelineInput: ContentGenerationInput = {
+          keywordId: kw.id,
+          keyword: kw.keyword,
+          locale: kw.locale,
+          category: kw.category || 'general',
+          includeRAG: settings.include_rag,
+          includeImages: settings.include_images,
+          imageCount: settings.image_count,
+          autoPublish: settings.auto_publish,
+        };
+
+        // Run the unified pipeline with pre-assigned author
+        const result = await runContentGenerationPipeline(supabase, pipelineInput, {
+          requestId: `${cronId}-${kw.id.substring(0, 8)}`,
+          preAssignedAuthorId: authorAssignments.get(kw.id),
+        });
+
+        return {
+          keywordId: kw.id,
+          keyword: kw.keyword,
+          locale: kw.locale,
+          success: result.success,
+          blogPostId: result.blogPostId,
+          authorSlug: result.authorSlug,
+          error: result.error,
+        };
+      })
+    );
+
+    // Result type
+    type ResultItem = {
       keywordId: string;
       keyword: string;
       locale: string;
@@ -240,17 +344,28 @@ export async function GET(request: NextRequest) {
       blogPostId?: string;
       authorSlug?: string;
       error?: string;
-    }> = [];
+    };
 
-    // Track assigned personas in this batch for round-robin
-    const assignedInBatch = new Map<string, number>();
+    // Collect results
+    const results: ResultItem[] = parallelResults.map((result, index) => {
+      if (result.status === 'fulfilled') {
+        return result.value;
+      } else {
+        const kw = validKeywords[index];
+        return {
+          keywordId: kw.id,
+          keyword: kw.keyword,
+          locale: kw.locale,
+          success: false,
+          error: result.reason?.message || 'Unknown error',
+        };
+      }
+    });
 
-    for (const kw of pendingKeywords) {
-      console.log(`\n📝 [${cronId}] Processing: ${kw.keyword} (${kw.locale})`);
-
-      // Validate locale
-      if (!VALID_LOCALES.includes(kw.locale as Locale)) {
-        console.warn(`   ⚠️ Invalid locale: ${kw.locale}, skipping`);
+    // Add invalid locale keywords to results
+    pendingKeywords
+      .filter(kw => !VALID_LOCALES.includes(kw.locale as Locale))
+      .forEach(kw => {
         results.push({
           keywordId: kw.id,
           keyword: kw.keyword,
@@ -258,50 +373,7 @@ export async function GET(request: NextRequest) {
           success: false,
           error: `Invalid locale: ${kw.locale}`,
         });
-        continue;
-      }
-
-      // Update keyword status to generating
-      await (supabase.from('content_keywords') as any)
-        .update({ status: 'generating', updated_at: new Date().toISOString() })
-        .eq('id', kw.id);
-
-      // Prepare pipeline input
-      const pipelineInput: ContentGenerationInput = {
-        keywordId: kw.id,
-        keyword: kw.keyword,
-        locale: kw.locale,
-        category: kw.category || 'general',
-        includeRAG: settings.include_rag,
-        includeImages: settings.include_images,
-        imageCount: settings.image_count,
-        autoPublish: settings.auto_publish,
-      };
-
-      // Run the unified pipeline
-      const result = await runContentGenerationPipeline(supabase, pipelineInput, {
-        requestId: `${cronId}-${kw.id.substring(0, 8)}`,
-        assignedInBatch,
       });
-
-      // Track assigned persona for round-robin
-      if (result.authorPersonaId) {
-        assignedInBatch.set(
-          result.authorPersonaId,
-          (assignedInBatch.get(result.authorPersonaId) || 0) + 1
-        );
-      }
-
-      results.push({
-        keywordId: kw.id,
-        keyword: kw.keyword,
-        locale: kw.locale,
-        success: result.success,
-        blogPostId: result.blogPostId,
-        authorSlug: result.authorSlug,
-        error: result.error,
-      });
-    }
 
     // 4. Summary
     const successCount = results.filter(r => r.success).length;

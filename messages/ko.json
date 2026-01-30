@@ -845,7 +845,7 @@
         "inquiries": "문의",
         "keywords": "키워드",
         "content": "콘텐츠",
-        "cron": "크론 작업",
+        "cron": "스케줄러",
         "progress": "진행상황",
         "feedback": "피드백",
         "analytics": "분석",
@@ -869,6 +869,7 @@
       "filters": {
         "label": "필터:",
         "language": "구사언어",
+        "allLanguages": "전체 언어",
         "specialty": "전문분야",
         "status": "상태",
         "allStatus": "전체 상태",
@@ -879,7 +880,17 @@
         "selected": "{count}개 선택",
         "clearSelection": "선택 해제",
         "reset": "초기화",
+        "refresh": "새로고침",
         "resultCount": "{count}명 / 총 {total}명"
+      },
+      "languages": {
+        "en": "영어",
+        "ko": "한국어",
+        "zh": "중국어",
+        "ja": "일본어",
+        "vi": "베트남어",
+        "th": "태국어",
+        "ru": "러시아어"
       },
       "stats": {
         "total": "전체",
@@ -1013,6 +1024,301 @@
       "uploading": "업로드 중...",
       "fileLimit": "PNG, JPG, WebP, GIF 최대 5MB",
       "orUseUrl": "또는 URL 사용"
+    },
+    "keywords": {
+      "title": "키워드 관리",
+      "subtitle": "SEO 키워드 및 AI 콘텐츠 생성 관리",
+      "addKeyword": "키워드 추가",
+      "csvUpload": "CSV 업로드",
+      "searchPlaceholder": "키워드 검색...",
+      "noResults": "키워드가 없습니다",
+      "noResultsDescription": "콘텐츠 생성을 시작하려면 첫 번째 키워드를 추가하세요",
+      "stats": {
+        "total": "전체",
+        "pending": "대기",
+        "generating": "생성 중",
+        "generated": "생성됨",
+        "published": "발행됨"
+      },
+      "filters": {
+        "status": "상태",
+        "allStatus": "전체 상태",
+        "category": "카테고리",
+        "allCategories": "전체 카테고리"
+      },
+      "table": {
+        "keyword": "키워드",
+        "category": "카테고리",
+        "locale": "언어",
+        "priority": "우선순위",
+        "volume": "검색량",
+        "status": "상태",
+        "actions": "작업"
+      },
+      "actions": {
+        "generate": "생성",
+        "regenerate": "재생성",
+        "viewPost": "게시글 보기"
+      },
+      "form": {
+        "title": "키워드 정보",
+        "description": "SEO 콘텐츠 생성을 위한 키워드 정보를 입력하세요",
+        "keyword": "키워드",
+        "keywordPlaceholder": "예: 강남 코성형 추천",
+        "keywordHint": "SEO 콘텐츠 생성을 위한 메인 키워드",
+        "category": "카테고리",
+        "selectCategory": "카테고리 선택",
+        "targetLocale": "대상 언어",
+        "selectLocale": "언어 선택",
+        "seoMetrics": "SEO 지표",
+        "seoMetricsDescription": "우선순위 결정을 위한 선택적 지표",
+        "searchVolume": "검색량",
+        "monthlyVolume": "월간 검색량",
+        "competition": "경쟁도 (0-1)",
+        "competitionHint": "0 = 낮음, 1 = 높음",
+        "priority": "우선순위 (1-10)",
+        "priorityHint": "높을수록 긴급",
+        "status": "상태",
+        "currentStatus": "현재 상태",
+        "created": "생성일",
+        "blogPost": "블로그 게시글",
+        "linked": "연결됨",
+        "saveChanges": "변경사항 저장",
+        "createKeyword": "키워드 생성",
+        "cancel": "취소",
+        "keywordRequired": "키워드는 필수입니다",
+        "keywordUpdated": "키워드가 수정되었습니다",
+        "keywordCreated": "키워드가 생성되었습니다",
+        "saveFailed": "저장 실패"
+      },
+      "categories": {
+        "plastic-surgery": "성형외과",
+        "dermatology": "피부과",
+        "dental": "치과",
+        "health-checkup": "건강검진",
+        "ophthalmology": "안과",
+        "orthopedics": "정형외과",
+        "medical-tourism": "의료관광",
+        "general": "일반"
+      }
+    },
+    "content": {
+      "title": "콘텐츠 관리",
+      "subtitle": "AI 생성 게시글 및 블로그 관리",
+      "generateFromKeywords": "키워드에서 생성",
+      "searchPlaceholder": "제목, 슬러그, 키워드로 검색...",
+      "noResults": "게시글이 없습니다",
+      "noResultsDescription": "키워드 페이지에서 콘텐츠를 생성하여 시작하세요",
+      "stats": {
+        "total": "전체",
+        "drafts": "초안",
+        "review": "검토",
+        "published": "발행됨",
+        "views": "조회수"
+      },
+      "filters": {
+        "status": "상태",
+        "allStatus": "전체 상태",
+        "category": "카테고리",
+        "allCategories": "전체 카테고리",
+        "language": "언어",
+        "allLanguages": "전체 언어",
+        "uncategorized": "미분류"
+      },
+      "languages": {
+        "en": "영어",
+        "ko": "한국어",
+        "ja": "일본어",
+        "zh-CN": "중국어(간체)",
+        "zh-TW": "중국어(번체)",
+        "th": "태국어",
+        "mn": "몽골어",
+        "ru": "러시아어"
+      },
+      "status": {
+        "draft": "초안",
+        "review": "검토",
+        "published": "발행됨",
+        "archived": "보관됨"
+      },
+      "tabs": {
+        "all": "전체 콘텐츠",
+        "needsReview": "검토 필요",
+        "drafts": "초안"
+      },
+      "table": {
+        "article": "게시글",
+        "keyword": "키워드",
+        "category": "카테고리",
+        "language": "언어",
+        "status": "상태",
+        "publishedUrl": "발행 URL",
+        "preview": "미리보기",
+        "feedback": "피드백",
+        "actions": "작업"
+      },
+      "actions": {
+        "preview": "미리보기",
+        "edit": "수정",
+        "viewLive": "라이브 보기",
+        "submitForReview": "검토 요청",
+        "approvePublish": "승인 및 발행",
+        "returnToDraft": "초안으로 되돌리기",
+        "archive": "보관",
+        "delete": "삭제",
+        "publish": "발행"
+      },
+      "preview": {
+        "back": "뒤로",
+        "previewUrl": "미리보기 URL",
+        "readyToStart": "여정을 시작할 준비가 되셨나요?",
+        "getConsultation": "의료 관광 전문가와 무료 상담을 받으세요.",
+        "getFreeQuote": "무료 견적 받기"
+      },
+      "edit": {
+        "title": "게시글 수정",
+        "description": "게시글 내용을 수정합니다",
+        "slug": "슬러그",
+        "articleTitle": "제목",
+        "excerpt": "요약",
+        "content": "내용",
+        "category": "카테고리",
+        "status": "상태",
+        "cancel": "취소",
+        "saveChanges": "변경사항 저장"
+      },
+      "delete": {
+        "title": "게시글 삭제",
+        "description": "이 게시글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+      },
+      "feedback": {
+        "title": "콘텐츠 피드백",
+        "description": "콘텐츠를 검토하고 피드백을 제공하거나 바로 발행할 수 있습니다.",
+        "fullPreview": "전체 미리보기",
+        "keywordLabel": "키워드",
+        "feedbackContent": "피드백 내용 (선택사항)",
+        "feedbackPlaceholder": "개선이 필요한 부분이나 수정 요청 사항을 작성해주세요...",
+        "feedbackHint": "피드백은 AI 학습에 활용됩니다.",
+        "cancel": "취소",
+        "regenerate": "피드백 반영 후 재생성",
+        "publishNow": "바로 발행",
+        "published": "발행됨"
+      },
+      "messages": {
+        "publishSuccess": "발행 완료!",
+        "publishFailed": "발행 실패",
+        "feedbackSuccess": "피드백이 반영되어 콘텐츠가 재생성되었습니다.",
+        "feedbackFailed": "피드백 반영 실패",
+        "noPendingReview": "검토 대기 중인 게시글이 없습니다",
+        "noDrafts": "초안 게시글이 없습니다"
+      },
+      "preview": {
+        "back": "돌아가기",
+        "previewUrl": "미리보기 URL",
+        "readyToStart": "여정을 시작할 준비가 되셨나요?",
+        "getConsultation": "의료 관광 전문가와 무료 상담을 받아보세요.",
+        "getFreeQuote": "무료 견적 받기"
+      },
+      "edit": {
+        "title": "게시글 편집",
+        "description": "게시글 내용을 수정합니다",
+        "slug": "슬러그",
+        "articleTitle": "제목",
+        "excerpt": "발췌문",
+        "content": "내용",
+        "category": "카테고리",
+        "status": "상태",
+        "cancel": "취소",
+        "saveChanges": "변경사항 저장"
+      },
+      "delete": {
+        "title": "게시글 삭제",
+        "description": "이 게시글을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+      }
+    },
+    "cron": {
+      "title": "스케줄러 설정",
+      "subtitle": "자동 콘텐츠 생성 및 발행 설정을 관리합니다.",
+      "loading": "로딩 중...",
+      "saveSuccess": "설정이 저장되었습니다.",
+      "saveFailed": "설정 저장 실패",
+      "saving": "저장 중...",
+      "saveAll": "모든 설정 저장",
+      "reset": "초기화",
+      "autoGenerate": {
+        "title": "자동 콘텐츠 생성",
+        "description": "대기 중인 키워드를 자동으로 콘텐츠로 생성합니다.",
+        "enabled": "자동 생성 활성화",
+        "enabledDescription": "스케줄러 실행 시 자동으로 콘텐츠를 생성합니다.",
+        "batchSize": "1회 실행당 생성 수",
+        "batchSizeHint": "스케줄러 1회 실행 시 처리할 키워드 수 (1-10)",
+        "keywords": "개의 키워드"
+      },
+      "autoPublish": {
+        "title": "자동 발행",
+        "description": "초안 상태의 콘텐츠를 자동으로 발행합니다.",
+        "enabled": "자동 발행 활성화",
+        "enabledDescription": "스케줄러 실행 시 초안 콘텐츠를 자동 발행합니다.",
+        "maxPublish": "1회 실행당 최대 발행 수",
+        "contents": "개의 콘텐츠"
+      },
+      "authorAssignment": {
+        "title": "통역사 배정",
+        "description": "콘텐츠 생성 시 통역사(Author) 자동 배정 방식을 설정합니다.",
+        "algorithm": "배정 알고리즘",
+        "algorithmHint": "Round Robin: total_posts가 가장 적은 통역사에게 배정",
+        "roundRobin": "Round Robin (균등 배분)",
+        "specialtyFirst": "Specialty First (전문분야 우선)",
+        "random": "Random (무작위)",
+        "specialtyMatch": "전문분야 우선 매칭",
+        "specialtyMatchDescription": "카테고리와 일치하는 전문분야의 통역사를 우선 배정합니다.",
+        "fallback": "Fallback 허용",
+        "fallbackDescription": "전문분야 매칭 실패 시 언어만 맞으면 배정합니다."
+      },
+      "schedule": {
+        "title": "실행 스케줄",
+        "preview": "실행 예정",
+        "active": "활성",
+        "disabled": "비활성",
+        "nextRuns": "다음 5회 실행 예정:",
+        "maxItems": "최대 {count}개",
+        "disabledMessage": "비활성화 상태입니다. 자동 생성이 실행되지 않습니다.",
+        "invalidSchedule": "유효하지 않은 스케줄입니다.",
+        "interval": "실행 주기",
+        "every": "마다",
+        "minutes": "분",
+        "hours": "시간",
+        "days": "일",
+        "months": "월",
+        "minInterval": "최소 실행 주기: 15분",
+        "executionDays": "실행 요일",
+        "everyday": "매일",
+        "weekdaysOnly": "평일만 (월-금)",
+        "weekendsOnly": "주말만 (토-일)",
+        "customDays": "특정 요일 선택",
+        "executionTime": "실행 시간",
+        "executionMinute": "실행 시점 (분)",
+        "everyHourAt": "매 시",
+        "advanced": "고급 설정 (특정 날짜/월 지정)",
+        "specificDays": "특정 날짜만 실행 (선택 안하면 매일)",
+        "selectedDays": "선택한 날짜",
+        "everyDay": "매일",
+        "specificMonths": "특정 월만 실행 (선택 안하면 매월)",
+        "selectedMonths": "선택한 월",
+        "everyMonth": "매월"
+      },
+      "options": {
+        "includeRag": "RAG 검색 포함",
+        "includeRagDescription": "벡터 DB에서 관련 컨텍스트를 검색하여 콘텐츠 품질을 높입니다.",
+        "includeImages": "이미지 생성 포함",
+        "includeImagesDescription": "Google Imagen 4를 사용하여 이미지를 자동 생성합니다.",
+        "imageCount": "이미지 수",
+        "imagesPerContent": "개/콘텐츠",
+        "autoPublish": "생성 후 자동 발행",
+        "autoPublishDescription": "콘텐츠 생성 직후 자동으로 발행합니다 (검토 없이).",
+        "priorityThreshold": "최소 우선순위",
+        "priorityThresholdHint": "이 값 이상의 priority를 가진 키워드만 처리 (0 = 모두 처리)"
+      }
     }
   }
 }

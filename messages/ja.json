@@ -869,6 +869,7 @@
       "filters": {
         "label": "フィルター:",
         "language": "言語",
+        "allLanguages": "全ての言語",
         "specialty": "専門分野",
         "status": "ステータス",
         "allStatus": "全てのステータス",
@@ -880,6 +881,15 @@
         "clearSelection": "選択解除",
         "reset": "リセット",
         "resultCount": "{count}名 / 全{total}名"
+      },
+      "languages": {
+        "en": "英語",
+        "ko": "韓国語",
+        "zh": "中国語",
+        "ja": "日本語",
+        "vi": "ベトナム語",
+        "th": "タイ語",
+        "ru": "ロシア語"
       },
       "stats": {
         "total": "合計",
@@ -1013,6 +1023,278 @@
       "uploading": "アップロード中...",
       "fileLimit": "PNG, JPG, WebP, GIF 最大5MB",
       "orUseUrl": "またはURLを使用"
+    },
+    "keywords": {
+      "title": "キーワード管理",
+      "subtitle": "SEOキーワードとAIコンテンツ生成の管理",
+      "addKeyword": "キーワード追加",
+      "csvUpload": "CSVアップロード",
+      "searchPlaceholder": "キーワード検索...",
+      "noResults": "キーワードが見つかりません",
+      "noResultsDescription": "コンテンツ生成を開始するには、最初のキーワードを追加してください",
+      "stats": {
+        "total": "合計",
+        "pending": "保留中",
+        "generating": "生成中",
+        "generated": "生成済み",
+        "published": "公開済み"
+      },
+      "filters": {
+        "status": "ステータス",
+        "allStatus": "全てのステータス",
+        "category": "カテゴリ",
+        "allCategories": "全てのカテゴリ"
+      },
+      "table": {
+        "keyword": "キーワード",
+        "category": "カテゴリ",
+        "locale": "言語",
+        "priority": "優先度",
+        "volume": "検索量",
+        "status": "ステータス",
+        "actions": "アクション"
+      },
+      "actions": {
+        "generate": "生成",
+        "regenerate": "再生成",
+        "viewPost": "記事を見る"
+      },
+      "form": {
+        "title": "キーワード情報",
+        "description": "SEOコンテンツ生成のためのキーワード詳細を入力してください",
+        "keyword": "キーワード",
+        "keywordPlaceholder": "例: 韓国 美容整形 おすすめ",
+        "keywordHint": "SEOコンテンツ生成のためのメインキーワード",
+        "category": "カテゴリ",
+        "selectCategory": "カテゴリを選択",
+        "targetLocale": "対象言語",
+        "selectLocale": "言語を選択",
+        "seoMetrics": "SEO指標",
+        "seoMetricsDescription": "優先順位付けのためのオプション指標",
+        "searchVolume": "検索量",
+        "monthlyVolume": "月間検索量",
+        "competition": "競争度 (0-1)",
+        "competitionHint": "0 = 低, 1 = 高",
+        "priority": "優先度 (1-10)",
+        "priorityHint": "高いほど緊急",
+        "status": "ステータス",
+        "currentStatus": "現在のステータス",
+        "created": "作成日",
+        "blogPost": "ブログ記事",
+        "linked": "連携済み",
+        "saveChanges": "変更を保存",
+        "createKeyword": "キーワード作成",
+        "cancel": "キャンセル",
+        "keywordRequired": "キーワードは必須です",
+        "keywordUpdated": "キーワードが更新されました",
+        "keywordCreated": "キーワードが作成されました",
+        "saveFailed": "保存に失敗しました"
+      },
+      "categories": {
+        "plastic-surgery": "美容整形",
+        "dermatology": "皮膚科",
+        "dental": "歯科",
+        "health-checkup": "健康診断",
+        "ophthalmology": "眼科",
+        "orthopedics": "整形外科",
+        "medical-tourism": "医療ツーリズム",
+        "general": "一般"
+      }
+    },
+    "content": {
+      "title": "コンテンツ管理",
+      "subtitle": "AI生成記事とブログの管理",
+      "generateFromKeywords": "キーワードから生成",
+      "searchPlaceholder": "タイトル、スラッグ、キーワードで検索...",
+      "noResults": "記事が見つかりません",
+      "noResultsDescription": "キーワードページからコンテンツを生成して始めてください",
+      "stats": {
+        "total": "合計",
+        "drafts": "下書き",
+        "review": "レビュー",
+        "published": "公開済み",
+        "views": "閲覧数"
+      },
+      "filters": {
+        "status": "ステータス",
+        "allStatus": "全てのステータス",
+        "category": "カテゴリ",
+        "allCategories": "全てのカテゴリ",
+        "language": "言語",
+        "allLanguages": "全ての言語",
+        "uncategorized": "未分類"
+      },
+      "languages": {
+        "en": "英語",
+        "ko": "韓国語",
+        "ja": "日本語",
+        "zh-CN": "中国語(簡体)",
+        "zh-TW": "中国語(繁体)",
+        "th": "タイ語",
+        "mn": "モンゴル語",
+        "ru": "ロシア語"
+      },
+      "status": {
+        "draft": "下書き",
+        "review": "レビュー",
+        "published": "公開済み",
+        "archived": "アーカイブ済み"
+      },
+      "tabs": {
+        "all": "全てのコンテンツ",
+        "needsReview": "レビューが必要",
+        "drafts": "下書き"
+      },
+      "table": {
+        "article": "記事",
+        "keyword": "キーワード",
+        "category": "カテゴリ",
+        "language": "言語",
+        "status": "ステータス",
+        "publishedUrl": "公開URL",
+        "preview": "プレビュー",
+        "feedback": "フィードバック",
+        "actions": "アクション"
+      },
+      "actions": {
+        "preview": "プレビュー",
+        "edit": "編集",
+        "viewLive": "公開ページを見る",
+        "submitForReview": "レビューに提出",
+        "approvePublish": "承認して公開",
+        "returnToDraft": "下書きに戻す",
+        "archive": "アーカイブ",
+        "delete": "削除",
+        "publish": "公開"
+      },
+      "feedback": {
+        "title": "コンテンツフィードバック",
+        "description": "コンテンツを確認してフィードバックを提供するか、直接公開できます。",
+        "fullPreview": "全体プレビュー",
+        "keywordLabel": "キーワード",
+        "feedbackContent": "フィードバック内容 (任意)",
+        "feedbackPlaceholder": "改善が必要な点や修正リクエストを書いてください...",
+        "feedbackHint": "フィードバックはAI学習に活用されます。",
+        "cancel": "キャンセル",
+        "regenerate": "フィードバックを反映して再生成",
+        "publishNow": "今すぐ公開",
+        "published": "公開済み"
+      },
+      "messages": {
+        "publishSuccess": "公開完了！",
+        "publishFailed": "公開失敗",
+        "feedbackSuccess": "フィードバックが反映され、コンテンツが再生成されました。",
+        "feedbackFailed": "フィードバック反映失敗",
+        "noPendingReview": "レビュー待ちの記事がありません",
+        "noDrafts": "下書き記事がありません"
+      },
+      "preview": {
+        "back": "戻る",
+        "previewUrl": "プレビューURL",
+        "readyToStart": "旅を始める準備はできましたか？",
+        "getConsultation": "医療ツーリズムの専門家に無料相談できます。",
+        "getFreeQuote": "無料見積もり"
+      },
+      "edit": {
+        "title": "記事を編集",
+        "description": "記事の内容を変更します",
+        "slug": "スラッグ",
+        "articleTitle": "タイトル",
+        "excerpt": "抜粋",
+        "content": "コンテンツ",
+        "category": "カテゴリ",
+        "status": "ステータス",
+        "cancel": "キャンセル",
+        "saveChanges": "変更を保存"
+      },
+      "delete": {
+        "title": "記事を削除",
+        "description": "この記事を削除してもよろしいですか？この操作は元に戻せません。"
+      }
+    },
+    "cron": {
+      "title": "スケジューラー設定",
+      "subtitle": "自動コンテンツ生成と公開設定を管理します。",
+      "loading": "読み込み中...",
+      "saveSuccess": "設定が保存されました。",
+      "saveFailed": "設定の保存に失敗しました",
+      "saving": "保存中...",
+      "saveAll": "全ての設定を保存",
+      "reset": "リセット",
+      "autoGenerate": {
+        "title": "自動コンテンツ生成",
+        "description": "保留中のキーワードを自動的にコンテンツに生成します。",
+        "enabled": "自動生成を有効化",
+        "enabledDescription": "スケジューラー実行時に自動的にコンテンツを生成します。",
+        "batchSize": "1回の実行あたりの生成数",
+        "batchSizeHint": "スケジューラー1回の実行で処理するキーワード数 (1-10)",
+        "keywords": "キーワード"
+      },
+      "autoPublish": {
+        "title": "自動公開",
+        "description": "下書き状態のコンテンツを自動的に公開します。",
+        "enabled": "自動公開を有効化",
+        "enabledDescription": "スケジューラー実行時に下書きコンテンツを自動公開します。",
+        "maxPublish": "1回の実行あたりの最大公開数",
+        "contents": "コンテンツ"
+      },
+      "authorAssignment": {
+        "title": "通訳者割り当て",
+        "description": "コンテンツ生成時の通訳者(Author)自動割り当て方式を設定します。",
+        "algorithm": "割り当てアルゴリズム",
+        "algorithmHint": "Round Robin: total_postsが最も少ない通訳者に割り当て",
+        "roundRobin": "Round Robin (均等配分)",
+        "specialtyFirst": "Specialty First (専門分野優先)",
+        "random": "Random (ランダム)",
+        "specialtyMatch": "専門分野優先マッチング",
+        "specialtyMatchDescription": "カテゴリと一致する専門分野の通訳者を優先的に割り当てます。",
+        "fallback": "フォールバック許可",
+        "fallbackDescription": "専門分野マッチング失敗時、言語のみ一致すれば割り当てます。"
+      },
+      "schedule": {
+        "title": "実行スケジュール",
+        "preview": "実行予定",
+        "active": "有効",
+        "disabled": "無効",
+        "nextRuns": "次の5回の実行予定:",
+        "maxItems": "最大 {count}個",
+        "disabledMessage": "無効化されています。自動生成は実行されません。",
+        "invalidSchedule": "無効なスケジュールです。",
+        "interval": "実行間隔",
+        "every": "ごと",
+        "minutes": "分",
+        "hours": "時間",
+        "days": "日",
+        "months": "月",
+        "minInterval": "最小実行間隔: 15分",
+        "executionDays": "実行曜日",
+        "everyday": "毎日",
+        "weekdaysOnly": "平日のみ（月〜金）",
+        "weekendsOnly": "週末のみ（土〜日）",
+        "customDays": "曜日を選択",
+        "executionTime": "実行時刻",
+        "executionMinute": "実行分",
+        "everyHourAt": "毎時",
+        "advanced": "詳細設定（特定の日付/月を指定）",
+        "specificDays": "特定の日のみ実行（空欄で毎日）",
+        "selectedDays": "選択された日",
+        "everyDay": "毎日",
+        "specificMonths": "特定の月のみ実行（空欄で毎月）",
+        "selectedMonths": "選択された月",
+        "everyMonth": "毎月"
+      },
+      "options": {
+        "includeRag": "RAG検索を含む",
+        "includeRagDescription": "ベクターDBから関連コンテキストを検索してコンテンツ品質を向上させます。",
+        "includeImages": "画像生成を含む",
+        "includeImagesDescription": "Google Imagen 4を使用して自動的に画像を生成します。",
+        "imageCount": "画像数",
+        "imagesPerContent": "枚/コンテンツ",
+        "autoPublish": "生成後自動公開",
+        "autoPublishDescription": "コンテンツ生成直後に自動的に公開します（レビューなし）。",
+        "priorityThreshold": "最小優先度",
+        "priorityThresholdHint": "この値以上の優先度を持つキーワードのみ処理 (0 = 全て処理)"
+      }
     }
   }
 }

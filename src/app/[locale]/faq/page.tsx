@@ -32,17 +32,17 @@ export default function FAQPage() {
     const items: Array<{ question: string; answer: string; category: string }> = [];
 
     faqCategories.forEach((cat) => {
-      // Assuming translations have faq.categories.{key}.items array
-      try {
-        for (let i = 1; i <= 5; i++) {
+      // Load FAQ items - only items 1-3 exist in translations
+      for (let i = 1; i <= 3; i++) {
+        try {
           const question = t.raw(`categories.${cat.key}.items.${i}.question`) as string;
           const answer = t.raw(`categories.${cat.key}.items.${i}.answer`) as string;
           if (question && answer) {
             items.push({ question, answer, category: cat.key });
           }
+        } catch {
+          // Translation not found, skip
         }
-      } catch {
-        // Translation not found, skip
       }
     });
 

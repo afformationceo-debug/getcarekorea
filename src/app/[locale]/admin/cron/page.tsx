@@ -6,11 +6,12 @@
 
 import { Suspense } from 'react';
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import CronSettingsForm from './CronSettingsForm';
 
 export const metadata: Metadata = {
-  title: 'Cron Settings | Admin',
+  title: 'Scheduler Settings | Admin',
   description: 'Configure automatic content generation and publishing',
 };
 
@@ -92,17 +93,18 @@ async function getSettings(): Promise<SystemSettings> {
 
 export default async function CronSettingsPage() {
   const settings = await getSettings();
+  const t = await getTranslations('admin.cron');
 
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Cron Job Settings</h1>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
         <p className="text-muted-foreground mt-1">
-          자동 콘텐츠 생성 및 발행 설정을 관리합니다.
+          {t('subtitle')}
         </p>
       </div>
 
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<div>{t('loading')}</div>}>
         <CronSettingsForm initialSettings={settings} />
       </Suspense>
     </div>

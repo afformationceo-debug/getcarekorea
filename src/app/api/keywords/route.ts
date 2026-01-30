@@ -76,18 +76,28 @@ export async function GET(request: NextRequest) {
       throw new APIError(ErrorCode.DATABASE_ERROR, undefined, undefined, locale);
     }
 
-    // Get unique categories for filter options - use adminSupabase
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: categories } = await (adminSupabase.from('content_keywords') as any)
-      .select('category')
-      .not('category', 'is', null);
+    // Fetch stats by status (global counts)
+    const [pendingResult, generatingResult, generatedResult, publishedResult, categoriesResult] = await Promise.all([
+      (adminSupabase.from('content_keywords') as any).select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      (adminSupabase.from('content_keywords') as any).select('*', { count: 'exact', head: true }).eq('status', 'generating'),
+      (adminSupabase.from('content_keywords') as any).select('*', { count: 'exact', head: true }).eq('status', 'generated'),
+      (adminSupabase.from('content_keywords') as any).select('*', { count: 'exact', head: true }).eq('status', 'published'),
+      (adminSupabase.from('content_keywords') as any).select('category').not('category', 'is', null),
+    ]);
 
-    const uniqueCategories = [...new Set((categories || []).map((c: { category: string }) => c.category))];
+    const uniqueCategories = [...new Set((categoriesResult.data || []).map((c: { category: string }) => c.category))];
 
     return createSuccessResponse(
       {
         keywords: data || [],
         categories: uniqueCategories,
+        stats: {
+          total: count || 0,
+          pending: pendingResult.count || 0,
+          generating: generatingResult.count || 0,
+          generated: generatedResult.count || 0,
+          published: publishedResult.count || 0,
+        },
       },
       {
         page,

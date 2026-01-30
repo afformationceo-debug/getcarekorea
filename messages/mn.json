@@ -872,6 +872,7 @@
         "specialty": "Мэргэжил",
         "status": "Төлөв",
         "allStatus": "Бүх төлөв",
+        "allLanguages": "Бүх хэл",
         "active": "Идэвхтэй",
         "inactive": "Идэвхгүй",
         "featured": "Онцлох",
@@ -984,6 +985,15 @@
         "fluent": "Чөлөөтэй",
         "conversational": "Харилцан ярианы"
       },
+      "languages": {
+        "en": "Англи",
+        "ko": "Солонгос",
+        "zh": "Хятад",
+        "ja": "Япон",
+        "vi": "Вьетнам",
+        "th": "Тайланд",
+        "ru": "Орос"
+      },
       "actions": {
         "view": "Харах",
         "edit": "Засах",
@@ -1013,6 +1023,278 @@
       "uploading": "Байршуулж байна...",
       "fileLimit": "PNG, JPG, WebP, GIF хамгийн ихдээ 5MB",
       "orUseUrl": "Эсвэл URL ашиглах"
+    },
+    "keywords": {
+      "title": "Түлхүүр үг удирдлага",
+      "subtitle": "SEO түлхүүр үг болон AI агуулга үүсгэлтийг удирдах",
+      "addKeyword": "Түлхүүр үг нэмэх",
+      "csvUpload": "CSV байршуулах",
+      "searchPlaceholder": "Түлхүүр үг хайх...",
+      "noResults": "Түлхүүр үг олдсонгүй",
+      "noResultsDescription": "Агуулга үүсгэж эхлэхийн тулд эхний түлхүүр үгээ нэмнэ үү",
+      "stats": {
+        "total": "Нийт",
+        "pending": "Хүлээгдэж буй",
+        "generating": "Үүсгэж байна",
+        "generated": "Үүсгэсэн",
+        "published": "Нийтлэгдсэн"
+      },
+      "filters": {
+        "status": "Төлөв",
+        "allStatus": "Бүх төлөв",
+        "category": "Ангилал",
+        "allCategories": "Бүх ангилал"
+      },
+      "table": {
+        "keyword": "Түлхүүр үг",
+        "category": "Ангилал",
+        "locale": "Хэл",
+        "priority": "Чухлын зэрэг",
+        "volume": "Хайлтын хэмжээ",
+        "status": "Төлөв",
+        "actions": "Үйлдэл"
+      },
+      "actions": {
+        "generate": "Үүсгэх",
+        "regenerate": "Дахин үүсгэх",
+        "viewPost": "Нийтлэл харах"
+      },
+      "form": {
+        "title": "Түлхүүр үгийн мэдээлэл",
+        "description": "SEO агуулга үүсгэх түлхүүр үгийн дэлгэрэнгүй мэдээллийг оруулна уу",
+        "keyword": "Түлхүүр үг",
+        "keywordPlaceholder": "Жишээ: Солонгосын гоо сайхны мэс засал",
+        "keywordHint": "SEO агуулга үүсгэх үндсэн түлхүүр үг",
+        "category": "Ангилал",
+        "selectCategory": "Ангилал сонгох",
+        "targetLocale": "Зорилтот хэл",
+        "selectLocale": "Хэл сонгох",
+        "seoMetrics": "SEO үзүүлэлт",
+        "seoMetricsDescription": "Эрэмбэлэхэд нэмэлт үзүүлэлт",
+        "searchVolume": "Хайлтын хэмжээ",
+        "monthlyVolume": "Сарын хайлтын хэмжээ",
+        "competition": "Өрсөлдөөн (0-1)",
+        "competitionHint": "0 = Бага, 1 = Өндөр",
+        "priority": "Чухлын зэрэг (1-10)",
+        "priorityHint": "Өндөр = илүү яаралтай",
+        "status": "Төлөв",
+        "currentStatus": "Одоогийн төлөв",
+        "created": "Үүсгэсэн",
+        "blogPost": "Блогийн нийтлэл",
+        "linked": "Холбогдсон",
+        "saveChanges": "Өөрчлөлт хадгалах",
+        "createKeyword": "Түлхүүр үг үүсгэх",
+        "cancel": "Цуцлах",
+        "keywordRequired": "Түлхүүр үг шаардлагатай",
+        "keywordUpdated": "Түлхүүр үг шинэчлэгдсэн",
+        "keywordCreated": "Түлхүүр үг үүсгэгдсэн",
+        "saveFailed": "Хадгалж чадсангүй"
+      },
+      "categories": {
+        "plastic-surgery": "Гоо сайхны мэс засал",
+        "dermatology": "Арьс судлал",
+        "dental": "Шүдний эмнэлэг",
+        "health-checkup": "Эрүүл мэндийн үзлэг",
+        "ophthalmology": "Нүдний эмнэлэг",
+        "orthopedics": "Ортопеди",
+        "medical-tourism": "Эмнэлгийн аялал",
+        "general": "Ерөнхий"
+      }
+    },
+    "content": {
+      "title": "Агуулга удирдлага",
+      "subtitle": "AI үүсгэсэн нийтлэл болон блогийг удирдах",
+      "generateFromKeywords": "Түлхүүр үгээс үүсгэх",
+      "searchPlaceholder": "Гарчиг, slug, түлхүүр үгээр хайх...",
+      "noResults": "Нийтлэл олдсонгүй",
+      "noResultsDescription": "Эхлэхийн тулд түлхүүр үгийн хуудаснаас агуулга үүсгэнэ үү",
+      "stats": {
+        "total": "Нийт",
+        "drafts": "Ноорог",
+        "review": "Хянагдаж байна",
+        "published": "Нийтлэгдсэн",
+        "views": "Үзсэн тоо"
+      },
+      "filters": {
+        "status": "Төлөв",
+        "allStatus": "Бүх төлөв",
+        "category": "Ангилал",
+        "allCategories": "Бүх ангилал",
+        "language": "Хэл",
+        "allLanguages": "Бүх хэл",
+        "uncategorized": "Ангилаагүй"
+      },
+      "languages": {
+        "en": "Англи",
+        "ko": "Солонгос",
+        "ja": "Япон",
+        "zh-CN": "Хятад (Хялбаршуулсан)",
+        "zh-TW": "Хятад (Уламжлалт)",
+        "th": "Тайланд",
+        "mn": "Монгол",
+        "ru": "Орос"
+      },
+      "status": {
+        "draft": "Ноорог",
+        "review": "Хянагдаж байна",
+        "published": "Нийтлэгдсэн",
+        "archived": "Архивлагдсан"
+      },
+      "tabs": {
+        "all": "Бүх агуулга",
+        "needsReview": "Хянах шаардлагатай",
+        "drafts": "Ноорог"
+      },
+      "table": {
+        "article": "Нийтлэл",
+        "keyword": "Түлхүүр үг",
+        "category": "Ангилал",
+        "language": "Хэл",
+        "status": "Төлөв",
+        "publishedUrl": "Нийтлэгдсэн URL",
+        "preview": "Урьдчилан харах",
+        "feedback": "Санал хүсэлт",
+        "actions": "Үйлдэл"
+      },
+      "actions": {
+        "preview": "Урьдчилан харах",
+        "edit": "Засах",
+        "viewLive": "Нийтлэгдсэнийг харах",
+        "submitForReview": "Хянуулахаар илгээх",
+        "approvePublish": "Баталгаажуулж нийтлэх",
+        "returnToDraft": "Ноорог руу буцаах",
+        "archive": "Архивлах",
+        "delete": "Устгах",
+        "publish": "Нийтлэх"
+      },
+      "preview": {
+        "back": "Буцах",
+        "previewUrl": "Урьдчилан харах URL",
+        "readyToStart": "Аялалаа эхлэхэд бэлэн үү?",
+        "getConsultation": "Эмнэлгийн аялалын мэргэжилтнүүдээс үнэгүй зөвлөгөө авах.",
+        "getFreeQuote": "Үнэгүй үнийн санал авах"
+      },
+      "edit": {
+        "title": "Нийтлэл засах",
+        "description": "Нийтлэлийн агуулгад өөрчлөлт оруулах",
+        "slug": "Slug",
+        "articleTitle": "Гарчиг",
+        "excerpt": "Хураангуй",
+        "content": "Агуулга",
+        "category": "Ангилал",
+        "status": "Төлөв",
+        "cancel": "Цуцлах",
+        "saveChanges": "Өөрчлөлт хадгалах"
+      },
+      "delete": {
+        "title": "Нийтлэл устгах",
+        "description": "Энэ нийтлэлийг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй."
+      },
+      "feedback": {
+        "title": "Агуулгын санал хүсэлт",
+        "description": "Агуулгыг хянаж, санал өгөх эсвэл шууд нийтлэх.",
+        "fullPreview": "Бүрэн урьдчилсан харагдац",
+        "keywordLabel": "Түлхүүр үг",
+        "feedbackContent": "Санал хүсэлтийн агуулга (заавал биш)",
+        "feedbackPlaceholder": "Сайжруулах шаардлагатай зүйлс эсвэл өөрчлөлтийн хүсэлтийг бичнэ үү...",
+        "feedbackHint": "Санал хүсэлтийг AI сургалтад ашиглана.",
+        "cancel": "Цуцлах",
+        "regenerate": "Санал хүсэлтийн дагуу дахин үүсгэх",
+        "publishNow": "Одоо нийтлэх",
+        "published": "Нийтлэгдсэн"
+      },
+      "messages": {
+        "publishSuccess": "Нийтлэгдсэн!",
+        "publishFailed": "Нийтлэхэд алдаа гарлаа",
+        "feedbackSuccess": "Санал хүсэлт хэрэгжсэн, агуулга дахин үүсгэгдсэн.",
+        "feedbackFailed": "Санал хүсэлт хэрэгжүүлэхэд алдаа гарлаа",
+        "noPendingReview": "Хянах шаардлагатай нийтлэл байхгүй",
+        "noDrafts": "Ноорог нийтлэл байхгүй"
+      }
+    },
+    "cron": {
+      "title": "Хуваарийн тохиргоо",
+      "subtitle": "Автомат агуулга үүсгэлт болон нийтлэлийн тохиргоог удирдах.",
+      "loading": "Уншиж байна...",
+      "saveSuccess": "Тохиргоо хадгалагдсан.",
+      "saveFailed": "Тохиргоо хадгалж чадсангүй",
+      "saving": "Хадгалж байна...",
+      "saveAll": "Бүх тохиргоог хадгалах",
+      "reset": "Дахин тохируулах",
+      "autoGenerate": {
+        "title": "Автомат агуулга үүсгэлт",
+        "description": "Хүлээгдэж буй түлхүүр үгийг автоматаар агуулга болгон үүсгэх.",
+        "enabled": "Автомат үүсгэлтийг идэвхжүүлэх",
+        "enabledDescription": "Хуваарь ажиллах үед автоматаар агуулга үүсгэнэ.",
+        "batchSize": "Удаа бүрийн үүсгэлтийн тоо",
+        "batchSizeHint": "Хуваарь удаа бүр боловсруулах түлхүүр үгийн тоо (1-10)",
+        "keywords": "түлхүүр үг"
+      },
+      "autoPublish": {
+        "title": "Автомат нийтлэл",
+        "description": "Ноорог агуулгыг автоматаар нийтлэх.",
+        "enabled": "Автомат нийтлэлийг идэвхжүүлэх",
+        "enabledDescription": "Хуваарь ажиллах үед ноорог агуулгыг автоматаар нийтлэнэ.",
+        "maxPublish": "Удаа бүрийн хамгийн их нийтлэлийн тоо",
+        "contents": "агуулга"
+      },
+      "authorAssignment": {
+        "title": "Орчуулагч хуваарилалт",
+        "description": "Агуулга үүсгэх үед орчуулагч (зохиогч)-ийг хэрхэн хуваарилахыг тохируулах.",
+        "algorithm": "Хуваарилах алгоритм",
+        "algorithmHint": "Round Robin: total_posts хамгийн бага орчуулагчид хуваарилна",
+        "roundRobin": "Round Robin (Жигд хуваарилалт)",
+        "specialtyFirst": "Specialty First (Мэргэжлийн чиглэл эхлээд)",
+        "random": "Random (Санамсаргүй)",
+        "specialtyMatch": "Мэргэжлийн чиглэлд тохирсон эхлээд",
+        "specialtyMatchDescription": "Ангилалд тохирсон мэргэжлийн чиглэлтэй орчуулагчийг эхлээд хуваарилна.",
+        "fallback": "Нөөц зөвшөөрөх",
+        "fallbackDescription": "Мэргэжлийн чиглэл таарахгүй бол хэл тааралдвал хуваарилна."
+      },
+      "schedule": {
+        "title": "Ажиллах хуваарь",
+        "preview": "Төлөвлөсөн ажиллагаа",
+        "active": "Идэвхтэй",
+        "disabled": "Идэвхгүй",
+        "nextRuns": "Дараагийн 5 удаагийн ажиллагаа:",
+        "maxItems": "хамгийн ихдээ {count}",
+        "disabledMessage": "Идэвхгүй болсон. Автомат үүсгэлт ажиллахгүй.",
+        "invalidSchedule": "Буруу хуваарь.",
+        "interval": "Интервал",
+        "every": "Бүр",
+        "minutes": "минут",
+        "hours": "цаг",
+        "days": "өдөр",
+        "months": "сар",
+        "minInterval": "Хамгийн бага интервал: 15 минут",
+        "executionDays": "Ажиллах өдрүүд",
+        "everyday": "Өдөр бүр",
+        "weekdaysOnly": "Ажлын өдрүүд (Даваа-Баасан)",
+        "weekendsOnly": "Амралтын өдрүүд (Бямба-Ням)",
+        "customDays": "Өдөр сонгох",
+        "executionTime": "Ажиллах цаг",
+        "executionMinute": "Ажиллах минут",
+        "everyHourAt": "Цаг бүр",
+        "advanced": "Нарийвчилсан тохиргоо (Тодорхой өдөр/сар)",
+        "specificDays": "Тодорхой өдрүүдэд ажиллах (хоосон бол өдөр бүр)",
+        "selectedDays": "Сонгосон өдрүүд",
+        "everyDay": "Өдөр бүр",
+        "specificMonths": "Тодорхой саруудад ажиллах (хоосон бол сар бүр)",
+        "selectedMonths": "Сонгосон сарууд",
+        "everyMonth": "Сар бүр"
+      },
+      "options": {
+        "includeRag": "RAG хайлт оруулах",
+        "includeRagDescription": "Вектор мэдээллийн сангаас холбогдох контекст хайж агуулгын чанарыг сайжруулах.",
+        "includeImages": "Зураг үүсгэлт оруулах",
+        "includeImagesDescription": "Google Imagen 4 ашиглан автоматаар зураг үүсгэх.",
+        "imageCount": "Зургийн тоо",
+        "imagesPerContent": "зураг/агуулга",
+        "autoPublish": "Үүсгэсний дараа автомат нийтлэх",
+        "autoPublishDescription": "Агуулга үүсгэсний дараа автоматаар нийтлэх (хянахгүйгээр).",
+        "priorityThreshold": "Хамгийн бага чухлын зэрэг",
+        "priorityThresholdHint": "Зөвхөн энэ чухлын зэрэг эсвэл түүнээс дээш түлхүүр үгийг боловсруулах (0 = бүгдийг боловсруулах)"
+      }
     }
   }
 }

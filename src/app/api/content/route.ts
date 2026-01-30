@@ -88,30 +88,27 @@ export async function GET(request: NextRequest) {
       throw new APIError(ErrorCode.DATABASE_ERROR, 'Failed to fetch blog posts');
     }
 
-    // Get statistics
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: stats } = await (adminSupabase.from('blog_posts') as any)
-      .select('status')
-      .then(({ data }: { data: Array<{ status: string }> | null }) => {
-        const statusCounts = {
-          total: data?.length || 0,
-          draft: data?.filter(p => p.status === 'draft').length || 0,
-          review: data?.filter(p => p.status === 'review').length || 0,
-          published: data?.filter(p => p.status === 'published').length || 0,
-          archived: data?.filter(p => p.status === 'archived').length || 0,
-        };
-        return { data: statusCounts };
-      });
+    // Get statistics using efficient count queries
+    const [totalResult, draftResult, reviewResult, publishedResult, archivedResult, viewsResult] = await Promise.all([
+      (adminSupabase.from('blog_posts') as any).select('*', { count: 'exact', head: true }),
+      (adminSupabase.from('blog_posts') as any).select('*', { count: 'exact', head: true }).eq('status', 'draft'),
+      (adminSupabase.from('blog_posts') as any).select('*', { count: 'exact', head: true }).eq('status', 'review'),
+      (adminSupabase.from('blog_posts') as any).select('*', { count: 'exact', head: true }).eq('status', 'published'),
+      (adminSupabase.from('blog_posts') as any).select('*', { count: 'exact', head: true }).eq('status', 'archived'),
+      (adminSupabase.from('blog_posts') as any).select('view_count'),
+    ]);
 
-    // Calculate total views and other aggregates
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: aggregates } = await (adminSupabase.from('blog_posts') as any)
-      .select('view_count')
-      .then(({ data }: { data: Array<{ view_count: number }> | null }) => ({
-        data: {
-          totalViews: data?.reduce((sum, p) => sum + (p.view_count || 0), 0) || 0,
-        }
-      }));
+    const stats = {
+      total: totalResult.count || 0,
+      draft: draftResult.count || 0,
+      review: reviewResult.count || 0,
+      published: publishedResult.count || 0,
+      archived: archivedResult.count || 0,
+    };
+
+    const aggregates = {
+      totalViews: (viewsResult.data || []).reduce((sum: number, p: { view_count: number }) => sum + (p.view_count || 0), 0),
+    };
 
     return createSuccessResponse({
       posts: posts || [],

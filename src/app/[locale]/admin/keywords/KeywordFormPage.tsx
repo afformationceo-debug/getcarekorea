@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,31 +34,24 @@ interface KeywordFormPageProps {
   keyword?: Keyword;
 }
 
-const CATEGORIES = [
-  { value: 'plastic-surgery', label: 'Plastic Surgery' },
-  { value: 'dermatology', label: 'Dermatology' },
-  { value: 'dental', label: 'Dental' },
-  { value: 'health-checkup', label: 'Health Checkup' },
-  { value: 'ophthalmology', label: 'Ophthalmology' },
-  { value: 'orthopedics', label: 'Orthopedics' },
-  { value: 'general', label: 'General' },
+const CATEGORY_KEYS = [
+  'plastic-surgery',
+  'dermatology',
+  'dental',
+  'health-checkup',
+  'ophthalmology',
+  'orthopedics',
+  'general',
 ];
 
-const LOCALE_NAMES: Record<string, string> = {
-  en: 'English',
-  ko: '한국어',
-  'zh-TW': '繁體中文',
-  'zh-CN': '简体中文',
-  ja: '日本語',
-  th: 'ภาษาไทย',
-  mn: 'Монгол',
-  ru: 'Русский',
-};
+const LOCALE_CODES = ['en', 'ko', 'zh-TW', 'zh-CN', 'ja', 'th', 'mn', 'ru'];
 
 export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
+  const t = useTranslations('admin.keywords');
+  const tContent = useTranslations('admin.content');
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -75,7 +69,7 @@ export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
     e.preventDefault();
 
     if (!formData.keyword.trim()) {
-      toast.warning('Keyword is required');
+      toast.warning(t('form.keywordRequired'));
       return;
     }
 
@@ -104,16 +98,16 @@ export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        toast.success(keyword ? 'Keyword updated' : 'Keyword created');
+        toast.success(keyword ? t('form.keywordUpdated') : t('form.keywordCreated'));
         router.push(`/${locale}/admin/keywords`);
         router.refresh();
       } else {
         const errorMessage = result.error?.message || result.message || 'Unknown error';
-        toast.error(`Failed to save: ${errorMessage}`);
+        toast.error(`${t('form.saveFailed')}: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Error saving keyword:', error);
-      toast.error('Failed to save keyword');
+      toast.error(t('form.saveFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -127,57 +121,57 @@ export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
           {/* Basic Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Keyword Information</CardTitle>
-              <CardDescription>Enter the keyword details for SEO content generation</CardDescription>
+              <CardTitle>{t('form.title')}</CardTitle>
+              <CardDescription>{t('form.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="keyword">Keyword *</Label>
+                <Label htmlFor="keyword">{t('form.keyword')} *</Label>
                 <Input
                   id="keyword"
                   value={formData.keyword}
                   onChange={(e) => setFormData({ ...formData, keyword: e.target.value })}
-                  placeholder="e.g., best rhinoplasty korea"
+                  placeholder={t('form.keywordPlaceholder')}
                   className="mt-1.5"
                   required
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  The main keyword for SEO content generation
+                  {t('form.keywordHint')}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">{t('form.category')}</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) => setFormData({ ...formData, category: value })}
                   >
                     <SelectTrigger id="category" className="mt-1.5">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={t('form.selectCategory')} />
                     </SelectTrigger>
                     <SelectContent>
-                      {CATEGORIES.map((cat) => (
-                        <SelectItem key={cat.value} value={cat.value}>
-                          {cat.label}
+                      {CATEGORY_KEYS.map((catKey) => (
+                        <SelectItem key={catKey} value={catKey}>
+                          {t(`categories.${catKey}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="locale">Target Locale</Label>
+                  <Label htmlFor="locale">{t('form.targetLocale')}</Label>
                   <Select
                     value={formData.locale}
                     onValueChange={(value) => setFormData({ ...formData, locale: value })}
                   >
                     <SelectTrigger id="locale" className="mt-1.5">
-                      <SelectValue placeholder="Select locale" />
+                      <SelectValue placeholder={t('form.selectLocale')} />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.entries(LOCALE_NAMES).map(([code, name]) => (
+                      {LOCALE_CODES.map((code) => (
                         <SelectItem key={code} value={code}>
-                          {name}
+                          {tContent(`languages.${code}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -190,13 +184,13 @@ export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
           {/* SEO Metrics */}
           <Card>
             <CardHeader>
-              <CardTitle>SEO Metrics</CardTitle>
-              <CardDescription>Optional metrics for prioritization</CardDescription>
+              <CardTitle>{t('form.seoMetrics')}</CardTitle>
+              <CardDescription>{t('form.seoMetricsDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="search_volume">Search Volume</Label>
+                  <Label htmlFor="search_volume">{t('form.searchVolume')}</Label>
                   <Input
                     id="search_volume"
                     type="number"
@@ -207,11 +201,11 @@ export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
                     className="mt-1.5"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Monthly search volume
+                    {t('form.monthlyVolume')}
                   </p>
                 </div>
                 <div>
-                  <Label htmlFor="competition">Competition (0-1)</Label>
+                  <Label htmlFor="competition">{t('form.competition')}</Label>
                   <Input
                     id="competition"
                     type="number"
@@ -224,11 +218,11 @@ export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
                     className="mt-1.5"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    0 = Low, 1 = High
+                    {t('form.competitionHint')}
                   </p>
                 </div>
                 <div>
-                  <Label htmlFor="priority">Priority (1-10)</Label>
+                  <Label htmlFor="priority">{t('form.priority')}</Label>
                   <Input
                     id="priority"
                     type="number"
@@ -239,7 +233,7 @@ export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
                     className="mt-1.5"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Higher = more urgent
+                    {t('form.priorityHint')}
                   </p>
                 </div>
               </div>
@@ -253,11 +247,11 @@ export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
           {keyword && (
             <Card>
               <CardHeader>
-                <CardTitle>Status</CardTitle>
+                <CardTitle>{t('form.status')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Current Status</span>
+                  <span className="text-sm text-muted-foreground">{t('form.currentStatus')}</span>
                   <span className={`text-sm font-medium capitalize ${
                     keyword.status === 'published' ? 'text-green-600' :
                     keyword.status === 'generated' ? 'text-yellow-600' :
@@ -268,15 +262,15 @@ export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Created</span>
+                  <span className="text-sm text-muted-foreground">{t('form.created')}</span>
                   <span className="text-sm">
                     {new Date(keyword.created_at).toLocaleDateString()}
                   </span>
                 </div>
                 {keyword.blog_post_id && (
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Blog Post</span>
-                    <span className="text-sm text-green-600">Linked</span>
+                    <span className="text-sm text-muted-foreground">{t('form.blogPost')}</span>
+                    <span className="text-sm text-green-600">{t('form.linked')}</span>
                   </div>
                 )}
               </CardContent>
@@ -289,7 +283,7 @@ export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading && <LoadingSpinner size="sm" className="mr-2" />}
-                  {keyword ? 'Save Changes' : 'Create Keyword'}
+                  {keyword ? t('form.saveChanges') : t('form.createKeyword')}
                 </Button>
                 <Button
                   type="button"
@@ -297,7 +291,7 @@ export function KeywordFormPage({ keyword }: KeywordFormPageProps) {
                   className="w-full"
                   onClick={() => router.push(`/${locale}/admin/keywords`)}
                 >
-                  Cancel
+                  {t('form.cancel')}
                 </Button>
               </div>
             </CardContent>

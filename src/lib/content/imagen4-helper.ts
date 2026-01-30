@@ -405,47 +405,77 @@ export function insertImagesIntoContent(
   let updatedContent = content;
 
   console.log(`🖼️ Inserting ${images.length} images into content...`);
+  console.log(`   Content length: ${content.length} chars`);
 
   for (const image of images) {
     // Get placeholder name without brackets
-    const placeholderName = image.placeholder.replace(/[[\]]/g, '');
+    const placeholderName = image.placeholder.replace(/[\[\]]/g, '');
     const imageHtml = createImageHTML(image, captions?.[image.placeholder]);
 
-    // 1. Replace <p>[IMAGE_PLACEHOLDER_X]</p> pattern
+    console.log(`   📷 Processing: [${placeholderName}] → ${image.url.substring(0, 50)}...`);
+
+    let replaced = false;
+
+    // 1. Replace <p>[IMAGE_PLACEHOLDER_X]</p> pattern (with optional whitespace/newlines)
     const pWrapperRegex = new RegExp(
-      `<p>\\s*\\[${placeholderName}\\]\\s*</p>`,
+      `<p[^>]*>\\s*\\[${placeholderName}\\]\\s*</p>`,
       'gi'
     );
-    if (pWrapperRegex.test(updatedContent)) {
+    const pMatch = updatedContent.match(pWrapperRegex);
+    if (pMatch) {
       updatedContent = updatedContent.replace(pWrapperRegex, imageHtml);
       console.log(`   ✅ Replaced <p>[${placeholderName}]</p>`);
-      continue;
+      replaced = true;
     }
 
     // 2. Replace <img src="[IMAGE_PLACEHOLDER_X]" ... /> pattern
-    const imgTagRegex = new RegExp(
-      `<img[^>]*src=["']\\[${placeholderName}\\]["'][^>]*\\/?>`,
-      'gi'
-    );
-    if (imgTagRegex.test(updatedContent)) {
-      updatedContent = updatedContent.replace(imgTagRegex, imageHtml);
-      console.log(`   ✅ Replaced <img src="[${placeholderName}]" />`);
-      continue;
+    if (!replaced) {
+      const imgTagRegex = new RegExp(
+        `<img[^>]*src=["']\\[${placeholderName}\\]["'][^>]*\\/?>`,
+        'gi'
+      );
+      const imgMatch = updatedContent.match(imgTagRegex);
+      if (imgMatch) {
+        updatedContent = updatedContent.replace(imgTagRegex, imageHtml);
+        console.log(`   ✅ Replaced <img src="[${placeholderName}]" />`);
+        replaced = true;
+      }
     }
 
-    // 3. Replace plain [IMAGE_PLACEHOLDER_X] text
-    const plainRegex = new RegExp(
-      `\\[${placeholderName}\\]`,
-      'gi'
-    );
-    if (plainRegex.test(updatedContent)) {
-      updatedContent = updatedContent.replace(plainRegex, imageHtml);
-      console.log(`   ✅ Replaced [${placeholderName}]`);
-      continue;
+    // 3. Replace plain [IMAGE_PLACEHOLDER_X] text (including within other tags)
+    if (!replaced) {
+      const plainRegex = new RegExp(
+        `\\[${placeholderName}\\]`,
+        'gi'
+      );
+      const plainMatch = updatedContent.match(plainRegex);
+      if (plainMatch) {
+        updatedContent = updatedContent.replace(plainRegex, imageHtml);
+        console.log(`   ✅ Replaced [${placeholderName}]`);
+        replaced = true;
+      }
     }
 
-    console.log(`   ⚠️ Placeholder [${placeholderName}] not found in content`);
+    if (!replaced) {
+      // Debug: Show a snippet of content to help identify format issues
+      const contentPreview = content.substring(0, 500);
+      console.log(`   ⚠️ Placeholder [${placeholderName}] not found in content`);
+      console.log(`   📝 Content preview: ${contentPreview.replace(/\n/g, '\\n')}...`);
+
+      // Check if placeholder exists in different format
+      const anyBracketPattern = content.match(/\[IMAGE[^\]]*\]/gi);
+      if (anyBracketPattern) {
+        console.log(`   📝 Found similar patterns: ${anyBracketPattern.slice(0, 3).join(', ')}`);
+      }
+    }
   }
+
+  const imagesInserted = images.filter(img => {
+    const name = img.placeholder.replace(/[\[\]]/g, '');
+    return !updatedContent.includes(`[${name}]`);
+  }).length;
+
+  console.log(`   📊 Images inserted: ${imagesInserted}/${images.length}`);
 
   return updatedContent;
 }

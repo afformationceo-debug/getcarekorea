@@ -869,6 +869,7 @@
       "filters": {
         "label": "筛选:",
         "language": "语言",
+        "allLanguages": "全部语言",
         "specialty": "专业领域",
         "status": "状态",
         "allStatus": "全部状态",
@@ -880,6 +881,15 @@
         "clearSelection": "清除选择",
         "reset": "重置",
         "resultCount": "{count} 人 / 共 {total} 人"
+      },
+      "languages": {
+        "en": "英语",
+        "ko": "韩语",
+        "zh": "中文",
+        "ja": "日语",
+        "vi": "越南语",
+        "th": "泰语",
+        "ru": "俄语"
       },
       "stats": {
         "total": "总计",
@@ -1013,6 +1023,278 @@
       "uploading": "上传中...",
       "fileLimit": "PNG, JPG, WebP, GIF 最大 5MB",
       "orUseUrl": "或使用网址"
+    },
+    "keywords": {
+      "title": "关键词管理",
+      "subtitle": "管理SEO关键词和AI内容生成",
+      "addKeyword": "添加关键词",
+      "csvUpload": "CSV上传",
+      "searchPlaceholder": "搜索关键词...",
+      "noResults": "没有找到关键词",
+      "noResultsDescription": "添加第一个关键词以开始生成内容",
+      "stats": {
+        "total": "总计",
+        "pending": "待处理",
+        "generating": "生成中",
+        "generated": "已生成",
+        "published": "已发布"
+      },
+      "filters": {
+        "status": "状态",
+        "allStatus": "全部状态",
+        "category": "分类",
+        "allCategories": "全部分类"
+      },
+      "table": {
+        "keyword": "关键词",
+        "category": "分类",
+        "locale": "语言",
+        "priority": "优先级",
+        "volume": "搜索量",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "actions": {
+        "generate": "生成",
+        "regenerate": "重新生成",
+        "viewPost": "查看文章"
+      },
+      "form": {
+        "title": "关键词信息",
+        "description": "输入SEO内容生成的关键词详情",
+        "keyword": "关键词",
+        "keywordPlaceholder": "例：韩国整形医院推荐",
+        "keywordHint": "用于SEO内容生成的主要关键词",
+        "category": "分类",
+        "selectCategory": "选择分类",
+        "targetLocale": "目标语言",
+        "selectLocale": "选择语言",
+        "seoMetrics": "SEO指标",
+        "seoMetricsDescription": "用于优先级排序的可选指标",
+        "searchVolume": "搜索量",
+        "monthlyVolume": "月搜索量",
+        "competition": "竞争度 (0-1)",
+        "competitionHint": "0 = 低, 1 = 高",
+        "priority": "优先级 (1-10)",
+        "priorityHint": "数值越高越紧急",
+        "status": "状态",
+        "currentStatus": "当前状态",
+        "created": "创建日期",
+        "blogPost": "博客文章",
+        "linked": "已关联",
+        "saveChanges": "保存更改",
+        "createKeyword": "创建关键词",
+        "cancel": "取消",
+        "keywordRequired": "关键词为必填项",
+        "keywordUpdated": "关键词已更新",
+        "keywordCreated": "关键词已创建",
+        "saveFailed": "保存失败"
+      },
+      "categories": {
+        "plastic-surgery": "整形外科",
+        "dermatology": "皮肤科",
+        "dental": "牙科",
+        "health-checkup": "健康检查",
+        "ophthalmology": "眼科",
+        "orthopedics": "骨科",
+        "medical-tourism": "医疗旅游",
+        "general": "一般"
+      }
+    },
+    "content": {
+      "title": "内容管理",
+      "subtitle": "管理AI生成的文章和博客",
+      "generateFromKeywords": "从关键词生成",
+      "searchPlaceholder": "按标题、网址、关键词搜索...",
+      "noResults": "没有找到文章",
+      "noResultsDescription": "从关键词页面生成内容以开始",
+      "stats": {
+        "total": "总计",
+        "drafts": "草稿",
+        "review": "审核",
+        "published": "已发布",
+        "views": "浏览量"
+      },
+      "filters": {
+        "status": "状态",
+        "allStatus": "全部状态",
+        "category": "分类",
+        "allCategories": "全部分类",
+        "language": "语言",
+        "allLanguages": "全部语言",
+        "uncategorized": "未分类"
+      },
+      "languages": {
+        "en": "英语",
+        "ko": "韩语",
+        "ja": "日语",
+        "zh-CN": "简体中文",
+        "zh-TW": "繁体中文",
+        "th": "泰语",
+        "mn": "蒙古语",
+        "ru": "俄语"
+      },
+      "status": {
+        "draft": "草稿",
+        "review": "审核",
+        "published": "已发布",
+        "archived": "已归档"
+      },
+      "tabs": {
+        "all": "全部内容",
+        "needsReview": "待审核",
+        "drafts": "草稿"
+      },
+      "table": {
+        "article": "文章",
+        "keyword": "关键词",
+        "category": "分类",
+        "language": "语言",
+        "status": "状态",
+        "publishedUrl": "发布URL",
+        "preview": "预览",
+        "feedback": "反馈",
+        "actions": "操作"
+      },
+      "actions": {
+        "preview": "预览",
+        "edit": "编辑",
+        "viewLive": "查看发布页面",
+        "submitForReview": "提交审核",
+        "approvePublish": "批准并发布",
+        "returnToDraft": "返回草稿",
+        "archive": "归档",
+        "delete": "删除",
+        "publish": "发布"
+      },
+      "feedback": {
+        "title": "内容反馈",
+        "description": "审核内容并提供反馈，或直接发布。",
+        "fullPreview": "完整预览",
+        "keywordLabel": "关键词",
+        "feedbackContent": "反馈内容（可选）",
+        "feedbackPlaceholder": "请写下需要改进的部分或修改建议...",
+        "feedbackHint": "反馈将用于AI学习。",
+        "cancel": "取消",
+        "regenerate": "应用反馈后重新生成",
+        "publishNow": "立即发布",
+        "published": "已发布"
+      },
+      "messages": {
+        "publishSuccess": "发布成功！",
+        "publishFailed": "发布失败",
+        "feedbackSuccess": "反馈已应用，内容已重新生成。",
+        "feedbackFailed": "反馈应用失败",
+        "noPendingReview": "没有待审核的文章",
+        "noDrafts": "没有草稿文章"
+      },
+      "preview": {
+        "back": "返回",
+        "previewUrl": "预览URL",
+        "readyToStart": "准备好开始您的旅程了吗？",
+        "getConsultation": "获取我们医疗旅游专家的免费咨询。",
+        "getFreeQuote": "获取免费报价"
+      },
+      "edit": {
+        "title": "编辑文章",
+        "description": "修改文章内容",
+        "slug": "网址",
+        "articleTitle": "标题",
+        "excerpt": "摘要",
+        "content": "内容",
+        "category": "分类",
+        "status": "状态",
+        "cancel": "取消",
+        "saveChanges": "保存更改"
+      },
+      "delete": {
+        "title": "删除文章",
+        "description": "确定要删除这篇文章吗？此操作无法撤消。"
+      }
+    },
+    "cron": {
+      "title": "调度器设置",
+      "subtitle": "管理自动内容生成和发布设置。",
+      "loading": "加载中...",
+      "saveSuccess": "设置已保存。",
+      "saveFailed": "保存设置失败",
+      "saving": "保存中...",
+      "saveAll": "保存所有设置",
+      "reset": "重置",
+      "autoGenerate": {
+        "title": "自动内容生成",
+        "description": "自动将待处理的关键词生成为内容。",
+        "enabled": "启用自动生成",
+        "enabledDescription": "调度器运行时自动生成内容。",
+        "batchSize": "每次运行生成数量",
+        "batchSizeHint": "调度器每次运行处理的关键词数量 (1-10)",
+        "keywords": "个关键词"
+      },
+      "autoPublish": {
+        "title": "自动发布",
+        "description": "自动发布草稿状态的内容。",
+        "enabled": "启用自动发布",
+        "enabledDescription": "调度器运行时自动发布草稿内容。",
+        "maxPublish": "每次运行最大发布数量",
+        "contents": "个内容"
+      },
+      "authorAssignment": {
+        "title": "翻译分配",
+        "description": "设置内容生成时翻译（作者）的自动分配方式。",
+        "algorithm": "分配算法",
+        "algorithmHint": "Round Robin: 分配给total_posts最少的翻译",
+        "roundRobin": "Round Robin（均匀分配）",
+        "specialtyFirst": "Specialty First（专业领域优先）",
+        "random": "Random（随机）",
+        "specialtyMatch": "专业领域优先匹配",
+        "specialtyMatchDescription": "优先分配与类别匹配的专业领域翻译。",
+        "fallback": "允许回退",
+        "fallbackDescription": "专业领域匹配失败时，只要语言匹配就分配。"
+      },
+      "schedule": {
+        "title": "执行计划",
+        "preview": "计划执行",
+        "active": "已启用",
+        "disabled": "已禁用",
+        "nextRuns": "下次5次执行计划：",
+        "maxItems": "最多 {count} 个",
+        "disabledMessage": "已禁用。自动生成不会运行。",
+        "invalidSchedule": "无效的计划。",
+        "interval": "执行间隔",
+        "every": "每隔",
+        "minutes": "分钟",
+        "hours": "小时",
+        "days": "天",
+        "months": "月",
+        "minInterval": "最小执行间隔：15分钟",
+        "executionDays": "执行日期",
+        "everyday": "每天",
+        "weekdaysOnly": "仅工作日（周一至周五）",
+        "weekendsOnly": "仅周末（周六至周日）",
+        "customDays": "选择日期",
+        "executionTime": "执行时间",
+        "executionMinute": "执行分钟",
+        "everyHourAt": "每小时",
+        "advanced": "高级设置（指定特定日期/月份）",
+        "specificDays": "仅在特定日期执行（留空为每天）",
+        "selectedDays": "已选日期",
+        "everyDay": "每天",
+        "specificMonths": "仅在特定月份执行（留空为每月）",
+        "selectedMonths": "已选月份",
+        "everyMonth": "每月"
+      },
+      "options": {
+        "includeRag": "包含RAG搜索",
+        "includeRagDescription": "从向量数据库搜索相关上下文以提高内容质量。",
+        "includeImages": "包含图像生成",
+        "includeImagesDescription": "使用Google Imagen 4自动生成图像。",
+        "imageCount": "图像数量",
+        "imagesPerContent": "张/内容",
+        "autoPublish": "生成后自动发布",
+        "autoPublishDescription": "内容生成后立即自动发布（无需审核）。",
+        "priorityThreshold": "最低优先级",
+        "priorityThresholdHint": "仅处理具有此优先级或更高优先级的关键词（0 = 全部处理）"
+      }
     }
   }
 }

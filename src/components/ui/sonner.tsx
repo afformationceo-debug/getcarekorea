@@ -17,6 +17,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      richColors
       icons={{
         success: <CircleCheckIcon className="size-4" />,
         info: <InfoIcon className="size-4" />,
@@ -26,16 +27,17 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       toastOptions={{
         classNames: {
-          success: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800',
-          warning: 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-800',
-          error: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800',
-          info: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
+          toast: '[&]:border',
+          success: '[&]:bg-[#ecfdf3] [&]:text-[#008a2e] [&]:border-[#008a2e]/20',
+          error: '[&]:bg-[#fff0f0] [&]:text-[#e60000] [&]:border-[#e60000]/20',
+          warning: '[&]:bg-[#fffcf0] [&]:text-[#dc7609] [&]:border-[#dc7609]/20',
+          info: '[&]:bg-[#f0f8ff] [&]:text-[#0973dc] [&]:border-[#0973dc]/20',
         },
       }}
       style={
         {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
+          "--normal-bg": "#ffffff",
+          "--normal-text": "#000000",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
         } as React.CSSProperties

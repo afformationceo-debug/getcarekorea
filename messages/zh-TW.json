@@ -872,6 +872,7 @@
         "specialty": "專業領域",
         "status": "狀態",
         "allStatus": "全部狀態",
+        "allLanguages": "所有語言",
         "active": "活躍",
         "inactive": "不活躍",
         "featured": "推薦",
@@ -984,6 +985,15 @@
         "fluent": "流利",
         "conversational": "日常會話"
       },
+      "languages": {
+        "en": "英語",
+        "ko": "韓語",
+        "zh": "中文",
+        "ja": "日語",
+        "vi": "越南語",
+        "th": "泰語",
+        "ru": "俄語"
+      },
       "actions": {
         "view": "檢視",
         "edit": "編輯",
@@ -1013,6 +1023,278 @@
       "uploading": "上傳中...",
       "fileLimit": "PNG, JPG, WebP, GIF 最大 5MB",
       "orUseUrl": "或使用網址"
+    },
+    "keywords": {
+      "title": "關鍵字管理",
+      "subtitle": "管理SEO關鍵字和AI內容生成",
+      "addKeyword": "新增關鍵字",
+      "csvUpload": "CSV上傳",
+      "searchPlaceholder": "搜尋關鍵字...",
+      "noResults": "找不到關鍵字",
+      "noResultsDescription": "新增第一個關鍵字以開始生成內容",
+      "stats": {
+        "total": "總計",
+        "pending": "待處理",
+        "generating": "生成中",
+        "generated": "已生成",
+        "published": "已發布"
+      },
+      "filters": {
+        "status": "狀態",
+        "allStatus": "全部狀態",
+        "category": "類別",
+        "allCategories": "全部類別"
+      },
+      "table": {
+        "keyword": "關鍵字",
+        "category": "類別",
+        "locale": "語言",
+        "priority": "優先級",
+        "volume": "搜尋量",
+        "status": "狀態",
+        "actions": "操作"
+      },
+      "actions": {
+        "generate": "生成",
+        "regenerate": "重新生成",
+        "viewPost": "查看文章"
+      },
+      "form": {
+        "title": "關鍵字資訊",
+        "description": "輸入SEO內容生成的關鍵字詳情",
+        "keyword": "關鍵字",
+        "keywordPlaceholder": "例如：韓國整形推薦",
+        "keywordHint": "SEO內容生成的主要關鍵字",
+        "category": "類別",
+        "selectCategory": "選擇類別",
+        "targetLocale": "目標語言",
+        "selectLocale": "選擇語言",
+        "seoMetrics": "SEO指標",
+        "seoMetricsDescription": "用於優先級排序的選填指標",
+        "searchVolume": "搜尋量",
+        "monthlyVolume": "月搜尋量",
+        "competition": "競爭度 (0-1)",
+        "competitionHint": "0 = 低, 1 = 高",
+        "priority": "優先級 (1-10)",
+        "priorityHint": "數值越高越緊急",
+        "status": "狀態",
+        "currentStatus": "目前狀態",
+        "created": "建立日期",
+        "blogPost": "部落格文章",
+        "linked": "已連結",
+        "saveChanges": "儲存變更",
+        "createKeyword": "建立關鍵字",
+        "cancel": "取消",
+        "keywordRequired": "關鍵字為必填",
+        "keywordUpdated": "關鍵字已更新",
+        "keywordCreated": "關鍵字已建立",
+        "saveFailed": "儲存失敗"
+      },
+      "categories": {
+        "plastic-surgery": "整形外科",
+        "dermatology": "皮膚科",
+        "dental": "牙科",
+        "health-checkup": "健康檢查",
+        "ophthalmology": "眼科",
+        "orthopedics": "骨科",
+        "medical-tourism": "醫療旅遊",
+        "general": "一般"
+      }
+    },
+    "content": {
+      "title": "內容管理",
+      "subtitle": "管理AI生成的文章和部落格文章",
+      "generateFromKeywords": "從關鍵字生成",
+      "searchPlaceholder": "依標題、網址代碼、關鍵字搜尋...",
+      "noResults": "找不到文章",
+      "noResultsDescription": "從關鍵字頁面生成內容以開始",
+      "stats": {
+        "total": "總計",
+        "drafts": "草稿",
+        "review": "審核中",
+        "published": "已發布",
+        "views": "瀏覽次數"
+      },
+      "filters": {
+        "status": "狀態",
+        "allStatus": "全部狀態",
+        "category": "類別",
+        "allCategories": "全部類別",
+        "language": "語言",
+        "allLanguages": "全部語言",
+        "uncategorized": "未分類"
+      },
+      "languages": {
+        "en": "英語",
+        "ko": "韓語",
+        "ja": "日語",
+        "zh-CN": "簡體中文",
+        "zh-TW": "繁體中文",
+        "th": "泰語",
+        "mn": "蒙古語",
+        "ru": "俄語"
+      },
+      "status": {
+        "draft": "草稿",
+        "review": "審核中",
+        "published": "已發布",
+        "archived": "已封存"
+      },
+      "tabs": {
+        "all": "全部內容",
+        "needsReview": "需要審核",
+        "drafts": "草稿"
+      },
+      "table": {
+        "article": "文章",
+        "keyword": "關鍵字",
+        "category": "類別",
+        "language": "語言",
+        "status": "狀態",
+        "publishedUrl": "發布網址",
+        "preview": "預覽",
+        "feedback": "回饋",
+        "actions": "操作"
+      },
+      "actions": {
+        "preview": "預覽",
+        "edit": "編輯",
+        "viewLive": "查看發布頁面",
+        "submitForReview": "提交審核",
+        "approvePublish": "批准並發布",
+        "returnToDraft": "退回草稿",
+        "archive": "封存",
+        "delete": "刪除",
+        "publish": "發布"
+      },
+      "preview": {
+        "back": "返回",
+        "previewUrl": "預覽網址",
+        "readyToStart": "準備開始您的旅程？",
+        "getConsultation": "獲取我們醫療旅遊專家的免費諮詢。",
+        "getFreeQuote": "獲取免費報價"
+      },
+      "edit": {
+        "title": "編輯文章",
+        "description": "修改文章內容",
+        "slug": "網址代碼",
+        "articleTitle": "標題",
+        "excerpt": "摘要",
+        "content": "內容",
+        "category": "類別",
+        "status": "狀態",
+        "cancel": "取消",
+        "saveChanges": "儲存變更"
+      },
+      "delete": {
+        "title": "刪除文章",
+        "description": "確定要刪除此文章嗎？此操作無法復原。"
+      },
+      "feedback": {
+        "title": "內容回饋",
+        "description": "審核內容並提供回饋，或直接發布。",
+        "fullPreview": "完整預覽",
+        "keywordLabel": "關鍵字",
+        "feedbackContent": "回饋內容（選填）",
+        "feedbackPlaceholder": "寫下任何改進建議或修改要求...",
+        "feedbackHint": "回饋將用於AI學習。",
+        "cancel": "取消",
+        "regenerate": "根據回饋重新生成",
+        "publishNow": "立即發布",
+        "published": "已發布"
+      },
+      "messages": {
+        "publishSuccess": "發布成功！",
+        "publishFailed": "發布失敗",
+        "feedbackSuccess": "回饋已應用，內容已重新生成。",
+        "feedbackFailed": "回饋應用失敗",
+        "noPendingReview": "沒有待審核的文章",
+        "noDrafts": "沒有草稿文章"
+      }
+    },
+    "cron": {
+      "title": "排程器設定",
+      "subtitle": "管理自動內容生成和發布設定。",
+      "loading": "載入中...",
+      "saveSuccess": "設定已儲存。",
+      "saveFailed": "儲存設定失敗",
+      "saving": "儲存中...",
+      "saveAll": "儲存所有設定",
+      "reset": "重置",
+      "autoGenerate": {
+        "title": "自動內容生成",
+        "description": "自動將待處理的關鍵字生成為內容。",
+        "enabled": "啟用自動生成",
+        "enabledDescription": "排程器執行時自動生成內容。",
+        "batchSize": "每次執行生成數量",
+        "batchSizeHint": "排程器每次執行處理的關鍵字數量 (1-10)",
+        "keywords": "個關鍵字"
+      },
+      "autoPublish": {
+        "title": "自動發布",
+        "description": "自動發布草稿狀態的內容。",
+        "enabled": "啟用自動發布",
+        "enabledDescription": "排程器執行時自動發布草稿內容。",
+        "maxPublish": "每次執行最大發布數量",
+        "contents": "個內容"
+      },
+      "authorAssignment": {
+        "title": "翻譯分配",
+        "description": "設定內容生成時翻譯（作者）的自動分配方式。",
+        "algorithm": "分配演算法",
+        "algorithmHint": "Round Robin：分配給total_posts最少的翻譯",
+        "roundRobin": "Round Robin（均勻分配）",
+        "specialtyFirst": "Specialty First（專業領域優先）",
+        "random": "Random（隨機）",
+        "specialtyMatch": "專業領域優先匹配",
+        "specialtyMatchDescription": "優先分配與類別匹配的專業領域翻譯。",
+        "fallback": "允許備援",
+        "fallbackDescription": "專業領域匹配失敗時，只要語言匹配就分配。"
+      },
+      "schedule": {
+        "title": "執行排程",
+        "preview": "排程執行",
+        "active": "已啟用",
+        "disabled": "已停用",
+        "nextRuns": "下次5次執行排程：",
+        "maxItems": "最多 {count} 個",
+        "disabledMessage": "已停用。自動生成不會執行。",
+        "invalidSchedule": "無效的排程。",
+        "interval": "執行間隔",
+        "every": "每隔",
+        "minutes": "分鐘",
+        "hours": "小時",
+        "days": "天",
+        "months": "月",
+        "minInterval": "最小執行間隔：15分鐘",
+        "executionDays": "執行日期",
+        "everyday": "每天",
+        "weekdaysOnly": "僅平日（週一至週五）",
+        "weekendsOnly": "僅週末（週六至週日）",
+        "customDays": "選擇日期",
+        "executionTime": "執行時間",
+        "executionMinute": "執行分鐘",
+        "everyHourAt": "每小時",
+        "advanced": "進階設定（指定特定日期/月份）",
+        "specificDays": "僅在特定日期執行（留空為每天）",
+        "selectedDays": "已選日期",
+        "everyDay": "每天",
+        "specificMonths": "僅在特定月份執行（留空為每月）",
+        "selectedMonths": "已選月份",
+        "everyMonth": "每月"
+      },
+      "options": {
+        "includeRag": "包含RAG搜尋",
+        "includeRagDescription": "從向量資料庫搜尋相關上下文以提高內容品質。",
+        "includeImages": "包含圖像生成",
+        "includeImagesDescription": "使用Google Imagen 4自動生成圖像。",
+        "imageCount": "圖像數量",
+        "imagesPerContent": "張/內容",
+        "autoPublish": "生成後自動發布",
+        "autoPublishDescription": "內容生成後立即自動發布（無需審核）。",
+        "priorityThreshold": "最低優先級",
+        "priorityThresholdHint": "僅處理具有此優先級或更高優先級的關鍵字（0 = 全部處理）"
+      }
     }
   }
 }

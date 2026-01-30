@@ -573,6 +573,7 @@ export async function runContentGenerationPipeline(
   options?: {
     requestId?: string;
     assignedInBatch?: Map<string, number>;
+    preAssignedAuthorId?: string;
   }
 ): Promise<ContentGenerationResult> {
   const requestId = options?.requestId || `GEN-${Date.now().toString(36)}`;
@@ -583,19 +584,57 @@ export async function runContentGenerationPipeline(
   console.log(`   Keyword: "${keyword}"`);
   console.log(`   Locale: ${locale}`);
   console.log(`   Category: ${category}`);
+  if (options?.preAssignedAuthorId) {
+    console.log(`   Pre-assigned Author: ${options.preAssignedAuthorId}`);
+  }
   console.log(`${'='.repeat(60)}`);
 
   const ctx: PipelineContext = { requestId, supabase, input };
 
   try {
-    // STEP 1: Fetch author persona
-    console.log(`\n👤 [${requestId}] STEP 1: Fetching author persona...`);
-    const { authorPersonaId, authorData } = await fetchAuthorPersona(
-      ctx,
-      category,
-      locale,
-      options?.assignedInBatch
-    );
+    let authorPersonaId: string | null = null;
+    let authorData: AuthorPersonaData | null = null;
+
+    // STEP 1: Fetch author persona (or use pre-assigned)
+    if (options?.preAssignedAuthorId) {
+      console.log(`\n👤 [${requestId}] STEP 1: Using pre-assigned author persona...`);
+      // Fetch the pre-assigned author's data
+      const { data: preAssignedAuthor } = await (supabase.from('author_personas') as any)
+        .select('*')
+        .eq('id', options.preAssignedAuthorId)
+        .single();
+
+      if (preAssignedAuthor) {
+        authorPersonaId = preAssignedAuthor.id;
+        const nameObj = preAssignedAuthor.name || {};
+        const bioShortObj = preAssignedAuthor.bio_short || {};
+        authorData = {
+          id: preAssignedAuthor.id,
+          slug: preAssignedAuthor.slug,
+          name_en: nameObj.en || '',
+          name_ko: nameObj.ko || '',
+          bio_short_en: bioShortObj.en || '',
+          bio_short_ko: bioShortObj.ko || '',
+          years_of_experience: preAssignedAuthor.years_of_experience || 0,
+          primary_specialty: preAssignedAuthor.primary_specialty || '',
+          languages: preAssignedAuthor.languages || [],
+        };
+        console.log(`   ✅ [${requestId}] Pre-assigned author loaded: ${preAssignedAuthor.slug}`);
+      }
+    }
+
+    // Fallback to normal fetch if no pre-assigned or pre-assigned not found
+    if (!authorPersonaId) {
+      console.log(`\n👤 [${requestId}] STEP 1: Fetching author persona...`);
+      const fetchResult = await fetchAuthorPersona(
+        ctx,
+        category,
+        locale,
+        options?.assignedInBatch
+      );
+      authorPersonaId = fetchResult.authorPersonaId;
+      authorData = fetchResult.authorData;
+    }
 
     // ATOMIC ROLLBACK: If author persona fetch failed after all retries
     if (!authorPersonaId) {

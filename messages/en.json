@@ -869,6 +869,7 @@
       "filters": {
         "label": "Filters:",
         "language": "Language",
+        "allLanguages": "All Languages",
         "specialty": "Specialty",
         "status": "Status",
         "allStatus": "All Status",
@@ -879,7 +880,17 @@
         "selected": "{count} selected",
         "clearSelection": "Clear selection",
         "reset": "Reset",
+        "refresh": "Refresh",
         "resultCount": "{count} / {total} total"
+      },
+      "languages": {
+        "en": "English",
+        "ko": "Korean",
+        "zh": "Chinese",
+        "ja": "Japanese",
+        "vi": "Vietnamese",
+        "th": "Thai",
+        "ru": "Russian"
       },
       "stats": {
         "total": "Total",
@@ -1013,6 +1024,278 @@
       "uploading": "Uploading...",
       "fileLimit": "PNG, JPG, WebP, GIF up to 5MB",
       "orUseUrl": "Or use URL"
+    },
+    "keywords": {
+      "title": "Keyword Management",
+      "subtitle": "Manage SEO keywords and AI content generation",
+      "addKeyword": "Add Keyword",
+      "csvUpload": "CSV Upload",
+      "searchPlaceholder": "Search keywords...",
+      "noResults": "No keywords found",
+      "noResultsDescription": "Add your first keyword to start generating content",
+      "stats": {
+        "total": "Total",
+        "pending": "Pending",
+        "generating": "Generating",
+        "generated": "Generated",
+        "published": "Published"
+      },
+      "filters": {
+        "status": "Status",
+        "allStatus": "All Status",
+        "category": "Category",
+        "allCategories": "All Categories"
+      },
+      "table": {
+        "keyword": "Keyword",
+        "category": "Category",
+        "locale": "Locale",
+        "priority": "Priority",
+        "volume": "Volume",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "actions": {
+        "generate": "Generate",
+        "regenerate": "Regenerate",
+        "viewPost": "View Post"
+      },
+      "form": {
+        "title": "Keyword Information",
+        "description": "Enter the keyword details for SEO content generation",
+        "keyword": "Keyword",
+        "keywordPlaceholder": "e.g., best rhinoplasty korea",
+        "keywordHint": "The main keyword for SEO content generation",
+        "category": "Category",
+        "selectCategory": "Select category",
+        "targetLocale": "Target Locale",
+        "selectLocale": "Select locale",
+        "seoMetrics": "SEO Metrics",
+        "seoMetricsDescription": "Optional metrics for prioritization",
+        "searchVolume": "Search Volume",
+        "monthlyVolume": "Monthly search volume",
+        "competition": "Competition (0-1)",
+        "competitionHint": "0 = Low, 1 = High",
+        "priority": "Priority (1-10)",
+        "priorityHint": "Higher = more urgent",
+        "status": "Status",
+        "currentStatus": "Current Status",
+        "created": "Created",
+        "blogPost": "Blog Post",
+        "linked": "Linked",
+        "saveChanges": "Save Changes",
+        "createKeyword": "Create Keyword",
+        "cancel": "Cancel",
+        "keywordRequired": "Keyword is required",
+        "keywordUpdated": "Keyword updated",
+        "keywordCreated": "Keyword created",
+        "saveFailed": "Failed to save"
+      },
+      "categories": {
+        "plastic-surgery": "Plastic Surgery",
+        "dermatology": "Dermatology",
+        "dental": "Dental",
+        "health-checkup": "Health Checkup",
+        "ophthalmology": "Ophthalmology",
+        "orthopedics": "Orthopedics",
+        "medical-tourism": "Medical Tourism",
+        "general": "General"
+      }
+    },
+    "content": {
+      "title": "Content Management",
+      "subtitle": "Manage AI-generated articles and blog posts",
+      "generateFromKeywords": "Generate from Keywords",
+      "searchPlaceholder": "Search by title, slug, keyword...",
+      "noResults": "No articles found",
+      "noResultsDescription": "Generate content from the Keywords page to get started",
+      "stats": {
+        "total": "Total",
+        "drafts": "Drafts",
+        "review": "Review",
+        "published": "Published",
+        "views": "Views"
+      },
+      "filters": {
+        "status": "Status",
+        "allStatus": "All Status",
+        "category": "Category",
+        "allCategories": "All Categories",
+        "language": "Language",
+        "allLanguages": "All Languages",
+        "uncategorized": "Uncategorized"
+      },
+      "languages": {
+        "en": "English",
+        "ko": "Korean",
+        "ja": "Japanese",
+        "zh-CN": "Chinese (Simplified)",
+        "zh-TW": "Chinese (Traditional)",
+        "th": "Thai",
+        "mn": "Mongolian",
+        "ru": "Russian"
+      },
+      "status": {
+        "draft": "Draft",
+        "review": "Review",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "tabs": {
+        "all": "All Content",
+        "needsReview": "Needs Review",
+        "drafts": "Drafts"
+      },
+      "table": {
+        "article": "Article",
+        "keyword": "Keyword",
+        "category": "Category",
+        "language": "Language",
+        "status": "Status",
+        "publishedUrl": "Published URL",
+        "preview": "Preview",
+        "feedback": "Feedback",
+        "actions": "Actions"
+      },
+      "actions": {
+        "preview": "Preview",
+        "edit": "Edit",
+        "viewLive": "View Live",
+        "submitForReview": "Submit for Review",
+        "approvePublish": "Approve & Publish",
+        "returnToDraft": "Return to Draft",
+        "archive": "Archive",
+        "delete": "Delete",
+        "publish": "Publish"
+      },
+      "preview": {
+        "back": "Back",
+        "previewUrl": "Preview URL",
+        "readyToStart": "Ready to Start Your Journey?",
+        "getConsultation": "Get a free consultation with our medical tourism experts.",
+        "getFreeQuote": "Get Free Quote"
+      },
+      "edit": {
+        "title": "Edit Article",
+        "description": "Make changes to the article content",
+        "slug": "Slug",
+        "articleTitle": "Title",
+        "excerpt": "Excerpt",
+        "content": "Content",
+        "category": "Category",
+        "status": "Status",
+        "cancel": "Cancel",
+        "saveChanges": "Save Changes"
+      },
+      "delete": {
+        "title": "Delete Article",
+        "description": "Are you sure you want to delete this article? This action cannot be undone."
+      },
+      "feedback": {
+        "title": "Content Feedback",
+        "description": "Review the content and provide feedback or publish directly.",
+        "fullPreview": "Full Preview",
+        "keywordLabel": "Keyword",
+        "feedbackContent": "Feedback Content (Optional)",
+        "feedbackPlaceholder": "Write any improvements or modification requests...",
+        "feedbackHint": "Feedback will be used for AI learning.",
+        "cancel": "Cancel",
+        "regenerate": "Regenerate with Feedback",
+        "publishNow": "Publish Now",
+        "published": "Published"
+      },
+      "messages": {
+        "publishSuccess": "Published!",
+        "publishFailed": "Publish failed",
+        "feedbackSuccess": "Feedback applied and content regenerated.",
+        "feedbackFailed": "Feedback application failed",
+        "noPendingReview": "No articles pending review",
+        "noDrafts": "No draft articles"
+      }
+    },
+    "cron": {
+      "title": "Scheduler Settings",
+      "subtitle": "Manage automatic content generation and publishing settings.",
+      "loading": "Loading...",
+      "saveSuccess": "Settings saved.",
+      "saveFailed": "Failed to save settings",
+      "saving": "Saving...",
+      "saveAll": "Save All Settings",
+      "reset": "Reset",
+      "autoGenerate": {
+        "title": "Auto Content Generation",
+        "description": "Automatically generate content for pending keywords.",
+        "enabled": "Enable Auto Generation",
+        "enabledDescription": "Automatically generate content when scheduler runs.",
+        "batchSize": "Items per Run",
+        "batchSizeHint": "Number of keywords to process per scheduler run (1-10)",
+        "keywords": "keywords"
+      },
+      "autoPublish": {
+        "title": "Auto Publish",
+        "description": "Automatically publish draft content.",
+        "enabled": "Enable Auto Publish",
+        "enabledDescription": "Automatically publish draft content when scheduler runs.",
+        "maxPublish": "Max Publish per Run",
+        "contents": "contents"
+      },
+      "authorAssignment": {
+        "title": "Interpreter Assignment",
+        "description": "Configure how interpreters (authors) are assigned during content generation.",
+        "algorithm": "Assignment Algorithm",
+        "algorithmHint": "Round Robin: Assigns to interpreter with fewest total posts",
+        "roundRobin": "Round Robin (Even Distribution)",
+        "specialtyFirst": "Specialty First",
+        "random": "Random",
+        "specialtyMatch": "Prefer Specialty Match",
+        "specialtyMatchDescription": "Prefer interpreters with matching specialty for the category.",
+        "fallback": "Allow Fallback",
+        "fallbackDescription": "Assign based on language match if specialty match fails."
+      },
+      "schedule": {
+        "title": "Execution Schedule",
+        "preview": "Scheduled Runs",
+        "active": "Active",
+        "disabled": "Disabled",
+        "nextRuns": "Next 5 scheduled runs:",
+        "maxItems": "max {count}",
+        "disabledMessage": "Disabled. Auto generation will not run.",
+        "invalidSchedule": "Invalid schedule.",
+        "interval": "Interval",
+        "every": "Every",
+        "minutes": "minutes",
+        "hours": "hours",
+        "days": "days",
+        "months": "months",
+        "minInterval": "Minimum interval: 15 minutes",
+        "executionDays": "Execution Days",
+        "everyday": "Everyday",
+        "weekdaysOnly": "Weekdays (Mon-Fri)",
+        "weekendsOnly": "Weekends (Sat-Sun)",
+        "customDays": "Select Days",
+        "executionTime": "Execution Time",
+        "executionMinute": "Execution Minute",
+        "everyHourAt": "Every hour at",
+        "advanced": "Advanced Settings (Specific Dates/Months)",
+        "specificDays": "Run on Specific Days (Leave empty for daily)",
+        "selectedDays": "Selected days",
+        "everyDay": "Every day",
+        "specificMonths": "Run in Specific Months (Leave empty for monthly)",
+        "selectedMonths": "Selected months",
+        "everyMonth": "Every month"
+      },
+      "options": {
+        "includeRag": "Include RAG Search",
+        "includeRagDescription": "Search related context from vector DB to improve content quality.",
+        "includeImages": "Include Image Generation",
+        "includeImagesDescription": "Generate images automatically using Google Imagen 4.",
+        "imageCount": "Number of Images",
+        "imagesPerContent": "images/content",
+        "autoPublish": "Auto Publish After Generation",
+        "autoPublishDescription": "Automatically publish content after generation (without review).",
+        "priorityThreshold": "Minimum Priority",
+        "priorityThresholdHint": "Only process keywords with this priority or higher (0 = process all)"
+      }
     }
   },
   "faq": {
