@@ -518,7 +518,7 @@ export default function ContentPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalViews.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{(stats.totalViews ?? 0).toLocaleString()}</div>
           </CardContent>
         </Card>
       </div>
@@ -1244,7 +1244,7 @@ export default function ContentPage() {
                             </div>
                             <div className="flex items-center gap-1">
                               <Eye className="h-4 w-4" />
-                              {previewPost.view_count.toLocaleString()} views
+                              {(previewPost.view_count ?? 0).toLocaleString()} views
                             </div>
                           </div>
 

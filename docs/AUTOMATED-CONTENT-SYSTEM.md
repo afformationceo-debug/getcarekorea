@@ -3,56 +3,141 @@
 ## Overview
 
 GetCareKorea의 완전 자동화된 콘텐츠 생성 및 발행 시스템입니다.
-키워드를 등록하면 매일 자동으로 콘텐츠가 생성되고, 품질 검증 후 자동 발행됩니다.
+키워드를 등록하면 자동으로 콘텐츠가 생성되고, 품질 검증 후 발행됩니다.
 
-## System Architecture
+## System Architecture (v2 - Unified Pipeline)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     Automated Content Pipeline                       │
+│                     Unified Content Pipeline                         │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                       │
 │  1. KEYWORD MANAGEMENT                                                │
-│  ┌─────────────┐                                                      │
-│  │ Admin Panel │ → content_keywords (status: pending)                │
-│  └─────────────┘                                                      │
-│         ↓                                                             │
-│  2. AUTO GENERATION (매일 09:00 UTC)                                  │
 │  ┌─────────────────┐                                                  │
-│  │ /api/cron/      │                                                  │
-│  │ auto-generate   │ → Claude AI + DALL-E 3 → blog_posts (draft)     │
+│  │ Admin Panel     │ → content_keywords (status: pending)            │
+│  │ /admin/keywords │                                                  │
 │  └─────────────────┘                                                  │
 │         ↓                                                             │
-│  3. QUALITY CHECK                                                     │
-│  ┌─────────────────┐                                                  │
-│  │ Quality Score   │ → 75점 이상 통과                                 │
-│  │ Validation      │                                                  │
-│  └─────────────────┘                                                  │
+│  2. CONTENT GENERATION (Manual or Cron)                              │
+│  ┌─────────────────────────────────────────────────────┐              │
+│  │                                                       │              │
+│  │  ┌─────────────────┐    ┌─────────────────────────┐  │              │
+│  │  │ Manual Generate │    │ Cron Auto-Generate      │  │              │
+│  │  │ /api/content/   │    │ /api/cron/auto-generate │  │              │
+│  │  │ generate        │    │                         │  │              │
+│  │  └────────┬────────┘    └───────────┬─────────────┘  │              │
+│  │           │                         │                 │              │
+│  │           └──────────┬──────────────┘                 │              │
+│  │                      ↓                                │              │
+│  │  ┌───────────────────────────────────────────────┐   │              │
+│  │  │  Unified Content Generation Pipeline          │   │              │
+│  │  │  (content-generation-pipeline.ts)             │   │              │
+│  │  │                                               │   │              │
+│  │  │  1. Author Persona Fetch (5 retries)          │   │              │
+│  │  │  2. Input Validation                          │   │              │
+│  │  │  3. Claude AI Content Generation              │   │              │
+│  │  │  4. Google Imagen 4 Image Generation          │   │              │
+│  │  │  5. Database Save                             │   │              │
+│  │  │  6. Atomic Rollback on Failure                │   │              │
+│  │  └───────────────────────────────────────────────┘   │              │
+│  │                      ↓                                │              │
+│  │  blog_posts (status: draft) + Supabase Storage       │              │
+│  └─────────────────────────────────────────────────────┘              │
 │         ↓                                                             │
-│  4. AUTO PUBLISH (매일 10:00 UTC)                                     │
+│  3. ADMIN REVIEW & PUBLISH                                            │
 │  ┌─────────────────┐                                                  │
-│  │ /api/cron/      │                                                  │
-│  │ auto-publish    │ → blog_posts (published) → ISR Revalidation     │
+│  │ Admin Panel     │ → blog_posts (published) → ISR Revalidation     │
+│  │ /admin/content  │                                                  │
 │  └─────────────────┘                                                  │
-│         ↓                                                             │
-│  5. LEARNING PIPELINE (매일 06:00 UTC)                                │
-│  ┌─────────────────┐                                                  │
-│  │ /api/cron/      │                                                  │
-│  │ gsc-collect     │ → GSC Data → High Performer Detection →          │
-│  └─────────────────┘   Upstash Vector (learning data)                │
 │                                                                       │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-## Cron Jobs Schedule
+## Unified Pipeline Features
 
-| Job | Path | Schedule | Description |
-|-----|------|----------|-------------|
-| GSC Collect | `/api/cron/gsc-collect` | 매일 06:00 UTC | Google Search Console 데이터 수집 + 학습 |
-| Auto Generate | `/api/cron/auto-generate` | 매일 09:00 UTC | 대기 키워드 콘텐츠 자동 생성 (일 5개) |
-| Auto Publish | `/api/cron/auto-publish` | 매일 10:00 UTC | 고품질 드래프트 자동 발행 |
-| Scheduled Publish | `/api/cron/publish-scheduled` | 매 15분 | 예약 발행 처리 |
-| Sitemap Update | `/api/cron/sitemap-update` | 매일 00:00 UTC | 사이트맵 자동 갱신 |
+### 1. Single Source of Truth
+- `src/lib/content/content-generation-pipeline.ts`에서 모든 콘텐츠 생성 로직 관리
+- Manual과 Cron 모두 동일한 파이프라인 사용
+
+### 2. Atomic Rollback
+- Author Persona 조회 실패 시 → 키워드 상태를 `pending`으로 롤백
+- Validation 실패 시 → 키워드 상태를 `pending`으로 롤백
+- 예기치 않은 오류 시 → 키워드 상태를 `pending`으로 롤백
+
+### 3. 5회 재시도 로직
+- Author Persona 조회 시 최대 5회 재시도
+- 각 시도 사이에 지수 백오프 적용
+
+## Database Schema (Simplified v2)
+
+### blog_posts
+단일 locale당 하나의 포스트 (다국어 컬럼 제거)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary key |
+| slug | text | URL slug |
+| locale | text | 언어 코드 (en, ko, ja...) |
+| title | text | 제목 |
+| content | text | 콘텐츠 (HTML) |
+| excerpt | text | 발췌 |
+| seo_meta | jsonb | SEO 메타데이터 |
+| category | text | 카테고리 |
+| tags | text[] | 태그 배열 |
+| cover_image_url | text | 커버 이미지 URL |
+| cover_image_alt | text | 커버 이미지 alt |
+| author_persona_id | uuid | 저자 페르소나 ID |
+| status | text | draft/published/archived |
+| generation_metadata | jsonb | 생성 메타데이터 |
+| published_at | timestamp | 발행일 |
+| view_count | int | 조회수 |
+
+### generation_metadata JSONB 구조
+```json
+{
+  "keyword": "韓国整形",
+  "locale": "ja",
+  "category": "plastic-surgery",
+  "generation_cost": 0.179,
+  "content_cost": 0.119,
+  "image_cost": 0.060,
+  "images_generated": 3,
+  "faq_schema": [...],
+  "howto_schema": [...],
+  "internal_links": [...],
+  "author_persona_id": "...",
+  "author_slug": "kim-sua",
+  "generated_at": "2026-01-30T..."
+}
+```
+
+### seo_meta JSONB 구조
+```json
+{
+  "meta_title": "韓国整形の真実...",
+  "meta_description": "12年間の通訳経験...",
+  "og_title": "韓国整形の真実...",
+  "og_description": "...",
+  "og_image": "https://...",
+  "twitter_title": "...",
+  "twitter_description": "...",
+  "twitter_image": "..."
+}
+```
+
+### author_personas (JSONB 구조)
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary key |
+| slug | text | URL slug |
+| name | jsonb | {"en": "...", "ko": "...", "ja": "..."} |
+| bio_short | jsonb | {"en": "...", "ko": "..."} |
+| bio_full | jsonb | {"en": "...", "ko": "..."} |
+| certifications | jsonb | {"en": [...], "ko": [...]} |
+| languages | jsonb | [{"code": "en", "proficiency": "native"}] |
+| photo_url | text | 프로필 이미지 |
+| years_of_experience | int | 경력 연수 |
+| is_active | boolean | 활성 상태 |
 
 ## Environment Variables
 
@@ -65,8 +150,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
 SUPABASE_SERVICE_ROLE_KEY=xxx
 
 # AI Services
-ANTHROPIC_API_KEY=sk-ant-xxx        # Claude AI
-OPENAI_API_KEY=sk-xxx               # DALL-E 3 이미지 생성
+ANTHROPIC_API_KEY=sk-ant-xxx        # Claude AI (콘텐츠 생성)
+REPLICATE_API_TOKEN=r8_xxx          # Google Imagen 4 (이미지 생성)
+OPENAI_API_KEY=sk-xxx               # Embeddings
 
 # Upstash (Vector + Redis)
 UPSTASH_VECTOR_REST_URL=https://xxx.upstash.io
@@ -85,244 +171,118 @@ CRON_SECRET=your-secret-key         # Cron job 인증용
 GSC_SITE_URL=https://getcarekorea.com
 GOOGLE_SERVICE_ACCOUNT_KEY='{...}'  # JSON 형식
 
-# Google Analytics 4
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
-
 # ISR Revalidation
 REVALIDATION_SECRET=your-secret     # On-demand revalidation
 ```
 
-## Database Tables
-
-### content_keywords
-키워드 관리 테이블
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | uuid | Primary key |
-| keyword | text | 타겟 키워드 |
-| locale | text | 언어 (en, ko, ja, zh-CN...) |
-| category | text | 카테고리 (plastic-surgery, dental...) |
-| status | text | pending/generating/generated/published/error |
-| priority | int | 우선순위 (높을수록 먼저 처리) |
-| blog_post_id | uuid | 생성된 포스트 ID |
-| author_persona_id | uuid | 지정 저자 |
-| target_publish_date | timestamp | 예약 발행일 |
-
-### blog_posts
-블로그 포스트 테이블 (다국어 필드)
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | uuid | Primary key |
-| slug | text | URL slug |
-| status | text | draft/scheduled/published |
-| title_{locale} | text | 언어별 제목 |
-| content_{locale} | text | 언어별 콘텐츠 (HTML) |
-| excerpt_{locale} | text | 언어별 발췌 |
-| generation_metadata | jsonb | 생성 메타데이터 |
-| published_at | timestamp | 발행일 |
-| scheduled_at | timestamp | 예약 발행일 |
-
-### llm_learning_data
-AI 학습 데이터
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | text | Primary key |
-| source_type | text | high_performer/user_feedback/manual_edit |
-| blog_post_id | uuid | 원본 포스트 |
-| performance_score | int | 성과 점수 (0-100) |
-| content_excerpt | text | 콘텐츠 발췌 |
-| seo_patterns | jsonb | SEO 패턴 분석 |
-| is_vectorized | boolean | Vector 인덱싱 여부 |
-
-### content_performance
-콘텐츠 성과 데이터
-
-| Column | Type | Description |
-|--------|------|-------------|
-| blog_post_id | uuid | 포스트 ID |
-| gsc_impressions | int | GSC 노출 수 |
-| gsc_clicks | int | GSC 클릭 수 |
-| gsc_ctr | float | CTR |
-| gsc_position | float | 평균 순위 |
-| is_high_performer | boolean | 고성과 콘텐츠 여부 |
-
-## Content Generation Flow
-
-### 1. 키워드 등록
-```
-Admin Panel → /admin/keywords
-- 키워드 입력 (예: "rhinoplasty korea cost")
-- 타겟 언어 선택 (예: en)
-- 카테고리 선택 (예: plastic-surgery)
-- 우선순위 설정 (1-10)
-- 예약 발행일 (선택)
-```
-
-### 2. 콘텐츠 자동 생성
-
-Auto-generate cron job이 매일 실행:
-
-1. `status: pending` 키워드 조회 (우선순위 순)
-2. Claude AI로 콘텐츠 생성
-   - v6 시스템 프롬프트 사용
-   - RAG 컨텍스트 (SEO 가이드, 고성과 콘텐츠, 피드백)
-   - 다국어 최적화
-3. DALL-E 3로 이미지 생성 (3장)
-4. blog_posts에 저장 (status: draft)
-5. 키워드 status를 'generated'로 업데이트
-
-### 3. 품질 검증
-
-자동 발행 전 품질 점수 검사:
-- 최소 75점 이상 필요
-- 평가 항목:
-  - 제목 품질 (키워드 포함, 길이)
-  - 콘텐츠 길이 (최소 500자)
-  - 메타 설명 존재
-  - Excerpt 존재
-
-### 4. 자동 발행
-
-Auto-publish cron job이 매일 실행:
-1. `status: draft` 포스트 조회
-2. 품질 점수 75점 이상 필터링
-3. 발행 처리 (status: published)
-4. ISR 재검증 트리거
-
-### 5. 학습 파이프라인
-
-GSC Collect cron job이 매일 실행:
-1. Google Search Console에서 성과 데이터 수집
-2. 고성과 콘텐츠 감지 (CTR 5%+, Top 10 순위)
-3. 패턴 분석 및 학습 데이터 생성
-4. Upstash Vector에 인덱싱
-5. 다음 콘텐츠 생성 시 RAG로 활용
-
-## Feedback System
-
-사용자/관리자 피드백 → AI 학습:
-
-### 피드백 저장 경로
-```
-User Feedback → /api/content/feedback → Upstash Vector
-                                           ↓
-                          RAG Context → Content Generation
-```
-
-### 피드백 유형
-- `positive`: 좋은 콘텐츠로 학습
-- `negative`: 향후 피하도록 학습
-- `edit`: 수정된 버전으로 학습
-
-## Google Analytics Integration
-
-### 설정 방법
-1. [Google Analytics 4](https://analytics.google.com) 계정 생성
-2. 새 속성 생성 (웹)
-3. 데이터 스트림 설정
-4. Measurement ID 복사 (G-XXXXXXXXXX)
-5. `.env.local`에 추가:
-```env
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
-```
-
-### 이벤트 트래킹
-```typescript
-import { sendGAEvent, sendGAConversion } from '@/components/analytics/GoogleAnalytics';
-
-// 이벤트 전송
-sendGAEvent('button_click', { button_name: 'contact_us' });
-
-// 전환 이벤트
-sendGAConversion('inquiry_submit');
-```
-
-## Google Search Console Integration
-
-### 설정 방법
-1. [Google Search Console](https://search.google.com/search-console) 접속
-2. 속성 추가 및 소유권 확인
-3. API 활성화:
-   - [Google Cloud Console](https://console.cloud.google.com) 접속
-   - Search Console API 활성화
-   - 서비스 계정 생성
-   - JSON 키 다운로드
-
-4. `.env.local`에 추가:
-```env
-GSC_SITE_URL=https://getcarekorea.com
-GOOGLE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
-```
-
-## Troubleshooting
-
-### Cron Job이 실행되지 않음
-1. Vercel Pro 플랜 확인 (Cron은 Pro+ 필요)
-2. `vercel.json` 설정 확인
-3. `CRON_SECRET` 환경변수 확인
-
-### 콘텐츠 생성 실패
-1. `ANTHROPIC_API_KEY` 확인
-2. 키워드 status가 'error'인 경우 로그 확인
-3. rate limit 확인
-
-### 이미지 생성 실패
-1. `OPENAI_API_KEY` 확인
-2. 콘텐츠는 생성되나 이미지만 실패하면 로그 확인
-
-### GSC 데이터 없음
-1. GSC 서비스 계정 권한 확인
-2. 사이트 소유권 확인
-3. 최소 7일 이상 된 데이터만 수집됨
-
 ## API Endpoints
 
 ### Content Generation
-- `POST /api/content/generate` - 단일 콘텐츠 생성 (수동)
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/content/generate` | POST | 수동 콘텐츠 생성 |
+| `/api/cron/auto-generate` | GET | Cron 자동 생성 |
+| `/api/keywords/[id]/status` | POST | 키워드 상태 업데이트 |
 
-### Feedback
-- `POST /api/content/feedback` - 피드백 제출
+### Blog Post Display
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/blog/[slug]` | GET | 블로그 포스트 조회 (locale 필터) |
+| `/[locale]/blog/[slug]` | - | 블로그 포스트 페이지 |
 
 ### Admin
-- `GET /api/admin/posts` - 포스트 목록
-- `GET /api/admin/posts/preview/[id]` - 프리뷰
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/content` | GET | 콘텐츠 목록 |
+| `/api/content` | PUT | 콘텐츠 업데이트 |
+| `/api/content` | DELETE | 콘텐츠 삭제 |
 
-### Cron (Internal)
-- `GET /api/cron/auto-generate` - 자동 생성
-- `GET /api/cron/auto-publish` - 자동 발행
-- `GET /api/cron/gsc-collect` - GSC 수집
-- `GET /api/cron/sitemap-update` - 사이트맵 갱신
-- `GET /api/cron/publish-scheduled` - 예약 발행
+## Image Generation
+
+### Google Imagen 4 via Replicate
+- 모델: `google/imagen-4`
+- 비율: 16:9
+- 포맷: PNG
+- 품질: 90%
+- 저장: Supabase Storage (`blog-images` bucket)
+
+### 이미지 생성 흐름
+```
+1. 콘텐츠에서 [IMAGE_PLACEHOLDER_N] 추출
+2. 각 placeholder에 대해 이미지 프롬프트 생성
+3. Replicate API로 Imagen 4 호출
+4. 생성된 이미지를 Supabase Storage에 업로드
+5. 영구 URL로 placeholder 교체
+```
+
+## Blog Post Rendering
+
+### HTML 콘텐츠 지원
+- 콘텐츠는 HTML 형식으로 생성됨
+- `dangerouslySetInnerHTML`로 직접 렌더링
+- Tailwind `prose` 클래스로 스타일링
+
+### Locale 필터링
+- 각 포스트는 특정 locale에만 표시
+- `/en/blog/slug` → `locale: 'en'`인 포스트만 조회
+- `/ja/blog/slug` → `locale: 'ja'`인 포스트만 조회
+
+## Cron Jobs Schedule
+
+| Job | Path | Schedule | Description |
+|-----|------|----------|-------------|
+| Auto Generate | `/api/cron/auto-generate` | 설정 가능 | 대기 키워드 콘텐츠 자동 생성 |
+| Sitemap Update | `/api/cron/sitemap-update` | 매일 00:00 UTC | 사이트맵 자동 갱신 |
+
+## Troubleshooting
+
+### 콘텐츠 생성 실패
+1. `ANTHROPIC_API_KEY` 확인
+2. `REPLICATE_API_TOKEN` 확인
+3. 키워드 status가 'pending'으로 롤백되었는지 확인
+4. 서버 로그에서 오류 메시지 확인
+
+### 이미지 생성 실패
+1. `REPLICATE_API_TOKEN` 확인
+2. Supabase Storage `blog-images` bucket 존재 확인
+3. bucket이 public인지 확인
+
+### 블로그 포스트가 보이지 않음
+1. 포스트 status가 `published`인지 확인
+2. locale이 URL과 일치하는지 확인
+3. slug가 정확한지 확인
+
+### Author Persona 조회 실패
+1. `author_personas` 테이블에 활성화된 페르소나가 있는지 확인
+2. `is_active: true`인 페르소나 존재 확인
+3. 해당 locale을 지원하는 페르소나 존재 확인
 
 ## Monitoring
 
-### Cron Logs
-```sql
-SELECT * FROM cron_logs
-ORDER BY created_at DESC
-LIMIT 20;
-```
-
-### High Performers
-```sql
-SELECT bp.title_en, cp.gsc_ctr, cp.gsc_position, cp.gsc_clicks
-FROM content_performance cp
-JOIN blog_posts bp ON bp.id = cp.blog_post_id
-WHERE cp.is_high_performer = true
-ORDER BY cp.gsc_ctr DESC;
-```
-
-### Generation Costs
+### 생성 비용 추적
 ```sql
 SELECT
   DATE(created_at) as date,
   COUNT(*) as posts,
-  SUM((generation_metadata->>'estimatedCost')::numeric) as total_cost
+  SUM((generation_metadata->>'generation_cost')::numeric) as total_cost,
+  SUM((generation_metadata->>'images_generated')::int) as total_images
 FROM blog_posts
 WHERE generation_metadata IS NOT NULL
 GROUP BY DATE(created_at)
 ORDER BY date DESC;
+```
+
+### 키워드 상태 확인
+```sql
+SELECT status, COUNT(*)
+FROM content_keywords
+GROUP BY status;
+```
+
+### 최근 생성된 포스트
+```sql
+SELECT slug, locale, title, status, created_at
+FROM blog_posts
+ORDER BY created_at DESC
+LIMIT 10;
 ```
