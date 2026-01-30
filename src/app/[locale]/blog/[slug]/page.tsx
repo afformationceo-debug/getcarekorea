@@ -15,6 +15,38 @@ interface PageProps {
 }
 
 // =====================================================
+// HELPERS
+// =====================================================
+
+/**
+ * Safely parse JSONB field that might be string or object
+ */
+function safeParseJson(data: unknown): Record<string, unknown> {
+  if (!data) return {};
+  if (typeof data === 'object') return data as Record<string, unknown>;
+  if (typeof data === 'string') {
+    try {
+      return JSON.parse(data);
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+/**
+ * Sanitize data for safe JSON serialization (removes undefined, functions, circular refs)
+ */
+function sanitizeForJson<T>(data: T): T {
+  try {
+    // Round-trip through JSON to remove non-serializable values
+    return JSON.parse(JSON.stringify(data));
+  } catch {
+    return data;
+  }
+}
+
+// =====================================================
 // DATA FETCHING (Simplified Schema)
 // =====================================================
 
@@ -52,24 +84,36 @@ async function getBlogPost(slug: string, locale: Locale): Promise<BlogPost | nul
 
       if (persona) {
         // Transform JSONB fields to match client interface
-        const nameObj = persona.name || {};
-        const bioShortObj = persona.bio_short || {};
+        const nameObj = safeParseJson(persona.name);
+        const bioShortObj = safeParseJson(persona.bio_short);
+        const bioFullObj = safeParseJson(persona.bio_full);
 
         authorPersona = {
-          ...persona,
+          id: persona.id,
+          slug: persona.slug,
+          photo_url: persona.photo_url,
+          years_of_experience: persona.years_of_experience,
+          primary_specialty: persona.primary_specialty,
+          secondary_specialties: persona.secondary_specialties,
+          languages: persona.languages,
+          certifications: persona.certifications,
+          target_locales: persona.target_locales,
+          preferred_messenger: persona.preferred_messenger,
+          messenger_cta_text: persona.messenger_cta_text,
+          is_verified: persona.is_verified,
           // Map JSONB name to individual locale fields
-          name_en: nameObj.en || nameObj.ko || persona.slug,
-          name_ko: nameObj.ko || nameObj.en || persona.slug,
-          name_ja: nameObj.ja || nameObj.en || null,
-          name_zh_tw: nameObj['zh-TW'] || nameObj.zh || null,
-          name_zh_cn: nameObj['zh-CN'] || nameObj.zh || null,
-          name_th: nameObj.th || null,
-          name_mn: nameObj.mn || null,
-          name_ru: nameObj.ru || null,
+          name_en: (nameObj.en || nameObj.ko || persona.slug) as string,
+          name_ko: (nameObj.ko || nameObj.en || persona.slug) as string,
+          name_ja: (nameObj.ja || nameObj.en || null) as string | null,
+          name_zh_tw: (nameObj['zh-TW'] || nameObj.zh || null) as string | null,
+          name_zh_cn: (nameObj['zh-CN'] || nameObj.zh || null) as string | null,
+          name_th: (nameObj.th || null) as string | null,
+          name_mn: (nameObj.mn || null) as string | null,
+          name_ru: (nameObj.ru || null) as string | null,
           // Map JSONB bio_short to individual locale fields
-          bio_short_en: bioShortObj.en || bioShortObj.ko || null,
-          bio_short_ko: bioShortObj.ko || bioShortObj.en || null,
-          bio_full_en: persona.bio_full?.en || persona.bio_full?.ko || null,
+          bio_short_en: (bioShortObj.en || bioShortObj.ko || null) as string | null,
+          bio_short_ko: (bioShortObj.ko || bioShortObj.en || null) as string | null,
+          bio_full_en: (bioFullObj.en || bioFullObj.ko || null) as string | null,
         };
       }
     }
@@ -85,27 +129,28 @@ async function getBlogPost(slug: string, locale: Locale): Promise<BlogPost | nul
       .order('published_at', { ascending: false })
       .limit(3);
 
-    // Extract metadata from generation_metadata
-    const metadata = post.generation_metadata || {};
-    const seoMeta = post.seo_meta || {};
+    // Safely parse JSONB fields
+    const metadata = safeParseJson(post.generation_metadata);
+    const seoMeta = safeParseJson(post.seo_meta);
 
-    return {
+    // Build result and sanitize for safe JSON serialization
+    const result: BlogPost = {
       id: post.id,
       slug: post.slug,
       title: post.title || '',
       content: post.content || '',
       excerpt: post.excerpt,
-      metaTitle: seoMeta.meta_title || post.title,
-      metaDescription: seoMeta.meta_description || post.excerpt,
+      metaTitle: (seoMeta.meta_title as string) || post.title,
+      metaDescription: (seoMeta.meta_description as string) || post.excerpt,
       cover_image_url: post.cover_image_url,
       category: post.category || 'General',
       tags: post.tags,
       published_at: post.published_at,
       view_count: post.view_count || 0,
-      aiSummary: metadata.aiSummary,
-      faqSchema: metadata.faqSchema,
+      aiSummary: metadata.aiSummary as BlogPost['aiSummary'],
+      faqSchema: metadata.faq_schema as BlogPost['faqSchema'],
       authorPersona: authorPersona,
-      generatedAuthor: metadata.author,
+      generatedAuthor: metadata.author as BlogPost['generatedAuthor'],
       relatedPosts: relatedPosts?.map((rp: { id: string; slug: string; title: string; cover_image_url: string | null; published_at: string | null }) => ({
         id: rp.id,
         slug: rp.slug,
@@ -114,6 +159,9 @@ async function getBlogPost(slug: string, locale: Locale): Promise<BlogPost | nul
         published_at: rp.published_at,
       })) || [],
     };
+
+    // Sanitize to ensure JSON-safe serialization
+    return sanitizeForJson(result);
   } catch (error) {
     console.error('Error fetching blog post:', error);
     return null;
