@@ -496,7 +496,7 @@ function ScheduleSelector({
     if (showTimeSelect) {
       parts.push(`@ ${timeStr}`);
     } else if (showMinuteSelect) {
-      parts.push(`:${minute.toString().padStart(2, '0')}`);
+      parts.push(`${minute.toString().padStart(2, '0')}${t('schedule.minuteUnit')}`);
     }
 
     if (dayRestriction !== 'all') {

@@ -1274,6 +1274,7 @@
         "customDays": "曜日を選択",
         "executionTime": "実行時刻",
         "executionMinute": "実行分",
+        "minuteUnit": "分",
         "everyHourAt": "毎時",
         "advanced": "詳細設定（特定の日付/月を指定）",
         "specificDays": "特定の日のみ実行（空欄で毎日）",

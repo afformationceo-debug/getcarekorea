@@ -1274,6 +1274,7 @@
         "customDays": "เลือกวัน",
         "executionTime": "เวลาทำงาน",
         "executionMinute": "นาทีที่ทำงาน",
+        "minuteUnit": " นาที",
         "everyHourAt": "ทุกชั่วโมงที่",
         "advanced": "การตั้งค่าขั้นสูง (วันที่/เดือนเฉพาะ)",
         "specificDays": "ทำงานเฉพาะวันที่ (เว้นว่างสำหรับทุกวัน)",

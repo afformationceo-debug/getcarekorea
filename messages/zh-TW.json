@@ -1274,6 +1274,7 @@
         "customDays": "選擇日期",
         "executionTime": "執行時間",
         "executionMinute": "執行分鐘",
+        "minuteUnit": "分",
         "everyHourAt": "每小時",
         "advanced": "進階設定（指定特定日期/月份）",
         "specificDays": "僅在特定日期執行（留空為每天）",

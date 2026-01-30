@@ -1275,6 +1275,7 @@
         "customDays": "Select Days",
         "executionTime": "Execution Time",
         "executionMinute": "Execution Minute",
+        "minuteUnit": " min",
         "everyHourAt": "Every hour at",
         "advanced": "Advanced Settings (Specific Dates/Months)",
         "specificDays": "Run on Specific Days (Leave empty for daily)",

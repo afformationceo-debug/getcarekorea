@@ -1274,6 +1274,7 @@
         "customDays": "Өдөр сонгох",
         "executionTime": "Ажиллах цаг",
         "executionMinute": "Ажиллах минут",
+        "minuteUnit": " мин",
         "everyHourAt": "Цаг бүр",
         "advanced": "Нарийвчилсан тохиргоо (Тодорхой өдөр/сар)",
         "specificDays": "Тодорхой өдрүүдэд ажиллах (хоосон бол өдөр бүр)",

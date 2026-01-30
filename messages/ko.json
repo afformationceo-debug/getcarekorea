@@ -1298,6 +1298,7 @@
         "customDays": "특정 요일 선택",
         "executionTime": "실행 시간",
         "executionMinute": "실행 시점 (분)",
+        "minuteUnit": "분",
         "everyHourAt": "매 시",
         "advanced": "고급 설정 (특정 날짜/월 지정)",
         "specificDays": "특정 날짜만 실행 (선택 안하면 매일)",
