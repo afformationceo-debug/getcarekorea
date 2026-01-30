@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import './globals.css';
 
@@ -79,6 +80,8 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {/* Google Analytics 4 */}
         {GA_MEASUREMENT_ID && <GoogleAnalytics measurementId={GA_MEASUREMENT_ID} />}
+        {/* Vercel Analytics */}
+        <Analytics />
         {children}
       </body>
     </html>
