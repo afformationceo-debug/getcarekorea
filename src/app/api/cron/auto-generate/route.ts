@@ -45,13 +45,27 @@ interface CronSettings {
   priority_threshold: number;
 }
 
-function shouldRunNow(cronExpression: string): boolean {
+// Get current time in Korea timezone (UTC+9)
+function getKoreaTime(): Date {
   const now = new Date();
-  const currentMinute = now.getMinutes();
-  const currentHour = now.getHours();
-  const currentDay = now.getDate();
-  const currentMonth = now.getMonth() + 1;
-  const currentDow = now.getDay();
+  // Convert to Korea timezone using UTC offset
+  const koreaOffset = 9 * 60; // +9 hours in minutes
+  const utcMinutes = now.getTime() / 60000 + now.getTimezoneOffset();
+  const koreaMinutes = utcMinutes + koreaOffset;
+  return new Date(koreaMinutes * 60000);
+}
+
+function shouldRunNow(cronExpression: string): boolean {
+  // Use Korea timezone for schedule matching
+  const koreaTime = getKoreaTime();
+  const currentMinute = koreaTime.getMinutes();
+  const currentHour = koreaTime.getHours();
+  const currentDay = koreaTime.getDate();
+  const currentMonth = koreaTime.getMonth() + 1;
+  const currentDow = koreaTime.getDay();
+
+  console.log(`   Korea Time: ${koreaTime.toISOString().replace('Z', '+09:00')}`);
+  console.log(`   Current: ${currentHour}:${currentMinute.toString().padStart(2, '0')} (KST)`);
 
   const parts = cronExpression.trim().split(/\s+/);
   if (parts.length !== 5) return false;

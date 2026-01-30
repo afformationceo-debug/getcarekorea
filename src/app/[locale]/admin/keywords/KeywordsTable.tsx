@@ -15,6 +15,7 @@ import {
   Upload,
   ExternalLink,
   Filter,
+  Loader2,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { KeywordBulkUpload } from '@/components/admin/KeywordBulkUpload';
@@ -38,10 +39,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+
+// Constants
+const PAGE_SIZE = 40;
 
 // Types
 interface Keyword {
@@ -69,33 +73,52 @@ interface KeywordsTableProps {
   totalCount: number;
 }
 
-const LOCALE_NAMES: Record<string, string> = {
-  en: 'English',
-  ko: '한국어',
-  'zh-TW': '繁體中文',
-  'zh-CN': '简体中文',
-  ja: '日本語',
-  th: 'ภาษาไทย',
-  mn: 'Монгол',
-  ru: 'Русский',
-};
+interface FilterState {
+  search: string;
+  status: string;
+  category: string;
+}
 
-export function KeywordsTable({ keywords: initialKeywords, categories, totalCount }: KeywordsTableProps) {
+export function KeywordsTable({ keywords: initialKeywords, categories, totalCount: initialTotal }: KeywordsTableProps) {
   const router = useRouter();
   const params = useParams();
   const currentLocale = (params.locale as string) || 'en';
 
+  // Data state
   const [keywords, setKeywords] = useState<Keyword[]>(initialKeywords);
+  const [totalCount, setTotalCount] = useState(initialTotal);
+  const [hasMore, setHasMore] = useState(initialKeywords.length >= PAGE_SIZE);
+  const [page, setPage] = useState(1);
 
-  // Sync keywords state when initialKeywords prop changes (e.g., page refresh, revalidation)
-  useEffect(() => {
-    setKeywords(initialKeywords);
-  }, [initialKeywords]);
+  // Loading states
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+
+  // Filter state - temporary (not applied yet)
+  const [tempFilters, setTempFilters] = useState<FilterState>({
+    search: '',
+    status: 'all',
+    category: 'all',
+  });
+
+  // Filter state - applied (used for fetching)
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>({
+    search: '',
+    status: 'all',
+    category: 'all',
+  });
+
+  // Check if filters have changed
+  const filtersChanged = useMemo(() => {
+    return (
+      tempFilters.search !== appliedFilters.search ||
+      tempFilters.status !== appliedFilters.status ||
+      tempFilters.category !== appliedFilters.category
+    );
+  }, [tempFilters, appliedFilters]);
+
+  // UI state
   const [showBulkUpload, setShowBulkUpload] = useState(false);
 
   // Bulk selection state
@@ -113,97 +136,134 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
   const [singleGenerating, setSingleGenerating] = useState<string | null>(null);
   const [generatedPostId, setGeneratedPostId] = useState<string | null>(null);
 
-  // Check if any filter is active
-  const hasActiveFilters = searchQuery || statusFilter !== 'all' || categoryFilter !== 'all';
+  // Infinite scroll ref
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const generatingRef = useRef<Set<string>>(new Set());
 
-  // Clear all filters
-  const clearFilters = () => {
-    setSearchQuery('');
-    setStatusFilter('all');
-    setCategoryFilter('all');
-  };
-
-  // Filter keywords client-side
-  const filteredKeywords = useMemo(() => {
-    return keywords.filter((keyword) => {
-      // Search filter
-      if (searchQuery) {
-        const searchLower = searchQuery.toLowerCase();
-        if (!keyword.keyword.toLowerCase().includes(searchLower)) {
-          return false;
-        }
-      }
-
-      // Status filter
-      if (statusFilter !== 'all' && keyword.status !== statusFilter) {
-        return false;
-      }
-
-      // Category filter
-      if (categoryFilter !== 'all' && keyword.category !== categoryFilter) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [keywords, searchQuery, statusFilter, categoryFilter]);
-
-  // Calculate stats
+  // Calculate stats from current keywords (but use totalCount for Total)
   const stats = useMemo(() => ({
-    total: keywords.length,
+    total: totalCount, // Use API total count
     pending: keywords.filter(k => k.status === 'pending').length,
     generating: keywords.filter(k => k.status === 'generating').length,
     generated: keywords.filter(k => k.status === 'generated').length,
     published: keywords.filter(k => k.status === 'published').length,
-  }), [keywords]);
+  }), [keywords, totalCount]);
 
-  // Fetch keywords
-  const fetchKeywords = useCallback(async () => {
-    setLoading(true);
+  // Fetch keywords with filters
+  const fetchKeywords = useCallback(async (pageNum: number = 1, append: boolean = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     try {
-      const response = await fetch('/api/keywords?limit=1000');
+      const searchParams = new URLSearchParams();
+      searchParams.set('page', pageNum.toString());
+      searchParams.set('limit', PAGE_SIZE.toString());
+
+      if (appliedFilters.search) {
+        searchParams.set('search', appliedFilters.search);
+      }
+      if (appliedFilters.status !== 'all') {
+        searchParams.set('status', appliedFilters.status);
+      }
+      if (appliedFilters.category !== 'all') {
+        searchParams.set('category', appliedFilters.category);
+      }
+
+      const response = await fetch(`/api/keywords?${searchParams.toString()}`);
       const data = await response.json();
 
       if (!data.success) {
         throw new Error(data.error?.message || 'Failed to fetch keywords');
       }
 
-      setKeywords(data.data.keywords);
+      const newKeywords = data.data?.keywords || [];
+
+      if (append) {
+        setKeywords(prev => [...prev, ...newKeywords]);
+      } else {
+        setKeywords(newKeywords);
+      }
+
+      // Use pagination total from API
+      setTotalCount(data.pagination?.total || 0);
+      setHasMore(data.pagination?.hasMore || false);
+      setPage(pageNum);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMsg);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  }, [appliedFilters]);
+
+  // Apply filters - reset and fetch
+  const handleApplyFilters = useCallback(() => {
+    setAppliedFilters({ ...tempFilters });
+    setPage(1);
+    setKeywords([]);
+  }, [tempFilters]);
+
+  // Clear filters
+  const handleClearFilters = useCallback(() => {
+    const cleared = { search: '', status: 'all', category: 'all' };
+    setTempFilters(cleared);
+    setAppliedFilters(cleared);
+    setPage(1);
+    setKeywords([]);
   }, []);
 
-  // 중복 요청 방지용 ref
-  const generatingRef = useRef<Set<string>>(new Set());
+  // Fetch when applied filters change
+  useEffect(() => {
+    fetchKeywords(1, false);
+  }, [appliedFilters, fetchKeywords]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const currentRef = loadMoreRef.current;
+    if (!currentRef) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && hasMore && !loading && !loadingMore) {
+          fetchKeywords(page + 1, true);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px',
+      }
+    );
+
+    observer.observe(currentRef);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasMore, loading, loadingMore, page, fetchKeywords]);
 
   // Generate content
   const handleGenerateContent = async (keyword: Keyword) => {
-    // 🔒 중복 요청 방지: 동일 키워드가 이미 생성 중이면 무시
     if (generatingRef.current.has(keyword.id)) {
-      console.log(`⚠️ Already generating: ${keyword.keyword}`);
+      console.log(`Already generating: ${keyword.keyword}`);
       return;
     }
-    // 다른 키워드 생성 중이어도 허용 (동시 생성 가능)
 
-    // 즉시 락 설정
     generatingRef.current.add(keyword.id);
-    setSingleGenerating(keyword.id); // 마지막 생성 중인 키워드 추적용
+    setSingleGenerating(keyword.id);
     setGeneratedPostId(null);
     setError(null);
 
-    // Update keyword status to 'generating' immediately (optimistic update)
     setKeywords(prev => prev.map(k =>
       k.id === keyword.id ? { ...k, status: 'generating' as const } : k
     ));
 
     try {
-      // Update DB status immediately (so other users/pages see the correct status)
       await fetch(`/api/keywords/${keyword.id}/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -214,7 +274,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
       const response = await fetch('/api/content/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Include cookies for authentication
+        credentials: 'include',
         body: JSON.stringify({
           keyword: keyword.keyword,
           locale: keyword.locale,
@@ -234,16 +294,14 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
 
       if (data.saved && data.content?.id) {
         setGeneratedPostId(data.content.id);
-        fetchKeywords();
+        fetchKeywords(1, false);
       } else {
         throw new Error('Content generated but not saved');
       }
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Generation failed';
       setError(errorMessage);
 
-      // Reset keyword status in DB and UI
       try {
         await fetch(`/api/keywords/${keyword.id}/status`, {
           method: 'POST',
@@ -259,18 +317,19 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
         k.id === keyword.id ? { ...k, status: 'pending' as const } : k
       ));
     } finally {
-      // 🔓 락 해제
       generatingRef.current.delete(keyword.id);
       setSingleGenerating(null);
     }
   };
 
   // Bulk selection handlers
+  const pendingKeywords = useMemo(() => keywords.filter(k => k.status === 'pending'), [keywords]);
+
   const handleSelectAll = () => {
-    if (selectedIds.size === filteredKeywords.filter(k => k.status === 'pending').length) {
+    if (selectedIds.size === pendingKeywords.length && pendingKeywords.length > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredKeywords.filter(k => k.status === 'pending').map(k => k.id)));
+      setSelectedIds(new Set(pendingKeywords.map(k => k.id)));
     }
   };
 
@@ -284,7 +343,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
     setSelectedIds(newSelected);
   };
 
-  // Bulk generate content
+  // Bulk generate
   const handleBulkGenerate = async () => {
     const selectedKeywords = keywords.filter(k => selectedIds.has(k.id) && k.status === 'pending');
     if (selectedKeywords.length === 0) {
@@ -352,28 +411,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
 
     setBulkGenerating(false);
     setSelectedIds(new Set());
-    fetchKeywords();
-  };
-
-  // Delete keyword
-  const handleDeleteKeyword = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this keyword?')) return;
-
-    try {
-      const response = await fetch(`/api/keywords/${id}`, {
-        method: 'DELETE',
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error?.message || 'Failed to delete keyword');
-      }
-
-      fetchKeywords();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Delete failed');
-    }
+    fetchKeywords(1, false);
   };
 
   return (
@@ -387,8 +425,9 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search keywords..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={tempFilters.search}
+                onChange={(e) => setTempFilters(prev => ({ ...prev, search: e.target.value }))}
+                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
                 className="pl-10"
               />
             </div>
@@ -407,7 +446,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                   Generate {selectedIds.size} Selected
                 </Button>
               )}
-              <Button variant="outline" onClick={fetchKeywords} disabled={loading}>
+              <Button variant="outline" onClick={() => fetchKeywords(1, false)} disabled={loading}>
                 <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
                 Refresh
               </Button>
@@ -432,7 +471,10 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
             </div>
 
             {/* Status Filter */}
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select
+              value={tempFilters.status}
+              onValueChange={(value) => setTempFilters(prev => ({ ...prev, status: value }))}
+            >
               <SelectTrigger className="w-[150px] h-9">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -446,7 +488,10 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
             </Select>
 
             {/* Category Filter */}
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <Select
+              value={tempFilters.category}
+              onValueChange={(value) => setTempFilters(prev => ({ ...prev, category: value }))}
+            >
               <SelectTrigger className="w-[180px] h-9">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
@@ -460,9 +505,19 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
               </SelectContent>
             </Select>
 
+            {/* Apply Button */}
+            <Button
+              onClick={handleApplyFilters}
+              disabled={!filtersChanged}
+              size="sm"
+              className="h-9"
+            >
+              Apply
+            </Button>
+
             {/* Clear filters button */}
-            {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 px-3">
+            {(appliedFilters.search || appliedFilters.status !== 'all' || appliedFilters.category !== 'all') && (
+              <Button variant="ghost" size="sm" onClick={handleClearFilters} className="h-9 px-3">
                 <X className="h-4 w-4 mr-1" />
                 Reset
               </Button>
@@ -470,7 +525,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
 
             {/* Result count */}
             <div className="ml-auto text-sm text-muted-foreground">
-              {filteredKeywords.length} / {keywords.length} keywords
+              {keywords.length} / {totalCount} keywords
             </div>
           </div>
         </div>
@@ -483,7 +538,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
             <KeywordBulkUpload
               onUploadComplete={(result) => {
                 if (result.success || result.data.inserted > 0) {
-                  fetchKeywords();
+                  fetchKeywords(1, false);
                 }
               }}
             />
@@ -496,18 +551,13 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
         <div className="flex items-center gap-2 rounded-md bg-red-50 p-4 text-red-700">
           <AlertCircle className="h-5 w-5" />
           <span>{error}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setError(null)}
-            className="ml-auto"
-          >
+          <Button variant="ghost" size="sm" onClick={() => setError(null)} className="ml-auto">
             <X className="h-4 w-4" />
           </Button>
         </div>
       )}
 
-      {/* Success notification after single generation */}
+      {/* Success notification */}
       {generatedPostId && !singleGenerating && (
         <Card className="border-green-200 bg-green-50">
           <CardContent className="pt-6">
@@ -520,11 +570,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setGeneratedPostId(null)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setGeneratedPostId(null)}>
                   Close
                 </Button>
                 <Button
@@ -550,12 +596,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                 <h3 className="font-semibold">
                   {bulkGenerating ? 'Bulk generation in progress...' : 'Bulk generation complete'}
                 </h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setBulkProgress(null)}
-                  disabled={bulkGenerating}
-                >
+                <Button variant="ghost" size="sm" onClick={() => setBulkProgress(null)} disabled={bulkGenerating}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -576,11 +617,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
               )}
               {!bulkGenerating && bulkProgress.succeeded > 0 && (
                 <div className="flex justify-end pt-2 border-t">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => router.push(`/${currentLocale}/admin/content`)}
-                  >
+                  <Button variant="default" size="sm" onClick={() => router.push(`/${currentLocale}/admin/content`)}>
                     <ExternalLink className="mr-2 h-4 w-4" />
                     View Generated Content
                   </Button>
@@ -595,7 +632,7 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="rounded-xl border bg-card p-4">
           <p className="text-sm text-muted-foreground">Total Keywords</p>
-          <p className="text-3xl font-bold">{stats.total}</p>
+          <p className="text-3xl font-bold">{totalCount}</p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <p className="text-sm text-muted-foreground">Pending</p>
@@ -615,42 +652,51 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
         </div>
       </div>
 
-      {/* Keywords Table */}
+      {/* Keywords Table - Always render structure, show loading inside */}
       <div className="rounded-xl border bg-card">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <LoadingSpinner size="lg" color="muted" />
-          </div>
-        ) : filteredKeywords.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">No keywords found</p>
-            <p className="text-sm text-muted-foreground">
-              {hasActiveFilters ? 'Try adjusting your filters' : 'Add your first keyword to start generating content'}
-            </p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={selectedIds.size === pendingKeywords.length && pendingKeywords.length > 0}
+                  onChange={handleSelectAll}
+                />
+              </TableHead>
+              <TableHead>Keyword</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Locale</TableHead>
+              <TableHead className="text-center">Priority</TableHead>
+              <TableHead className="text-right">Volume</TableHead>
+              <TableHead className="text-right">Competition</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading && keywords.length === 0 ? (
               <TableRow>
-                <TableHead className="w-[50px]">
-                  <Checkbox
-                    checked={selectedIds.size === filteredKeywords.filter(k => k.status === 'pending').length && filteredKeywords.filter(k => k.status === 'pending').length > 0}
-                    onChange={handleSelectAll}
-                  />
-                </TableHead>
-                <TableHead>Keyword</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Locale</TableHead>
-                <TableHead className="text-center">Priority</TableHead>
-                <TableHead className="text-right">Volume</TableHead>
-                <TableHead className="text-right">Competition</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableCell colSpan={9} className="text-center py-12">
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <RefreshCw className="h-6 w-6 animate-spin" />
+                    <span>Loading...</span>
+                  </div>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredKeywords.map((keyword) => (
+            ) : keywords.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} className="text-center py-12">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-lg font-medium">No keywords found</p>
+                  <p className="text-sm text-muted-foreground">
+                    {appliedFilters.search || appliedFilters.status !== 'all' || appliedFilters.category !== 'all'
+                      ? 'Try adjusting your filters'
+                      : 'Add your first keyword to start generating content'}
+                  </p>
+                </TableCell>
+              </TableRow>
+            ) : (
+              keywords.map((keyword) => (
                 <TableRow
                   key={keyword.id}
                   onClick={() => router.push(`/${currentLocale}/admin/keywords/${keyword.id}`)}
@@ -705,7 +751,6 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                   </TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-2">
-                      {/* Generate Button - for pending status */}
                       {keyword.status === 'pending' && (
                         <Button
                           size="sm"
@@ -727,7 +772,6 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                           )}
                         </Button>
                       )}
-                      {/* Regenerate Button - for generated status */}
                       {keyword.status === 'generated' && (
                         <Button
                           size="sm"
@@ -749,7 +793,6 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                           )}
                         </Button>
                       )}
-                      {/* View Blog Button - for published status */}
                       {keyword.status === 'published' && (
                         <Button
                           size="sm"
@@ -770,10 +813,23 @@ export function KeywordsTable({ keywords: initialKeywords, categories, totalCoun
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+              ))
+            )}
+          </TableBody>
+        </Table>
+
+        {/* Load More Trigger */}
+        <div ref={loadMoreRef} className="py-4 text-center">
+          {loadingMore && (
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading more...</span>
+            </div>
+          )}
+          {!hasMore && keywords.length > 0 && (
+            <p className="text-sm text-muted-foreground">All keywords loaded</p>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -29,6 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import {
   Plus,
   Search,
@@ -38,8 +39,13 @@ import {
   Filter,
   X,
   ChevronDown,
+  RefreshCw,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Constants
+const PAGE_SIZE = 40;
 
 type LocalizedField = Record<string, string>;
 type LocalizedCertifications = Record<string, string[]>;
@@ -74,6 +80,13 @@ interface InterpretersTableProps {
   interpreters: AuthorPersona[];
 }
 
+interface FilterState {
+  search: string;
+  languages: string[];
+  specialties: string[];
+  status: string;
+}
+
 const LOCALE_CODES = ['en', 'ko', 'ja', 'zh-TW', 'zh-CN', 'th', 'mn', 'ru'] as const;
 const SPECIALTY_VALUES = ['plastic-surgery', 'dermatology', 'dental', 'health-checkup', 'fertility', 'hair-transplant', 'ophthalmology', 'orthopedics', 'general-medical'] as const;
 
@@ -88,45 +101,76 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
   const params = useParams();
   const locale = params.locale as string;
 
-  const [interpreters] = useState(initialInterpreters);
+  // Data state
+  const [interpreters, setInterpreters] = useState<AuthorPersona[]>(initialInterpreters);
+  const [totalCount, setTotalCount] = useState(initialInterpreters.length);
+  const [hasMore, setHasMore] = useState(initialInterpreters.length >= PAGE_SIZE);
+  const [page, setPage] = useState(1);
 
-  // Filter states
-  const [searchQuery, setSearchQuery] = useState('');
-  const [languageFilters, setLanguageFilters] = useState<string[]>([]);
-  const [specialtyFilters, setSpecialtyFilters] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState('all');
+  // Loading states
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Temporary filter state (UI)
+  const [tempFilters, setTempFilters] = useState<FilterState>({
+    search: '',
+    languages: [],
+    specialties: [],
+    status: 'all',
+  });
+
+  // Applied filter state (used for fetching/filtering)
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>({
+    search: '',
+    languages: [],
+    specialties: [],
+    status: 'all',
+  });
+
+  // Check if filters have changed
+  const filtersChanged = useMemo(() => {
+    return (
+      tempFilters.search !== appliedFilters.search ||
+      tempFilters.status !== appliedFilters.status ||
+      tempFilters.languages.length !== appliedFilters.languages.length ||
+      tempFilters.specialties.length !== appliedFilters.specialties.length ||
+      !tempFilters.languages.every(l => appliedFilters.languages.includes(l)) ||
+      !tempFilters.specialties.every(s => appliedFilters.specialties.includes(s))
+    );
+  }, [tempFilters, appliedFilters]);
 
   // Check if any filter is active
-  const hasActiveFilters = searchQuery || languageFilters.length > 0 || specialtyFilters.length > 0 || statusFilter !== 'all';
+  const hasActiveFilters = appliedFilters.search || appliedFilters.languages.length > 0 || appliedFilters.specialties.length > 0 || appliedFilters.status !== 'all';
 
-  // Clear all filters
-  const clearFilters = () => {
-    setSearchQuery('');
-    setLanguageFilters([]);
-    setSpecialtyFilters([]);
-    setStatusFilter('all');
-  };
+  // Infinite scroll ref
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Toggle language filter
   const toggleLanguageFilter = (code: string) => {
-    setLanguageFilters(prev =>
-      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
-    );
+    setTempFilters(prev => ({
+      ...prev,
+      languages: prev.languages.includes(code)
+        ? prev.languages.filter(c => c !== code)
+        : [...prev.languages, code]
+    }));
   };
 
   // Toggle specialty filter
   const toggleSpecialtyFilter = (spec: string) => {
-    setSpecialtyFilters(prev =>
-      prev.includes(spec) ? prev.filter(s => s !== spec) : [...prev, spec]
-    );
+    setTempFilters(prev => ({
+      ...prev,
+      specialties: prev.specialties.includes(spec)
+        ? prev.specialties.filter(s => s !== spec)
+        : [...prev.specialties, spec]
+    }));
   };
 
-  // Filter interpreters
-  const filteredInterpreters = useMemo(() => {
-    return interpreters.filter((interpreter) => {
+  // Filter interpreters client-side based on applied filters
+  const filterInterpreters = useCallback((data: AuthorPersona[]): AuthorPersona[] => {
+    return data.filter((interpreter) => {
       // Search filter (name, slug)
-      if (searchQuery) {
-        const searchLower = searchQuery.toLowerCase();
+      if (appliedFilters.search) {
+        const searchLower = appliedFilters.search.toLowerCase();
         const allNames = Object.values(interpreter.name || {}).join(' ').toLowerCase();
         const slug = interpreter.slug?.toLowerCase() || '';
         if (!allNames.includes(searchLower) && !slug.includes(searchLower)) {
@@ -135,21 +179,21 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
       }
 
       // Language filter (multi-select: match ANY selected language)
-      if (languageFilters.length > 0) {
-        const hasAnyLanguage = interpreter.languages?.some(l => languageFilters.includes(l.code));
+      if (appliedFilters.languages.length > 0) {
+        const hasAnyLanguage = interpreter.languages?.some(l => appliedFilters.languages.includes(l.code));
         if (!hasAnyLanguage) return false;
       }
 
       // Specialty filter (multi-select: match ANY selected specialty)
-      if (specialtyFilters.length > 0) {
-        const hasAnySpecialty = specialtyFilters.includes(interpreter.primary_specialty) ||
-          interpreter.secondary_specialties?.some(s => specialtyFilters.includes(s));
+      if (appliedFilters.specialties.length > 0) {
+        const hasAnySpecialty = appliedFilters.specialties.includes(interpreter.primary_specialty) ||
+          interpreter.secondary_specialties?.some(s => appliedFilters.specialties.includes(s));
         if (!hasAnySpecialty) return false;
       }
 
       // Status filter
-      if (statusFilter !== 'all') {
-        switch (statusFilter) {
+      if (appliedFilters.status !== 'all') {
+        switch (appliedFilters.status) {
           case 'active':
             if (!interpreter.is_active) return false;
             break;
@@ -167,7 +211,93 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
 
       return true;
     });
-  }, [interpreters, searchQuery, languageFilters, specialtyFilters, statusFilter]);
+  }, [appliedFilters]);
+
+  // Fetch interpreters from API
+  const fetchInterpreters = useCallback(async (pageNum: number = 1, append: boolean = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
+    try {
+      const params = new URLSearchParams();
+      params.set('page', pageNum.toString());
+      params.set('limit', PAGE_SIZE.toString());
+      params.set('locale', locale);
+
+      const response = await fetch(`/api/admin/interpreters?${params.toString()}`);
+      const data = await response.json();
+
+      if (data.success) {
+        const newData = data.data || [];
+
+        if (append) {
+          setInterpreters(prev => [...prev, ...newData]);
+        } else {
+          setInterpreters(newData);
+        }
+
+        setTotalCount(data.pagination?.total || newData.length);
+        setHasMore(data.pagination?.hasMore || false);
+        setPage(pageNum);
+      }
+    } catch (error) {
+      console.error('Error fetching interpreters:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [locale]);
+
+  // Apply filters
+  const handleApplyFilters = useCallback(() => {
+    setAppliedFilters({ ...tempFilters });
+  }, [tempFilters]);
+
+  // Clear all filters
+  const handleClearFilters = useCallback(() => {
+    const cleared: FilterState = {
+      search: '',
+      languages: [],
+      specialties: [],
+      status: 'all',
+    };
+    setTempFilters(cleared);
+    setAppliedFilters(cleared);
+  }, []);
+
+  // Filtered interpreters
+  const filteredInterpreters = useMemo(() => {
+    return filterInterpreters(interpreters);
+  }, [interpreters, filterInterpreters]);
+
+  // Paginated data for display
+  const displayedInterpreters = useMemo(() => {
+    return filteredInterpreters.slice(0, page * PAGE_SIZE);
+  }, [filteredInterpreters, page]);
+
+  // Check if there's more filtered data
+  const hasMoreFiltered = displayedInterpreters.length < filteredInterpreters.length;
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreFiltered && !loading && !loadingMore) {
+          setPage(prev => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMoreFiltered, loading, loadingMore]);
 
   return (
     <div className="space-y-6">
@@ -180,17 +310,24 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder={t('searchPlaceholder')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={tempFilters.search}
+                onChange={(e) => setTempFilters(prev => ({ ...prev, search: e.target.value }))}
+                onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
                 className="pl-10"
               />
             </div>
-            <Button asChild>
-              <Link href={`/${locale}/admin/interpreters/new`}>
-                <Plus className="mr-2 h-4 w-4" />
-                {t('addInterpreter')}
-              </Link>
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => fetchInterpreters(1, false)} disabled={loading}>
+                <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
+                {t('filters.refresh') || 'Refresh'}
+              </Button>
+              <Button asChild>
+                <Link href={`/${locale}/admin/interpreters/new`}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('addInterpreter')}
+                </Link>
+              </Button>
+            </div>
           </div>
 
           {/* Second row: Filters */}
@@ -207,13 +344,13 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
                   variant="outline"
                   className={cn(
                     "h-9 justify-between min-w-[140px]",
-                    languageFilters.length > 0 && "border-primary"
+                    tempFilters.languages.length > 0 && "border-primary"
                   )}
                 >
-                  {languageFilters.length === 0 ? (
+                  {tempFilters.languages.length === 0 ? (
                     <span className="text-muted-foreground">{t('filters.language')}</span>
                   ) : (
-                    <span>{t('filters.selected', { count: languageFilters.length })}</span>
+                    <span>{t('filters.selected', { count: tempFilters.languages.length })}</span>
                   )}
                   <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
                 </Button>
@@ -226,19 +363,19 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
                       className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer"
                     >
                       <Checkbox
-                        checked={languageFilters.includes(code)}
+                        checked={tempFilters.languages.includes(code)}
                         onCheckedChange={() => toggleLanguageFilter(code)}
                       />
                       <span className="text-sm">{t(`locales.${code}`)}</span>
                     </label>
                   ))}
                 </div>
-                {languageFilters.length > 0 && (
+                {tempFilters.languages.length > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
                     className="w-full mt-2"
-                    onClick={() => setLanguageFilters([])}
+                    onClick={() => setTempFilters(prev => ({ ...prev, languages: [] }))}
                   >
                     {t('filters.clearSelection')}
                   </Button>
@@ -253,13 +390,13 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
                   variant="outline"
                   className={cn(
                     "h-9 justify-between min-w-[150px]",
-                    specialtyFilters.length > 0 && "border-primary"
+                    tempFilters.specialties.length > 0 && "border-primary"
                   )}
                 >
-                  {specialtyFilters.length === 0 ? (
+                  {tempFilters.specialties.length === 0 ? (
                     <span className="text-muted-foreground">{t('filters.specialty')}</span>
                   ) : (
-                    <span>{t('filters.selected', { count: specialtyFilters.length })}</span>
+                    <span>{t('filters.selected', { count: tempFilters.specialties.length })}</span>
                   )}
                   <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
                 </Button>
@@ -272,19 +409,19 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
                       className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer"
                     >
                       <Checkbox
-                        checked={specialtyFilters.includes(spec)}
+                        checked={tempFilters.specialties.includes(spec)}
                         onCheckedChange={() => toggleSpecialtyFilter(spec)}
                       />
                       <span className="text-sm">{t(`specialties.${spec}`)}</span>
                     </label>
                   ))}
                 </div>
-                {specialtyFilters.length > 0 && (
+                {tempFilters.specialties.length > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
                     className="w-full mt-2"
-                    onClick={() => setSpecialtyFilters([])}
+                    onClick={() => setTempFilters(prev => ({ ...prev, specialties: [] }))}
                   >
                     {t('filters.clearSelection')}
                   </Button>
@@ -293,7 +430,10 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
             </Popover>
 
             {/* Status Filter */}
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select
+              value={tempFilters.status}
+              onValueChange={(value) => setTempFilters(prev => ({ ...prev, status: value }))}
+            >
               <SelectTrigger className="w-[130px] h-9">
                 <SelectValue placeholder={t('filters.status')} />
               </SelectTrigger>
@@ -306,9 +446,19 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
               </SelectContent>
             </Select>
 
+            {/* Apply Button */}
+            <Button
+              onClick={handleApplyFilters}
+              disabled={!filtersChanged}
+              size="sm"
+              className="h-9"
+            >
+              Apply
+            </Button>
+
             {/* Clear filters button */}
             {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 px-3">
+              <Button variant="ghost" size="sm" onClick={handleClearFilters} className="h-9 px-3">
                 <X className="h-4 w-4 mr-1" />
                 {t('filters.reset')}
               </Button>
@@ -348,7 +498,7 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table - Always render structure, show loading inside */}
       <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
@@ -361,103 +511,125 @@ export function InterpretersTable({ interpreters: initialInterpreters }: Interpr
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredInterpreters.length === 0 ? (
+            {loading && interpreters.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-12">
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <RefreshCw className="h-6 w-6 animate-spin" />
+                    <span>Loading...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : displayedInterpreters.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                   {hasActiveFilters ? t('noFilterResults') : t('noResults')}
                 </TableCell>
               </TableRow>
             ) : (
-              filteredInterpreters.map((interpreter) => (
-                <TableRow
-                  key={interpreter.id}
-                  className={cn(
-                    "relative transition-colors hover:bg-muted/50",
-                    !interpreter.is_active && "opacity-50"
-                  )}
-                >
-                  <TableCell>
-                    {/* Full row link overlay */}
-                    <Link
-                      href={`/${locale}/admin/interpreters/${interpreter.id}`}
-                      className="absolute inset-0 z-10"
-                      aria-label={`${getDisplayName(interpreter.name)} ${t('viewDetails')}`}
-                    />
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-10 w-10 overflow-hidden rounded-full bg-muted">
-                        {interpreter.photo_url ? (
-                          <Image
-                            src={interpreter.photo_url}
-                            alt={getDisplayName(interpreter.name)}
-                            fill
-                            sizes="40px"
-                            className="object-cover"
-                            unoptimized={interpreter.photo_url?.includes('.svg') || interpreter.photo_url?.includes('dicebear')}
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
-                            {getDisplayName(interpreter.name)[0] || '?'}
+                  displayedInterpreters.map((interpreter) => (
+                    <TableRow
+                      key={interpreter.id}
+                      className={cn(
+                        "relative transition-colors hover:bg-muted/50",
+                        !interpreter.is_active && "opacity-50"
+                      )}
+                    >
+                      <TableCell>
+                        {/* Full row link overlay */}
+                        <Link
+                          href={`/${locale}/admin/interpreters/${interpreter.id}`}
+                          className="absolute inset-0 z-10"
+                          aria-label={`${getDisplayName(interpreter.name)} ${t('viewDetails')}`}
+                        />
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-10 w-10 overflow-hidden rounded-full bg-muted">
+                            {interpreter.photo_url ? (
+                              <Image
+                                src={interpreter.photo_url}
+                                alt={getDisplayName(interpreter.name)}
+                                fill
+                                sizes="40px"
+                                className="object-cover"
+                                unoptimized={interpreter.photo_url?.includes('.svg') || interpreter.photo_url?.includes('dicebear')}
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
+                                {getDisplayName(interpreter.name)[0] || '?'}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium">{getDisplayName(interpreter.name)}</p>
-                        <p className="text-xs text-muted-foreground">
-                          /{interpreter.slug}
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {interpreter.languages?.[0] && (
-                        <Badge variant="outline" className="text-xs font-normal">
-                          {t(`locales.${interpreter.languages[0].code}`)}
+                          <div>
+                            <p className="font-medium">{getDisplayName(interpreter.name)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              /{interpreter.slug}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {interpreter.languages?.[0] && (
+                            <Badge variant="outline" className="text-xs font-normal">
+                              {t(`locales.${interpreter.languages[0].code}`)}
+                            </Badge>
+                          )}
+                          {interpreter.languages?.length > 1 && (
+                            <Badge variant="outline" className="text-xs font-normal">
+                              +{interpreter.languages.length - 1}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="font-normal">
+                          {t(`specialties.${interpreter.primary_specialty}`)}
                         </Badge>
-                      )}
-                      {interpreter.languages?.length > 1 && (
-                        <Badge variant="outline" className="text-xs font-normal">
-                          +{interpreter.languages.length - 1}
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="font-normal">
-                      {t(`specialties.${interpreter.primary_specialty}`)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-2">
-                      {interpreter.is_active ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <XCircle className="h-4 w-4 text-red-500" />
-                      )}
-                      {interpreter.is_featured && (
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      )}
-                      {interpreter.is_verified && (
-                        <Badge variant="secondary" className="text-xs">{t('stats.verified')}</Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm">{interpreter.avg_rating?.toFixed(1) || '0.0'}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {t('table.reviews', { count: interpreter.review_count || 0 })}
-                      </p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-2">
+                          {interpreter.is_active ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          )}
+                          {interpreter.is_featured && (
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          )}
+                          {interpreter.is_verified && (
+                            <Badge variant="secondary" className="text-xs">{t('stats.verified')}</Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm">{interpreter.avg_rating?.toFixed(1) || '0.0'}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {t('table.reviews', { count: interpreter.review_count || 0 })}
+                          </p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+
+        {/* Load More Trigger */}
+        <div ref={loadMoreRef} className="py-4 text-center">
+          {loadingMore && (
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading more...</span>
+            </div>
+          )}
+          {!hasMoreFiltered && displayedInterpreters.length > 0 && (
+            <p className="text-sm text-muted-foreground">All interpreters loaded</p>
+          )}
+        </div>
       </div>
     </div>
   );

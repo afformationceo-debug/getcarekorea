@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   Search,
   Plus,
@@ -40,6 +40,7 @@ import {
   CalendarDays,
   Languages,
   ChevronDown,
+  Loader2,
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
@@ -137,10 +138,36 @@ const LOCALE_LABELS: Record<string, string> = {
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200';
 
+// Constants
+const PAGE_SIZE = 40;
+
+interface FilterState {
+  search: string;
+  status: string;
+  category: string;
+  locale: string;
+  dateFrom: string;
+  dateTo: string;
+  sortBy: 'created_at' | 'updated_at' | 'view_count' | 'title';
+  sortOrder: 'asc' | 'desc';
+}
+
+const initialFilters: FilterState = {
+  search: '',
+  status: 'all',
+  category: 'all',
+  locale: 'all',
+  dateFrom: '',
+  dateTo: '',
+  sortBy: 'created_at',
+  sortOrder: 'desc',
+};
+
 export default function ContentPage() {
   const params = useParams();
   const currentLocale = params.locale as string || 'en';
 
+  // Data state
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [stats, setStats] = useState<Stats>({
     total: 0,
@@ -150,16 +177,46 @@ export default function ContentPage() {
     archived: 0,
     totalViews: 0,
   });
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
+
+  // Loading states
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [localeFilter, setLocaleFilter] = useState('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [sortBy, setSortBy] = useState<'created_at' | 'updated_at' | 'view_count' | 'title'>('created_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Temporary filter state (UI)
+  const [tempFilters, setTempFilters] = useState<FilterState>(initialFilters);
+
+  // Applied filter state (used for fetching)
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>(initialFilters);
+
+  // Compatibility aliases for legacy code
+  const searchQuery = tempFilters.search;
+  const setSearchQuery = (v: string) => setTempFilters(prev => ({ ...prev, search: v }));
+  const statusFilter = tempFilters.status;
+  const setStatusFilter = (v: string) => setTempFilters(prev => ({ ...prev, status: v }));
+  const categoryFilter = tempFilters.category;
+  const setCategoryFilter = (v: string) => setTempFilters(prev => ({ ...prev, category: v }));
+  const localeFilter = tempFilters.locale;
+  const setLocaleFilter = (v: string) => setTempFilters(prev => ({ ...prev, locale: v }));
+  const dateFrom = tempFilters.dateFrom;
+  const setDateFrom = (v: string) => setTempFilters(prev => ({ ...prev, dateFrom: v }));
+  const dateTo = tempFilters.dateTo;
+  const setDateTo = (v: string) => setTempFilters(prev => ({ ...prev, dateTo: v }));
+  const sortBy = tempFilters.sortBy;
+  const setSortBy = (v: typeof tempFilters.sortBy) => setTempFilters(prev => ({ ...prev, sortBy: v }));
+  const sortOrder = tempFilters.sortOrder;
+  const setSortOrder = (v: typeof tempFilters.sortOrder) => setTempFilters(prev => ({ ...prev, sortOrder: v }));
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Check if filters have changed
+  const filtersChanged = useMemo(() => {
+    return JSON.stringify(tempFilters) !== JSON.stringify(appliedFilters);
+  }, [tempFilters, appliedFilters]);
+
+  // Infinite scroll ref
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Modal states
   const [previewPost, setPreviewPost] = useState<BlogPost | null>(null);
@@ -177,44 +234,91 @@ export default function ContentPage() {
   // Action states
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const fetchPosts = useCallback(async () => {
-    setLoading(true);
+  const fetchPosts = useCallback(async (pageNum: number = 1, append: boolean = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     try {
-      const params = new URLSearchParams();
-      if (searchQuery) params.set('search', searchQuery);
-      if (statusFilter !== 'all') params.set('status', statusFilter);
-      if (categoryFilter !== 'all') params.set('category', categoryFilter);
-      if (localeFilter !== 'all') params.set('locale', localeFilter);
-      if (dateFrom) params.set('dateFrom', dateFrom);
-      if (dateTo) params.set('dateTo', dateTo);
-      params.set('sortBy', sortBy);
-      params.set('sortOrder', sortOrder);
+      const searchParams = new URLSearchParams();
+      searchParams.set('page', pageNum.toString());
+      searchParams.set('limit', PAGE_SIZE.toString());
+      if (appliedFilters.search) searchParams.set('search', appliedFilters.search);
+      if (appliedFilters.status !== 'all') searchParams.set('status', appliedFilters.status);
+      if (appliedFilters.category !== 'all') searchParams.set('category', appliedFilters.category);
+      if (appliedFilters.locale !== 'all') searchParams.set('locale', appliedFilters.locale);
+      if (appliedFilters.dateFrom) searchParams.set('dateFrom', appliedFilters.dateFrom);
+      if (appliedFilters.dateTo) searchParams.set('dateTo', appliedFilters.dateTo);
+      searchParams.set('sortBy', appliedFilters.sortBy);
+      searchParams.set('sortOrder', appliedFilters.sortOrder);
 
-      const response = await fetch(`/api/content?${params.toString()}`);
+      const response = await fetch(`/api/content?${searchParams.toString()}`);
       const data = await response.json();
 
       if (data.success) {
-        setPosts(data.data.posts);
+        if (append) {
+          setPosts(prev => [...prev, ...data.data.posts]);
+        } else {
+          setPosts(data.data.posts);
+        }
         setStats(data.data.stats);
+        setTotalCount(data.data.pagination?.total || data.data.posts.length);
+        setHasMore((data.data.pagination?.page || 1) < (data.data.pagination?.totalPages || 1));
+        setPage(pageNum);
       }
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  }, [searchQuery, statusFilter, categoryFilter, localeFilter, dateFrom, dateTo, sortBy, sortOrder]);
+  }, [appliedFilters]);
 
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+  // Apply filters
+  const handleApplyFilters = useCallback(() => {
+    setAppliedFilters({ ...tempFilters });
+    setPage(1);
+    setPosts([]);
+  }, [tempFilters]);
 
-  // Debounced search
+  // Clear filters
+  const handleClearFilters = useCallback(() => {
+    setTempFilters(initialFilters);
+    setAppliedFilters(initialFilters);
+    setPage(1);
+    setPosts([]);
+  }, []);
+
+  // Fetch when applied filters change
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      fetchPosts();
-    }, 300);
-    return () => clearTimeout(timeout);
-  }, [searchQuery, fetchPosts]);
+    fetchPosts(1, false);
+  }, [appliedFilters, fetchPosts]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const currentRef = loadMoreRef.current;
+    if (!currentRef) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && hasMore && !loading && !loadingMore) {
+          fetchPosts(page + 1, true);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px',
+      }
+    );
+
+    observer.observe(currentRef);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasMore, loading, loadingMore, page, fetchPosts]);
 
   const handleStatusChange = async (postId: string, newStatus: string) => {
     setActionLoading(postId);
@@ -458,7 +562,7 @@ export default function ContentPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchPosts} disabled={loading}>
+          <Button variant="outline" onClick={() => fetchPosts(1, false)} disabled={loading}>
             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
@@ -571,6 +675,13 @@ export default function ContentPage() {
               </SelectContent>
             </Select>
             <Button
+              onClick={handleApplyFilters}
+              disabled={!filtersChanged}
+              size="sm"
+            >
+              Apply
+            </Button>
+            <Button
               variant={showAdvancedFilters ? 'secondary' : 'outline'}
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
               className="gap-2"
@@ -579,6 +690,10 @@ export default function ContentPage() {
               고급 필터
               <ChevronDown className={`h-4 w-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
             </Button>
+            {/* Result count */}
+            <div className="text-sm text-muted-foreground">
+              {posts.length} / {totalCount} articles
+            </div>
           </div>
 
           {/* Advanced Filters */}
@@ -698,16 +813,7 @@ export default function ContentPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setStatusFilter('all');
-                    setCategoryFilter('all');
-                    setLocaleFilter('all');
-                    setDateFrom('');
-                    setDateTo('');
-                    setSortBy('created_at');
-                    setSortOrder('desc');
-                  }}
+                  onClick={handleClearFilters}
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Reset Filters
@@ -931,6 +1037,19 @@ export default function ContentPage() {
                 )}
               </TableBody>
             </Table>
+
+            {/* Load More Trigger */}
+            <div ref={loadMoreRef} className="py-4 text-center">
+              {loadingMore && (
+                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Loading more...</span>
+                </div>
+              )}
+              {!hasMore && posts.length > 0 && (
+                <p className="text-sm text-muted-foreground">All articles loaded</p>
+              )}
+            </div>
           </Card>
         </TabsContent>
 
