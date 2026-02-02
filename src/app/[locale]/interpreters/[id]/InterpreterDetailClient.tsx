@@ -23,6 +23,8 @@ import {
   Briefcase,
   GraduationCap,
   Mail,
+  Camera,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +49,13 @@ interface Review {
   hospital: string;
 }
 
+interface WorkingPhoto {
+  id: string;
+  image_url: string;
+  caption: string | null;
+  display_order: number;
+}
+
 interface Interpreter {
   id: string;
   name: string;
@@ -65,6 +74,7 @@ interface Interpreter {
   education: string;
   certifications: string[];
   services: string[];
+  working_photos?: WorkingPhoto[];
   availability?: {
     [key: string]: { start: string; end: string }[];
   };
@@ -113,49 +123,32 @@ export function InterpreterDetailClient({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-violet-50/50 via-background to-background dark:from-violet-950/20">
-      {/* Breadcrumb */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="border-b bg-background/80 backdrop-blur-sm"
-      >
-        <div className="container py-3">
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-foreground transition-colors">
-              {t('detail.home')}
-            </Link>
-            <ChevronRight className="h-4 w-4" />
-            <Link href={`/interpreters`} className="hover:text-foreground transition-colors">
-              {t('detail.interpreters')}
-            </Link>
-            <ChevronRight className="h-4 w-4" />
-            <span className="font-medium text-foreground">{interpreter.name}</span>
-          </nav>
-        </div>
-      </motion.div>
+    <div className="min-h-screen">
+      {/* Hero Background Gradient */}
+      <div className="bg-gradient-to-b from-violet-200 to-white dark:from-violet-900 dark:to-zinc-950">
+        {/* Breadcrumb */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="border-b border-violet-200/50 dark:border-violet-800/50"
+        >
+          <div className="container py-3">
+            <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Link href="/" className="hover:text-foreground transition-colors">
+                {t('detail.home')}
+              </Link>
+              <ChevronRight className="h-4 w-4" />
+              <Link href={`/interpreters`} className="hover:text-foreground transition-colors">
+                {t('detail.interpreters')}
+              </Link>
+              <ChevronRight className="h-4 w-4" />
+              <span className="font-medium text-foreground">{interpreter.name}</span>
+            </nav>
+          </div>
+        </motion.div>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-8 lg:py-12">
-        {/* Background decorations */}
-        <div className="absolute inset-0 -z-10">
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.2, 0.3, 0.2],
-            }}
-            transition={{ duration: 8, repeat: Infinity }}
-            className="absolute -left-32 top-0 h-96 w-96 rounded-full bg-violet-400/20 blur-3xl"
-          />
-          <motion.div
-            animate={{
-              scale: [1.2, 1, 1.2],
-              opacity: [0.2, 0.3, 0.2],
-            }}
-            transition={{ duration: 10, repeat: Infinity }}
-            className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-purple-400/20 blur-3xl"
-          />
-        </div>
+        {/* Hero Section */}
+        <section className="relative overflow-hidden py-8 lg:py-12">
 
         <div className="container">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
@@ -278,22 +271,27 @@ export function InterpreterDetailClient({
                       const order = { native: 0, fluent: 1, conversational: 2 };
                       return (order[a.level as keyof typeof order] ?? 2) - (order[b.level as keyof typeof order] ?? 2);
                     })
-                    .map((lang) => (
-                    <Badge
-                      key={lang.code}
-                      variant="outline"
-                      className={`border-2 px-3 py-1.5 text-sm ${
-                        lang.level === 'native'
-                          ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/30'
-                          : ''
-                      }`}
-                    >
-                      {getLanguageName(lang.code)}
-                      <span className="ml-1.5 text-xs text-muted-foreground">
-                        ({lang.level === 'native' ? t('detail.native') : lang.level === 'fluent' ? t('detail.fluent') : t('detail.conversational')})
-                      </span>
-                    </Badge>
-                  ))}
+                    .map((lang) => {
+                      // Different styles based on proficiency level
+                      const levelStyles = {
+                        native: 'bg-violet-600 text-white border-violet-600 shadow-md',
+                        fluent: 'bg-white/90 text-violet-700 border-violet-300 dark:bg-violet-950/50 dark:text-violet-200 dark:border-violet-600',
+                        conversational: 'bg-white/70 text-violet-600 border-violet-200 dark:bg-violet-950/30 dark:text-violet-300 dark:border-violet-700',
+                      };
+                      const style = levelStyles[lang.level as keyof typeof levelStyles] || levelStyles.conversational;
+
+                      return (
+                        <Badge
+                          key={lang.code}
+                          className={`border-2 px-3 py-1.5 text-sm ${style}`}
+                        >
+                          {getLanguageName(lang.code)}
+                          <span className={`ml-1.5 text-xs ${lang.level === 'native' ? 'text-white/80' : 'text-muted-foreground'}`}>
+                            ({lang.level === 'native' ? t('detail.native') : lang.level === 'fluent' ? t('detail.fluent') : t('detail.conversational')})
+                          </span>
+                        </Badge>
+                      );
+                    })}
                 </div>
               </div>
 
@@ -316,9 +314,10 @@ export function InterpreterDetailClient({
           </div>
         </div>
       </section>
+      </div>
 
       {/* Main Content */}
-      <section className="container pb-16">
+      <section className="container pb-16 bg-background">
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2">
@@ -332,6 +331,9 @@ export function InterpreterDetailClient({
                   {[
                     { key: 'about', label: t('detail.about') },
                     { key: 'services', label: t('detail.servicesTab') },
+                    ...(interpreter.working_photos && interpreter.working_photos.length > 0
+                      ? [{ key: 'gallery', label: t('detail.gallery') }]
+                      : []),
                   ].map((tab) => (
                     <TabsTrigger
                       key={tab.key}
@@ -350,6 +352,12 @@ export function InterpreterDetailClient({
                 <TabsContent value="services" className="mt-8">
                   <ServicesSection interpreter={interpreter} />
                 </TabsContent>
+
+                {interpreter.working_photos && interpreter.working_photos.length > 0 && (
+                  <TabsContent value="gallery" className="mt-8">
+                    <GallerySection photos={interpreter.working_photos} />
+                  </TabsContent>
+                )}
               </Tabs>
             </motion.div>
           </div>
@@ -557,6 +565,92 @@ function ServicesSection({ interpreter }: { interpreter: Interpreter }) {
   );
 }
 
+function GallerySection({ photos }: { photos: WorkingPhoto[] }) {
+  const t = useTranslations('interpreters');
+  const [selectedPhoto, setSelectedPhoto] = useState<WorkingPhoto | null>(null);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <Card className="border shadow-sm">
+        <CardHeader className="border-b py-3">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/30">
+              <Camera className="h-3.5 w-3.5 text-violet-600" />
+            </div>
+            {t('detail.workingPhotos')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="py-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {photos.map((photo, index) => (
+              <motion.div
+                key={photo.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1 }}
+                className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group"
+                onClick={() => setSelectedPhoto(photo)}
+              >
+                <Image
+                  src={photo.image_url}
+                  alt={photo.caption || `Photo ${index + 1}`}
+                  fill
+                  className="object-cover transition-transform group-hover:scale-105"
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                {photo.caption && (
+                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                    <p className="text-xs text-white truncate">{photo.caption}</p>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Lightbox */}
+      {selectedPhoto && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white hover:text-gray-300"
+            onClick={() => setSelectedPhoto(null)}
+          >
+            <X className="h-8 w-8" />
+          </button>
+          <div className="relative max-w-4xl max-h-[90vh] w-full h-full">
+            <Image
+              src={selectedPhoto.image_url}
+              alt={selectedPhoto.caption || 'Photo'}
+              fill
+              className="object-contain"
+              sizes="100vw"
+            />
+            {selectedPhoto.caption && (
+              <div className="absolute bottom-4 left-0 right-0 text-center">
+                <p className="text-white bg-black/50 inline-block px-4 py-2 rounded-lg">
+                  {selectedPhoto.caption}
+                </p>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
 function ReviewsSection({
   reviews,
   interpreter,
@@ -661,8 +755,10 @@ function ReviewsSection({
 function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; locale: Locale }) {
   const t = useTranslations('interpreters');
   const [ctaConfig, setCTAConfig] = useState<CTAConfig | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     async function loadCTA() {
       try {
         const config = await getCTAForLocale(locale);
@@ -673,6 +769,10 @@ function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; loc
     }
     loadCTA();
   }, [locale]);
+
+  // Default values for SSR - must match initial client render
+  const buttonColor = mounted && ctaConfig?.color ? ctaConfig.color : 'from-violet-600 to-purple-600';
+  const buttonUrl = mounted && ctaConfig?.url ? ctaConfig.url : '#';
 
   return (
     <motion.div
@@ -702,11 +802,11 @@ function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; loc
 
           <div className="space-y-3">
             <Button
-              className={`w-full gap-2 rounded-xl bg-gradient-to-r ${ctaConfig?.color || 'from-violet-600 to-purple-600'} py-6 text-lg hover:opacity-90`}
+              className={`w-full gap-2 rounded-xl bg-gradient-to-r ${buttonColor} py-6 text-lg hover:opacity-90`}
               asChild
             >
               <a
-                href={ctaConfig?.url || '#'}
+                href={buttonUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >

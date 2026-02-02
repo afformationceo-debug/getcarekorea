@@ -315,7 +315,9 @@
         "hospitalCoordination": "병원 조율",
         "postOperativeCare": "수술 후 케어 지원",
         "documentTranslation": "문서 번역"
-      }
+      },
+      "gallery": "갤러리",
+      "workingPhotos": "통역 활동 사진"
     }
   },
   "chat": {
@@ -935,6 +937,7 @@
         "inquiries": "문의",
         "keywords": "키워드",
         "content": "콘텐츠",
+        "seo": "SEO",
         "cron": "스케줄러",
         "progress": "진행상황",
         "feedback": "피드백",
@@ -943,6 +946,23 @@
         "notifications": "알림",
         "settings": "설정"
       }
+    },
+    "seo": {
+      "title": "SEO 미리보기",
+      "description": "통역사 및 블로그 게시물의 SEO 메타데이터를 확인하세요",
+      "selectItem": "항목 선택",
+      "selectItemPrompt": "목록에서 항목을 선택하여 SEO를 미리 보세요",
+      "tabs": {
+        "interpreters": "통역사",
+        "blog": "블로그"
+      },
+      "stats": {
+        "interpreters": "통역사",
+        "blogPosts": "블로그 게시물",
+        "locales": "지원 언어"
+      },
+      "noInterpreters": "통역사가 없습니다",
+      "noBlogPosts": "블로그 게시물이 없습니다"
     },
     "interpreters": {
       "title": "통역사 관리",

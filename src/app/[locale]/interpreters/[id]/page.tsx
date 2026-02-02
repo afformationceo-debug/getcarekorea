@@ -3,7 +3,9 @@ import { setRequestLocale } from 'next-intl/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { InterpreterDetailClient } from './InterpreterDetailClient';
 import type { Locale } from '@/lib/i18n/config';
+import { locales } from '@/lib/i18n/config';
 import type { Metadata } from 'next';
+import Script from 'next/script';
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://getcarekorea.com';
 
@@ -13,6 +15,163 @@ interface PageProps {
 
 // Type for localized JSONB fields
 type LocalizedField = Record<string, string>;
+
+// Localized SEO templates
+const seoTemplates: Record<string, {
+  title: (name: string) => string;
+  description: (name: string, specialty: string, languages: string) => string;
+  ogTitle: (name: string) => string;
+  specialties: Record<string, string>;
+}> = {
+  en: {
+    title: (name) => `${name} | Medical Interpreter | GetCareKorea`,
+    description: (name, specialty, languages) =>
+      `${name} - Professional medical interpreter in Korea specializing in ${specialty}. Fluent in ${languages}. Book your interpreter for a seamless medical tourism experience.`,
+    ogTitle: (name) => `${name} - Medical Interpreter in Korea`,
+    specialties: {
+      'plastic-surgery': 'Plastic Surgery',
+      'dermatology': 'Dermatology',
+      'dental': 'Dental',
+      'health-checkup': 'Health Checkup',
+      'fertility': 'Fertility',
+      'hair-transplant': 'Hair Transplant',
+      'ophthalmology': 'Ophthalmology',
+      'orthopedics': 'Orthopedics',
+      'general-medical': 'General Medical',
+    },
+  },
+  ko: {
+    title: (name) => `${name} | 의료 통역사 | GetCareKorea`,
+    description: (name, specialty, languages) =>
+      `${name} - ${specialty} 전문 한국 의료 통역사. ${languages} 구사. 외국인 환자를 위한 전문 의료 통역 서비스를 제공합니다.`,
+    ogTitle: (name) => `${name} - 한국 의료 통역사`,
+    specialties: {
+      'plastic-surgery': '성형외과',
+      'dermatology': '피부과',
+      'dental': '치과',
+      'health-checkup': '건강검진',
+      'fertility': '난임',
+      'hair-transplant': '모발이식',
+      'ophthalmology': '안과',
+      'orthopedics': '정형외과',
+      'general-medical': '일반의료',
+    },
+  },
+  ja: {
+    title: (name) => `${name} | 医療通訳 | GetCareKorea`,
+    description: (name, specialty, languages) =>
+      `${name} - 韓国の${specialty}専門医療通訳者。${languages}対応。韓国での医療ツーリズムをサポートします。`,
+    ogTitle: (name) => `${name} - 韓国医療通訳`,
+    specialties: {
+      'plastic-surgery': '美容整形',
+      'dermatology': '皮膚科',
+      'dental': '歯科',
+      'health-checkup': '健康診断',
+      'fertility': '不妊治療',
+      'hair-transplant': '植毛',
+      'ophthalmology': '眼科',
+      'orthopedics': '整形外科',
+      'general-medical': '一般医療',
+    },
+  },
+  'zh-CN': {
+    title: (name) => `${name} | 医疗翻译 | GetCareKorea`,
+    description: (name, specialty, languages) =>
+      `${name} - 韩国${specialty}专业医疗翻译。精通${languages}。为您的韩国医疗之旅提供专业翻译服务。`,
+    ogTitle: (name) => `${name} - 韩国医疗翻译`,
+    specialties: {
+      'plastic-surgery': '整形外科',
+      'dermatology': '皮肤科',
+      'dental': '牙科',
+      'health-checkup': '健康体检',
+      'fertility': '不孕治疗',
+      'hair-transplant': '植发',
+      'ophthalmology': '眼科',
+      'orthopedics': '骨科',
+      'general-medical': '综合医疗',
+    },
+  },
+  'zh-TW': {
+    title: (name) => `${name} | 醫療口譯 | GetCareKorea`,
+    description: (name, specialty, languages) =>
+      `${name} - 韓國${specialty}專業醫療口譯員。精通${languages}。為您的韓國醫療之旅提供專業口譯服務。`,
+    ogTitle: (name) => `${name} - 韓國醫療口譯`,
+    specialties: {
+      'plastic-surgery': '整形外科',
+      'dermatology': '皮膚科',
+      'dental': '牙科',
+      'health-checkup': '健康檢查',
+      'fertility': '不孕治療',
+      'hair-transplant': '植髮',
+      'ophthalmology': '眼科',
+      'orthopedics': '骨科',
+      'general-medical': '綜合醫療',
+    },
+  },
+  th: {
+    title: (name) => `${name} | ล่ามแพทย์ | GetCareKorea`,
+    description: (name, specialty, languages) =>
+      `${name} - ล่ามแพทย์เฉพาะทาง${specialty}ในเกาหลี พูดได้${languages} บริการล่ามสำหรับการท่องเที่ยวเชิงการแพทย์`,
+    ogTitle: (name) => `${name} - ล่ามแพทย์ในเกาหลี`,
+    specialties: {
+      'plastic-surgery': 'ศัลยกรรมตกแต่ง',
+      'dermatology': 'ผิวหนัง',
+      'dental': 'ทันตกรรม',
+      'health-checkup': 'ตรวจสุขภาพ',
+      'fertility': 'รักษาภาวะมีบุตรยาก',
+      'hair-transplant': 'ปลูกผม',
+      'ophthalmology': 'จักษุ',
+      'orthopedics': 'กระดูกและข้อ',
+      'general-medical': 'การแพทย์ทั่วไป',
+    },
+  },
+  mn: {
+    title: (name) => `${name} | Эмнэлгийн орчуулагч | GetCareKorea`,
+    description: (name, specialty, languages) =>
+      `${name} - Солонгосын ${specialty} чиглэлээр мэргэшсэн эмнэлгийн орчуулагч. ${languages} ярьдаг. Эмнэлгийн аялал жуулчлалд туслах орчуулагч.`,
+    ogTitle: (name) => `${name} - Солонгост эмнэлгийн орчуулагч`,
+    specialties: {
+      'plastic-surgery': 'Гоо сайхны мэс засал',
+      'dermatology': 'Арьс судлал',
+      'dental': 'Шүдний эмчилгээ',
+      'health-checkup': 'Эрүүл мэндийн үзлэг',
+      'fertility': 'Үргүйдэл эмчилгээ',
+      'hair-transplant': 'Үс суулгах',
+      'ophthalmology': 'Нүдний эмчилгээ',
+      'orthopedics': 'Ортопеди',
+      'general-medical': 'Ерөнхий эмчилгээ',
+    },
+  },
+  ru: {
+    title: (name) => `${name} | Медицинский переводчик | GetCareKorea`,
+    description: (name, specialty, languages) =>
+      `${name} - Профессиональный медицинский переводчик в Корее, специализация: ${specialty}. Языки: ${languages}. Сопровождение медицинского туризма.`,
+    ogTitle: (name) => `${name} - Медицинский переводчик в Корее`,
+    specialties: {
+      'plastic-surgery': 'Пластическая хирургия',
+      'dermatology': 'Дерматология',
+      'dental': 'Стоматология',
+      'health-checkup': 'Медосмотр',
+      'fertility': 'Лечение бесплодия',
+      'hair-transplant': 'Пересадка волос',
+      'ophthalmology': 'Офтальмология',
+      'orthopedics': 'Ортопедия',
+      'general-medical': 'Общая медицина',
+    },
+  },
+};
+
+// Get localized language names
+const languageNames: Record<string, Record<string, string>> = {
+  en: { en: 'English', ko: 'Korean', ja: 'Japanese', 'zh-CN': 'Chinese (Simplified)', 'zh-TW': 'Chinese (Traditional)', th: 'Thai', mn: 'Mongolian', ru: 'Russian', vi: 'Vietnamese' },
+  ko: { en: '영어', ko: '한국어', ja: '일본어', 'zh-CN': '중국어(간체)', 'zh-TW': '중국어(번체)', th: '태국어', mn: '몽골어', ru: '러시아어', vi: '베트남어' },
+  ja: { en: '英語', ko: '韓国語', ja: '日本語', 'zh-CN': '中国語(簡体)', 'zh-TW': '中国語(繁体)', th: 'タイ語', mn: 'モンゴル語', ru: 'ロシア語', vi: 'ベトナム語' },
+  'zh-CN': { en: '英语', ko: '韩语', ja: '日语', 'zh-CN': '简体中文', 'zh-TW': '繁体中文', th: '泰语', mn: '蒙古语', ru: '俄语', vi: '越南语' },
+  'zh-TW': { en: '英語', ko: '韓語', ja: '日語', 'zh-CN': '簡體中文', 'zh-TW': '繁體中文', th: '泰語', mn: '蒙古語', ru: '俄語', vi: '越南語' },
+  th: { en: 'อังกฤษ', ko: 'เกาหลี', ja: 'ญี่ปุ่น', 'zh-CN': 'จีน(ตัวย่อ)', 'zh-TW': 'จีน(ตัวเต็ม)', th: 'ไทย', mn: 'มองโกเลีย', ru: 'รัสเซีย', vi: 'เวียดนาม' },
+  mn: { en: 'Англи', ko: 'Солонгос', ja: 'Япон', 'zh-CN': 'Хятад(хялбаршуулсан)', 'zh-TW': 'Хятад(уламжлалт)', th: 'Тайланд', mn: 'Монгол', ru: 'Орос', vi: 'Вьетнам' },
+  ru: { en: 'Английский', ko: 'Корейский', ja: 'Японский', 'zh-CN': 'Китайский(упр.)', 'zh-TW': 'Китайский(трад.)', th: 'Тайский', mn: 'Монгольский', ru: 'Русский', vi: 'Вьетнамский' },
+};
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -41,51 +200,157 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  // Get locale-specific templates (fallback to English)
+  const templates = seoTemplates[locale] || seoTemplates.en;
+  const langNames = languageNames[locale] || languageNames.en;
+
+  // Get localized name
   const nameData = interpreter.name as LocalizedField;
   const name = nameData?.[locale] || nameData?.['en'] || 'Medical Interpreter';
-  const bioData = interpreter.bio_short as LocalizedField;
-  const bio = bioData?.[locale] || bioData?.['en'] || '';
   const slug = interpreter.slug || id;
 
+  // Get localized specialty
+  const specialtySlug = interpreter.primary_specialty || 'general-medical';
+  const specialty = templates.specialties[specialtySlug] || specialtySlug;
+
+  // Get localized language list
   const languages = Array.isArray(interpreter.languages)
-    ? interpreter.languages.map((l: { code: string }) => l.code).join(', ')
+    ? interpreter.languages.map((l: { code: string }) => langNames[l.code] || l.code).join(', ')
     : '';
 
-  const specialty = interpreter.primary_specialty
-    ? interpreter.primary_specialty.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-    : 'Medical Tourism';
+  // Get bio or generate description
+  const bioData = interpreter.bio_short as LocalizedField;
+  const bio = bioData?.[locale] || bioData?.['en'] || '';
+  const description = bio || templates.description(name, specialty, languages);
 
-  const description = bio || `${name} - Professional medical interpreter specializing in ${specialty}. Languages: ${languages}`;
+  // Generate localized title
+  const title = templates.title(name);
+  const ogTitle = templates.ogTitle(name);
 
   return {
-    title: `${name} | Medical Interpreter | GetCareKorea`,
+    title,
     description: description.slice(0, 160),
     openGraph: {
-      title: `${name} - Medical Interpreter Korea`,
+      title: ogTitle,
       description: description.slice(0, 160),
       url: `${baseUrl}/${locale}/interpreters/${slug}`,
       siteName: 'GetCareKorea',
-      images: interpreter.photo_url ? [{ url: interpreter.photo_url, width: 400, height: 400 }] : [],
+      images: [{
+        url: `${baseUrl}/api/og/interpreter?id=${slug}&locale=${locale}`,
+        width: 1200,
+        height: 630,
+        alt: ogTitle,
+      }],
       locale: locale,
       type: 'profile',
     },
     twitter: {
-      card: 'summary',
-      title: `${name} | Medical Interpreter`,
+      card: 'summary_large_image',
+      title: ogTitle,
       description: description.slice(0, 160),
-      images: interpreter.photo_url ? [interpreter.photo_url] : [],
+      images: [`${baseUrl}/api/og/interpreter?id=${slug}&locale=${locale}`],
     },
     alternates: {
       canonical: `${baseUrl}/${locale}/interpreters/${slug}`,
-      languages: {
-        'en': `${baseUrl}/en/interpreters/${slug}`,
-        'ko': `${baseUrl}/ko/interpreters/${slug}`,
-        'ja': `${baseUrl}/ja/interpreters/${slug}`,
-        'zh-CN': `${baseUrl}/zh-CN/interpreters/${slug}`,
-        'zh-TW': `${baseUrl}/zh-TW/interpreters/${slug}`,
-      },
+      languages: Object.fromEntries(
+        locales.map((loc) => [loc, `${baseUrl}/${loc}/interpreters/${slug}`])
+      ),
     },
   };
+}
+
+// Generate JSON-LD schema for interpreter detail page
+function generateInterpreterSchema(
+  interpreter: {
+    name: string;
+    bio: string;
+    photo_url: string | null;
+    slug: string;
+    languages: { code: string; name: string }[];
+    specialties: string[];
+    location: string;
+    avg_rating: number;
+    review_count: number;
+    experience_years: number;
+  },
+  locale: string
+) {
+  const personSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: interpreter.name,
+    description: interpreter.bio,
+    image: interpreter.photo_url || undefined,
+    url: `${baseUrl}/${locale}/interpreters/${interpreter.slug}`,
+    jobTitle: 'Medical Interpreter',
+    worksFor: {
+      '@type': 'Organization',
+      name: 'GetCareKorea',
+      url: baseUrl,
+    },
+    workLocation: {
+      '@type': 'Place',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: interpreter.location,
+        addressCountry: 'KR',
+      },
+    },
+    knowsLanguage: interpreter.languages.map((lang) => lang.name),
+    hasOccupation: {
+      '@type': 'Occupation',
+      name: 'Medical Interpreter',
+      occupationalCategory: 'Healthcare',
+      skills: interpreter.specialties,
+    },
+  };
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: `${baseUrl}/${locale}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Interpreters',
+        item: `${baseUrl}/${locale}/interpreters`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: interpreter.name,
+        item: `${baseUrl}/${locale}/interpreters/${interpreter.slug}`,
+      },
+    ],
+  };
+
+  // Service schema for interpreter services
+  const serviceSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: `Medical Interpretation by ${interpreter.name}`,
+    description: `Professional medical interpretation services in Korea. Specializing in ${interpreter.specialties.join(', ')}.`,
+    provider: personSchema,
+    areaServed: {
+      '@type': 'Country',
+      name: 'South Korea',
+    },
+    aggregateRating: interpreter.review_count > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: interpreter.avg_rating,
+      reviewCount: interpreter.review_count,
+      bestRating: 5,
+      worstRating: 1,
+    } : undefined,
+  };
+
+  return [personSchema, breadcrumbSchema, serviceSchema];
 }
 
 // Get localized value from JSONB field with fallback to English
@@ -243,11 +508,24 @@ export default async function InterpreterDetailPage({ params }: PageProps) {
     hospital: string;
   }> = [];
 
+  // Generate JSON-LD schema for SEO
+  const schemaMarkup = generateInterpreterSchema(interpreter, locale);
+
   return (
-    <InterpreterDetailClient
-      interpreter={interpreter}
-      reviews={reviews}
-      locale={locale as Locale}
-    />
+    <>
+      {/* JSON-LD Schema for SEO */}
+      <Script
+        id="interpreter-detail-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(schemaMarkup),
+        }}
+      />
+      <InterpreterDetailClient
+        interpreter={interpreter}
+        reviews={reviews}
+        locale={locale as Locale}
+      />
+    </>
   );
 }

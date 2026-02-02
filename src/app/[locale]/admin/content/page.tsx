@@ -69,6 +69,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { SEOPreview } from '@/components/admin/SEOPreview';
 
 // Types
 interface BlogPost {
@@ -687,6 +688,21 @@ export default function ContentPage() {
                           <p className="text-sm text-muted-foreground">
                             <span className="font-medium">Preview URL:</span> <code className="bg-background px-2 py-1 rounded text-violet-600">{typeof window !== 'undefined' ? window.location.origin : ''}/{previewLocale}/blog/{previewPost.slug}</code>
                           </p>
+                        </div>
+                        {/* SEO Preview */}
+                        <div className="mb-6">
+                          <SEOPreview
+                            type="blog"
+                            data={{
+                              title: previewPost.title,
+                              excerpt: previewPost.excerpt || undefined,
+                              cover_image_url: previewPost.cover_image_url || undefined,
+                              slug: previewPost.slug,
+                              locale: previewPost.locale,
+                              category: previewPost.category || undefined,
+                            }}
+                            defaultLocale={previewPost.locale || 'en'}
+                          />
                         </div>
                         <div className="mb-4 flex flex-wrap items-center gap-2">
                           {previewPost.category && <Badge className="bg-violet-500 hover:bg-violet-600">{formatCategoryName(previewPost.category)}</Badge>}

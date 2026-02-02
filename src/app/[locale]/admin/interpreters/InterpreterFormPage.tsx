@@ -27,6 +27,8 @@ import { X, Plus, Upload, Camera, ChevronDown, Languages } from 'lucide-react';
 import { toast } from 'sonner';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { cn } from '@/lib/utils';
+import { InterpreterPhotosManager } from '@/components/admin/InterpreterPhotosManager';
+import { SEOPreview } from '@/components/admin/SEOPreview';
 
 type LocalizedField = Record<string, string>;
 
@@ -772,6 +774,25 @@ export function InterpreterFormPage({ interpreter }: InterpreterFormPageProps) {
               )}
             </CardContent>
           </Card>
+
+          {/* Working Photos */}
+          {interpreter?.id && (
+            <InterpreterPhotosManager interpreterId={interpreter.id} />
+          )}
+
+          {/* SEO Preview */}
+          <SEOPreview
+            type="interpreter"
+            data={{
+              name: { ...Object.fromEntries(languageEntries.map(e => [e.code, e.name])), en: englishName },
+              bio_short: Object.fromEntries(languageEntries.map(e => [e.code, e.bioShort])),
+              photo_url: photoUrl || undefined,
+              slug: slug,
+              primary_specialty: primarySpecialty,
+              languages: languageEntries.map(e => ({ code: e.code, proficiency: e.proficiency })),
+            }}
+            defaultLocale={locale}
+          />
 
           {/* Settings */}
           <Card>

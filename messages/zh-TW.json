@@ -315,7 +315,9 @@
         "hospitalCoordination": "醫院協調",
         "postOperativeCare": "術後護理支援",
         "documentTranslation": "文件翻譯"
-      }
+      },
+      "gallery": "相簿",
+      "workingPhotos": "口譯工作照片"
     }
   },
   "chat": {
@@ -935,6 +937,7 @@
         "inquiries": "諮詢",
         "keywords": "關鍵字",
         "content": "內容",
+        "seo": "SEO",
         "cron": "定時任務",
         "progress": "進度",
         "feedback": "回饋",
@@ -943,6 +946,23 @@
         "notifications": "通知",
         "settings": "設定"
       }
+    },
+    "seo": {
+      "title": "SEO預覽",
+      "description": "檢查翻譯和部落格文章的SEO元數據",
+      "selectItem": "選擇項目",
+      "selectItemPrompt": "選擇一個項目預覽SEO",
+      "tabs": {
+        "interpreters": "翻譯",
+        "blog": "部落格"
+      },
+      "stats": {
+        "interpreters": "翻譯",
+        "blogPosts": "部落格文章",
+        "locales": "支援語言"
+      },
+      "noInterpreters": "沒有翻譯",
+      "noBlogPosts": "沒有部落格文章"
     },
     "interpreters": {
       "title": "翻譯管理",

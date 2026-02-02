@@ -163,6 +163,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     const locale = searchParams.get('locale') || 'en';
     const includeReviews = searchParams.get('includeReviews') === 'true';
     const includePosts = searchParams.get('includePosts') === 'true';
+    const includePhotos = searchParams.get('includePhotos') !== 'false'; // Default: true
 
     const startTime = Date.now();
 
@@ -223,6 +224,18 @@ export async function GET(request: NextRequest, { params }: Params) {
       // In future, could link reviews to author_personas
       response.reviews = [];
       response.reviewCount = 0;
+    }
+
+    // Fetch working photos
+    if (includePhotos) {
+      const personaId = (personaData as Record<string, unknown>).id as string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: photos } = await (supabase.from('interpreter_photos') as any)
+        .select('id, image_url, caption, display_order')
+        .eq('persona_id', personaId)
+        .order('display_order', { ascending: true });
+
+      response.working_photos = photos || [];
     }
 
     const responseTime = Date.now() - startTime;

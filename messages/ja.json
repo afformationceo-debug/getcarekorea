@@ -315,7 +315,9 @@
         "hospitalCoordination": "病院調整",
         "postOperativeCare": "術後ケアサポート",
         "documentTranslation": "書類翻訳"
-      }
+      },
+      "gallery": "ギャラリー",
+      "workingPhotos": "通訳活動写真"
     }
   },
   "chat": {
@@ -935,6 +937,7 @@
         "inquiries": "お問い合わせ",
         "keywords": "キーワード",
         "content": "コンテンツ",
+        "seo": "SEO",
         "cron": "Cronジョブ",
         "progress": "進捗",
         "feedback": "フィードバック",
@@ -943,6 +946,23 @@
         "notifications": "通知",
         "settings": "設定"
       }
+    },
+    "seo": {
+      "title": "SEOプレビュー",
+      "description": "通訳者とブログ記事のSEOメタデータを確認",
+      "selectItem": "項目を選択",
+      "selectItemPrompt": "SEOをプレビューする項目を選択してください",
+      "tabs": {
+        "interpreters": "通訳者",
+        "blog": "ブログ"
+      },
+      "stats": {
+        "interpreters": "通訳者",
+        "blogPosts": "ブログ記事",
+        "locales": "対応言語"
+      },
+      "noInterpreters": "通訳者がいません",
+      "noBlogPosts": "ブログ記事がありません"
     },
     "interpreters": {
       "title": "通訳者管理",

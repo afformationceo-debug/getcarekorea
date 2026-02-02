@@ -315,7 +315,9 @@
         "hospitalCoordination": "Hospital Coordination",
         "postOperativeCare": "Post-operative Care Support",
         "documentTranslation": "Document Translation"
-      }
+      },
+      "gallery": "Gallery",
+      "workingPhotos": "Working Photos"
     }
   },
   "chat": {
@@ -935,6 +937,7 @@
         "inquiries": "Inquiries",
         "keywords": "Keywords",
         "content": "Content",
+        "seo": "SEO",
         "cron": "Cron Jobs",
         "progress": "Progress",
         "feedback": "Feedback",
@@ -943,6 +946,23 @@
         "notifications": "Notifications",
         "settings": "Settings"
       }
+    },
+    "seo": {
+      "title": "SEO Preview",
+      "description": "Check and preview SEO metadata for interpreters and blog posts",
+      "selectItem": "Select Item",
+      "selectItemPrompt": "Select an item from the list to preview SEO",
+      "tabs": {
+        "interpreters": "Interpreters",
+        "blog": "Blog"
+      },
+      "stats": {
+        "interpreters": "Interpreters",
+        "blogPosts": "Blog Posts",
+        "locales": "Supported Locales"
+      },
+      "noInterpreters": "No interpreters found",
+      "noBlogPosts": "No blog posts found"
     },
     "interpreters": {
       "title": "Interpreters",

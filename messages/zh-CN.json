@@ -315,7 +315,9 @@
         "hospitalCoordination": "医院协调",
         "postOperativeCare": "术后护理支持",
         "documentTranslation": "文件翻译"
-      }
+      },
+      "gallery": "相册",
+      "workingPhotos": "口译工作照片"
     }
   },
   "chat": {
@@ -935,6 +937,7 @@
         "inquiries": "咨询",
         "keywords": "关键词",
         "content": "内容",
+        "seo": "SEO",
         "cron": "定时任务",
         "progress": "进度",
         "feedback": "反馈",
@@ -943,6 +946,23 @@
         "notifications": "通知",
         "settings": "设置"
       }
+    },
+    "seo": {
+      "title": "SEO预览",
+      "description": "检查翻译和博客文章的SEO元数据",
+      "selectItem": "选择项目",
+      "selectItemPrompt": "选择一个项目预览SEO",
+      "tabs": {
+        "interpreters": "翻译",
+        "blog": "博客"
+      },
+      "stats": {
+        "interpreters": "翻译",
+        "blogPosts": "博客文章",
+        "locales": "支持语言"
+      },
+      "noInterpreters": "没有翻译",
+      "noBlogPosts": "没有博客文章"
     },
     "interpreters": {
       "title": "翻译管理",

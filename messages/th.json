@@ -315,7 +315,9 @@
         "hospitalCoordination": "ประสานงานโรงพยาบาล",
         "postOperativeCare": "ดูแลหลังผ่าตัด",
         "documentTranslation": "แปลเอกสาร"
-      }
+      },
+      "gallery": "แกลเลอรี",
+      "workingPhotos": "ภาพการทำงาน"
     }
   },
   "chat": {
@@ -935,6 +937,7 @@
         "inquiries": "สอบถาม",
         "keywords": "คีย์เวิร์ด",
         "content": "เนื้อหา",
+        "seo": "SEO",
         "cron": "งาน Cron",
         "progress": "ความคืบหน้า",
         "feedback": "ข้อเสนอแนะ",
@@ -943,6 +946,23 @@
         "notifications": "การแจ้งเตือน",
         "settings": "การตั้งค่า"
       }
+    },
+    "seo": {
+      "title": "ดูตัวอย่าง SEO",
+      "description": "ตรวจสอบข้อมูล SEO สำหรับล่ามและบล็อก",
+      "selectItem": "เลือกรายการ",
+      "selectItemPrompt": "เลือกรายการเพื่อดูตัวอย่าง SEO",
+      "tabs": {
+        "interpreters": "ล่าม",
+        "blog": "บล็อก"
+      },
+      "stats": {
+        "interpreters": "ล่าม",
+        "blogPosts": "โพสต์บล็อก",
+        "locales": "ภาษาที่รองรับ"
+      },
+      "noInterpreters": "ไม่มีล่าม",
+      "noBlogPosts": "ไม่มีโพสต์บล็อก"
     },
     "interpreters": {
       "title": "จัดการล่าม",

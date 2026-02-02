@@ -315,7 +315,9 @@
         "hospitalCoordination": "Эмнэлгийн зохицуулалт",
         "postOperativeCare": "Мэс заслын дараах тусламж",
         "documentTranslation": "Баримт бичгийн орчуулга"
-      }
+      },
+      "gallery": "Галерей",
+      "workingPhotos": "Ажлын зураг"
     }
   },
   "chat": {
@@ -935,6 +937,7 @@
         "inquiries": "Лавлагаа",
         "keywords": "Түлхүүр үг",
         "content": "Агуулга",
+        "seo": "SEO",
         "cron": "Cron ажил",
         "progress": "Явц",
         "feedback": "Санал хүсэлт",
@@ -943,6 +946,23 @@
         "notifications": "Мэдэгдэл",
         "settings": "Тохиргоо"
       }
+    },
+    "seo": {
+      "title": "SEO урьдчилан харах",
+      "description": "Орчуулагч болон блогийн SEO мета өгөгдлийг шалгах",
+      "selectItem": "Зүйл сонгох",
+      "selectItemPrompt": "SEO урьдчилан харахын тулд зүйл сонгоно уу",
+      "tabs": {
+        "interpreters": "Орчуулагч",
+        "blog": "Блог"
+      },
+      "stats": {
+        "interpreters": "Орчуулагч",
+        "blogPosts": "Блог нийтлэл",
+        "locales": "Дэмжигдсэн хэл"
+      },
+      "noInterpreters": "Орчуулагч алга",
+      "noBlogPosts": "Блог нийтлэл алга"
     },
     "interpreters": {
       "title": "Орчуулагч удирдлага",

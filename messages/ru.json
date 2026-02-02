@@ -315,7 +315,9 @@
         "hospitalCoordination": "Координация с клиникой",
         "postOperativeCare": "Послеоперационная поддержка",
         "documentTranslation": "Перевод документов"
-      }
+      },
+      "gallery": "Галерея",
+      "workingPhotos": "Фото работы"
     }
   },
   "chat": {
@@ -935,6 +937,7 @@
         "inquiries": "Запросы",
         "keywords": "Ключевые слова",
         "content": "Контент",
+        "seo": "SEO",
         "cron": "Cron задачи",
         "progress": "Прогресс",
         "feedback": "Обратная связь",
@@ -943,6 +946,23 @@
         "notifications": "Уведомления",
         "settings": "Настройки"
       }
+    },
+    "seo": {
+      "title": "Предпросмотр SEO",
+      "description": "Проверка SEO метаданных для переводчиков и блога",
+      "selectItem": "Выбрать элемент",
+      "selectItemPrompt": "Выберите элемент для предпросмотра SEO",
+      "tabs": {
+        "interpreters": "Переводчики",
+        "blog": "Блог"
+      },
+      "stats": {
+        "interpreters": "Переводчики",
+        "blogPosts": "Посты блога",
+        "locales": "Поддерживаемые языки"
+      },
+      "noInterpreters": "Нет переводчиков",
+      "noBlogPosts": "Нет постов блога"
     },
     "interpreters": {
       "title": "Управление переводчиками",
