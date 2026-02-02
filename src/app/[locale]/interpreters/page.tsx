@@ -183,7 +183,6 @@ function transformToInterpreter(persona: Record<string, unknown>, locale: string
     avg_rating: parseFloat(String(persona.avg_rating || 4.8)),
     review_count: (persona.review_count as number) || 0,
     total_bookings: (persona.total_bookings as number) || 0,
-    total_posts: (persona.total_posts as number) || 0,
     is_verified: (persona.is_verified as boolean) || false,
     is_available: (persona.is_available as boolean) ?? true,
     is_featured: (persona.is_featured as boolean) || false,

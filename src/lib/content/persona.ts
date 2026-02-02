@@ -351,8 +351,6 @@ export interface DBAuthorPersona {
   messenger_cta_text: Record<string, string>;
   is_active: boolean;
   is_verified: boolean;
-  total_posts: number;
-  total_views: number;
   created_at: string;
   updated_at: string;
 }

@@ -256,29 +256,28 @@ export async function GET(request: NextRequest) {
     // Pre-assign authors to prevent overlap in parallel execution
     console.log(`\n👥 [${cronId}] Pre-assigning authors to prevent overlap...`);
 
-    // Fetch all active personas
-    const { data: allPersonas } = await (supabase.from('author_personas') as any)
-      .select('id, slug, target_locales, primary_specialty, total_posts')
-      .eq('is_active', true);
+    // Fetch all active personas with dynamic post counts
+    const { data: allPersonas } = await supabase.rpc('get_authors_with_post_counts');
 
-    const personas = allPersonas || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const personas = (allPersonas || []) as any[];
     const authorAssignments = new Map<string, string>(); // keywordId -> authorPersonaId
 
-    // Assign authors based on locale match and lowest total_posts (round-robin style)
+    // Assign authors based on locale match and lowest post_count (round-robin style)
     const usedAuthors = new Map<string, number>(); // authorId -> times used in this batch
 
     for (const kw of validKeywords) {
-      // Find matching personas for this keyword's locale
-      const matchingPersonas = personas.filter((p: any) => {
-        const targetLocales = p.target_locales || [];
-        return targetLocales.includes(kw.locale) || targetLocales.includes('*');
+      // Find matching personas for this keyword's locale (check languages JSONB)
+      const matchingPersonas = personas.filter((p) => {
+        if (!p.languages || !Array.isArray(p.languages)) return false;
+        return p.languages.some((lang: { code: string }) => lang.code === kw.locale);
       });
 
       if (matchingPersonas.length > 0) {
-        // Sort by (total_posts + times used in batch) to distribute evenly
-        matchingPersonas.sort((a: any, b: any) => {
-          const aEffective = (a.total_posts || 0) + (usedAuthors.get(a.id) || 0);
-          const bEffective = (b.total_posts || 0) + (usedAuthors.get(b.id) || 0);
+        // Sort by (post_count + times used in batch) to distribute evenly
+        matchingPersonas.sort((a, b) => {
+          const aEffective = (a.post_count || 0) + (usedAuthors.get(a.id) || 0);
+          const bEffective = (b.post_count || 0) + (usedAuthors.get(b.id) || 0);
           return aEffective - bEffective;
         });
 

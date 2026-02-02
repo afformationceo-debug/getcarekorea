@@ -56,7 +56,6 @@ interface Interpreter {
   avg_rating: number;
   review_count: number;
   total_bookings: number;
-  total_posts?: number;
   is_verified: boolean;
   is_available: boolean;
   is_featured?: boolean;

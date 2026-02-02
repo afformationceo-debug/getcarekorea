@@ -110,27 +110,26 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 5. Author 매칭 (optional)
-    // is_available column removed - all active interpreters are available
-    const { data: allPersonas } = await (supabase.from('author_personas') as any)
-      .select('id, slug, languages, primary_specialty, total_posts')
-      .eq('is_active', true);
+    // 5. Author 매칭 (optional) - 동적 post_count 사용
+    const { data: allPersonas } = await supabase.rpc('get_authors_with_post_counts');
 
     let authorPersonaId: string | null = null;
     let selectedPersonaSlug: string | null = null;
 
-    if (allPersonas && allPersonas.length > 0) {
-      const matchingPersonas = allPersonas.filter((p: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const personas = (allPersonas || []) as any[];
+    if (personas.length > 0) {
+      const matchingPersonas = personas.filter((p) => {
         if (!p.languages || !Array.isArray(p.languages)) return false;
         return p.languages.some((lang: any) => lang.code === kw.locale);
       });
 
       if (matchingPersonas.length > 0) {
-        matchingPersonas.sort((a: any, b: any) => (a.total_posts || 0) - (b.total_posts || 0));
+        // Already sorted by post_count ASC from the RPC function
         const selectedPersona = matchingPersonas[0];
         authorPersonaId = selectedPersona.id;
         selectedPersonaSlug = selectedPersona.slug;
-        console.log(`   👤 Author: ${selectedPersonaSlug}`);
+        console.log(`   👤 Author: ${selectedPersonaSlug} (posts: ${selectedPersona.post_count})`);
       }
     }
 
@@ -188,18 +187,7 @@ export async function GET(request: NextRequest) {
       })
       .eq('id', kw.id);
 
-    // 8. Author total_posts 업데이트
-    if (authorPersonaId) {
-      const { data: currentPersona } = await (supabase.from('author_personas') as any)
-        .select('total_posts')
-        .eq('id', authorPersonaId)
-        .single();
-      if (currentPersona) {
-        await (supabase.from('author_personas') as any)
-          .update({ total_posts: (currentPersona.total_posts || 0) + 1 })
-          .eq('id', authorPersonaId);
-      }
-    }
+    // Note: post count is now calculated dynamically from blog_posts table
 
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
     console.log(`\n✅ Test generate completed in ${totalTime}s`);

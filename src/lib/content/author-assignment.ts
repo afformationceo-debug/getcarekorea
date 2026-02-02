@@ -2,9 +2,9 @@
  * Author (Interpreter) Assignment System
  *
  * 키워드 등록 시 locale과 category에 맞는 통역사 자동 배분
- * - locale 기반 필터링 (target_locales 포함)
+ * - locale 기반 필터링 (languages JSONB 포함)
  * - category 기반 우선 매칭 (primary_specialty)
- * - 균등 배분 (라운드 로빈)
+ * - 균등 배분 (라운드 로빈) - 동적으로 blog_posts count 계산
  */
 
 import { createAdminClient } from '@/lib/supabase/server';
@@ -21,15 +21,75 @@ export interface AuthorPersonaBasic {
   languages: Array<{ code: string; proficiency: string }>;
   primary_specialty: string | null;
   secondary_specialties: string[] | null;
-  total_posts: number;
+  post_count: number; // Dynamic count from blog_posts
   is_active: boolean;
-  is_available: boolean;
 }
 
 export interface AssignmentResult {
   authorPersonaId: string | null;
   authorName: string | null;
   reason: string;
+}
+
+// =====================================================
+// HELPER FUNCTIONS
+// =====================================================
+
+/**
+ * 통역사의 발행된 글 수를 동적으로 가져옴
+ */
+export async function getAuthorPostCount(authorPersonaId: string): Promise<number> {
+  try {
+    const supabase = await createAdminClient();
+
+    const { count, error } = await (supabase.from('blog_posts') as any)
+      .select('id', { count: 'exact', head: true })
+      .eq('author_persona_id', authorPersonaId)
+      .eq('status', 'published');
+
+    if (error) {
+      console.error('Error getting post count:', error);
+      return 0;
+    }
+
+    return count || 0;
+  } catch (error) {
+    console.error('Get post count error:', error);
+    return 0;
+  }
+}
+
+/**
+ * 모든 활성 통역사와 그들의 글 수를 가져옴
+ */
+export async function getAuthorsWithPostCounts(): Promise<AuthorPersonaBasic[]> {
+  try {
+    const supabase = await createAdminClient();
+
+    // Use the database function for efficient query
+    const { data, error } = await supabase.rpc('get_authors_with_post_counts');
+
+    if (error) {
+      console.error('Error fetching authors with post counts:', error);
+      return [];
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const authors = (data || []) as any[];
+    return authors.map((author) => ({
+      id: author.id,
+      slug: author.slug,
+      name: author.name || {},
+      languages: author.languages || [],
+      primary_specialty: author.primary_specialty,
+      secondary_specialties: author.secondary_specialties,
+      post_count: author.post_count || 0,
+      is_active: author.is_active,
+    }));
+  } catch (error) {
+    console.error('Get authors with post counts error:', error);
+    return [];
+  }
 }
 
 // =====================================================
@@ -48,29 +108,8 @@ export async function assignAuthorForKeyword(
   category?: string
 ): Promise<AssignmentResult> {
   try {
-    const supabase = await createAdminClient();
-
-    // 1. 활성 통역사 조회 (languages JSONB 필드 사용)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: authors, error } = await (supabase.from('author_personas') as any)
-      .select(`
-        id,
-        slug,
-        name,
-        languages,
-        primary_specialty,
-        secondary_specialties,
-        total_posts,
-        is_active,
-        is_available
-      `)
-      .eq('is_active', true)
-      .eq('is_available', true);
-
-    if (error) {
-      console.error('Error fetching authors:', error);
-      return { authorPersonaId: null, authorName: null, reason: 'Database error' };
-    }
+    // 1. 모든 활성 통역사와 글 수 조회 (동적 count)
+    const authors = await getAuthorsWithPostCounts();
 
     if (!authors || authors.length === 0) {
       console.warn(`No active authors found`);
@@ -78,7 +117,7 @@ export async function assignAuthorForKeyword(
     }
 
     // 2. locale에 해당하는 언어를 구사하는 통역사 필터링
-    const localeMatchedAuthors = authors.filter((a: AuthorPersonaBasic) => {
+    const localeMatchedAuthors = authors.filter((a) => {
       if (!a.languages || !Array.isArray(a.languages)) return false;
       return a.languages.some((lang) => lang.code === locale);
     });
@@ -89,7 +128,7 @@ export async function assignAuthorForKeyword(
     }
 
     // 3. category가 있으면 전문 분야 매칭 시도
-    let matchedAuthors = localeMatchedAuthors as AuthorPersonaBasic[];
+    let matchedAuthors = localeMatchedAuthors;
 
     if (category) {
       // Primary specialty 매칭
@@ -112,15 +151,15 @@ export async function assignAuthorForKeyword(
       }
     }
 
-    // 4. 균등 배분: total_posts가 가장 적은 사람 선택 (라운드 로빈)
+    // 4. 균등 배분: post_count가 가장 적은 사람 선택 (라운드 로빈)
     const sortedByPosts = matchedAuthors.sort(
-      (a, b) => (a.total_posts || 0) - (b.total_posts || 0)
+      (a, b) => (a.post_count || 0) - (b.post_count || 0)
     );
 
     const selectedAuthor = sortedByPosts[0];
     const authorName = selectedAuthor.name?.en || selectedAuthor.name?.ko || selectedAuthor.slug;
 
-    console.log(`Assigned author: ${authorName} (${selectedAuthor.slug}) for locale=${locale}, category=${category || 'any'}`);
+    console.log(`Assigned author: ${authorName} (${selectedAuthor.slug}) for locale=${locale}, category=${category || 'any'}, post_count=${selectedAuthor.post_count}`);
 
     return {
       authorPersonaId: selectedAuthor.id,
@@ -172,87 +211,20 @@ export async function autoAssignAuthorToKeyword(
 }
 
 /**
- * 특정 locale의 모든 통역사 조회
+ * 특정 locale의 모든 통역사 조회 (글 수 포함)
  */
 export async function getAuthorsForLocale(
   locale: Locale | string
 ): Promise<AuthorPersonaBasic[]> {
   try {
-    const supabase = await createAdminClient();
+    const authors = await getAuthorsWithPostCounts();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('author_personas') as any)
-      .select(`
-        id,
-        slug,
-        name_en,
-        name_ko,
-        target_locales,
-        primary_specialty,
-        secondary_specialties,
-        total_posts,
-        is_active,
-        is_available
-      `)
-      .eq('is_active', true)
-      .contains('target_locales', [locale])
-      .order('display_order', { ascending: true });
-
-    if (error) {
-      console.error('Error fetching authors for locale:', error);
-      return [];
-    }
-
-    return data || [];
+    return authors.filter((a) => {
+      if (!a.languages || !Array.isArray(a.languages)) return false;
+      return a.languages.some((lang) => lang.code === locale);
+    });
   } catch (error) {
     console.error('Get authors error:', error);
     return [];
-  }
-}
-
-/**
- * 통역사의 할당된 글 수 업데이트
- */
-export async function updateAuthorPostCount(authorPersonaId: string): Promise<void> {
-  try {
-    const supabase = await createAdminClient();
-
-    // 발행된 글 수 계산
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { count } = await (supabase.from('blog_posts') as any)
-      .select('id', { count: 'exact', head: true })
-      .eq('author_persona_id', authorPersonaId)
-      .eq('status', 'published');
-
-    // total_posts 업데이트
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('author_personas') as any)
-      .update({ total_posts: count || 0 })
-      .eq('id', authorPersonaId);
-  } catch (error) {
-    console.error('Update post count error:', error);
-  }
-}
-
-/**
- * 모든 통역사의 글 수 일괄 업데이트
- */
-export async function syncAllAuthorPostCounts(): Promise<void> {
-  try {
-    const supabase = await createAdminClient();
-
-    // 모든 활성 통역사 조회
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: authors } = await (supabase.from('author_personas') as any)
-      .select('id')
-      .eq('is_active', true);
-
-    if (authors) {
-      for (const author of authors) {
-        await updateAuthorPostCount(author.id);
-      }
-    }
-  } catch (error) {
-    console.error('Sync post counts error:', error);
   }
 }

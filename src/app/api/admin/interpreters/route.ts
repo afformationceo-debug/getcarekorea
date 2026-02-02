@@ -111,8 +111,6 @@ export async function POST(request: NextRequest) {
         avg_rating: body.avg_rating ?? 4.8,
         review_count: body.review_count ?? 0,
         total_bookings: 0,
-        total_posts: 0,
-        total_views: 0,
       })
       .select()
       .single();

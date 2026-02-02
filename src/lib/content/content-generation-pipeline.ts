@@ -109,9 +109,8 @@ async function fetchAuthorPersona(
     try {
       // Fetch all active personas
       // Schema uses JSONB: name = {"en": "...", "ko": "..."}, bio_short = {"en": "...", "ko": "..."}
-      const { data: personas, error: personaError } = await (supabase.from('author_personas') as any)
-        .select('id, slug, name, languages, primary_specialty, years_of_experience, total_posts, bio_short')
-        .eq('is_active', true);
+      // Get personas with dynamic post counts using the RPC function
+      const { data: personas, error: personaError } = await supabase.rpc('get_authors_with_post_counts');
 
       if (personaError) {
         console.warn(`   ⚠️ [${requestId}] Error fetching personas (attempt ${retryCount}): ${personaError.message}`);
@@ -170,9 +169,10 @@ async function fetchAuthorPersona(
       }
 
       // Calculate effective posts (for batch round-robin)
+      // post_count comes from the RPC function (dynamic count from blog_posts)
       const personasWithBatchCount = matchingPersonas.map((p: any) => ({
         ...p,
-        effectivePosts: (p.total_posts || 0) + (assignedInBatch?.get(p.id) || 0),
+        effectivePosts: (p.post_count || 0) + (assignedInBatch?.get(p.id) || 0),
       }));
 
       // Priority: specialty match + lowest posts
@@ -483,24 +483,8 @@ async function generateAndSaveContent(
       console.log(`   ✅ [${requestId}] Keyword status updated to '${keywordStatus}'`);
     }
 
-    // Update author persona total_posts count
-    if (authorPersonaId) {
-      await (supabase.from('author_personas') as any)
-        .update({ total_posts: (supabase as any).rpc('increment', { row_id: authorPersonaId }) })
-        .eq('id', authorPersonaId);
-
-      // Alternative: increment manually
-      const { data: currentAuthor } = await (supabase.from('author_personas') as any)
-        .select('total_posts')
-        .eq('id', authorPersonaId)
-        .single();
-
-      if (currentAuthor) {
-        await (supabase.from('author_personas') as any)
-          .update({ total_posts: (currentAuthor.total_posts || 0) + 1 })
-          .eq('id', authorPersonaId);
-      }
-    }
+    // Note: total_posts is now calculated dynamically from blog_posts table
+    // No need to update it manually
 
     return {
       success: true,
