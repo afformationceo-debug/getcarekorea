@@ -18,6 +18,7 @@ import {
   Award,
   Shield,
   ChevronRight,
+  ChevronDown,
   Play,
   MapPin,
   Zap,
@@ -526,22 +527,31 @@ export function InterpretersPageClient({ initialInterpreters, initialTotal, loca
 
         {/* Load More / Infinite Scroll Trigger */}
         {hasMore && !isLoading && (
-          <div ref={loadMoreRef} className="mt-12 flex justify-center">
+          <div ref={loadMoreRef} className="mt-16 flex flex-col items-center gap-4">
             {isLoadingMore ? (
-              <div className="flex items-center gap-3 text-muted-foreground">
+              <div className="flex items-center gap-3 rounded-full bg-violet-100 px-8 py-4 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
                 <Loader2 className="h-6 w-6 animate-spin" />
-                <span>{t('filters.all')}...</span>
+                <span className="font-medium">{t('filters.all')}...</span>
               </div>
             ) : (
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={loadMore}
-                className="gap-2 rounded-xl border-2 px-8"
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center gap-3"
               >
-                {t('loadMore')}
-                <ChevronRight className="h-5 w-5" />
-              </Button>
+                <p className="text-sm text-muted-foreground">
+                  {filteredInterpreters.length} / {total} {t('filters.all')}
+                </p>
+                <Button
+                  size="lg"
+                  onClick={loadMore}
+                  className="group gap-3 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 px-10 py-6 text-lg font-semibold text-white shadow-lg shadow-violet-500/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-violet-500/30"
+                >
+                  <ChevronDown className="h-5 w-5 transition-transform group-hover:translate-y-0.5" />
+                  {t('loadMore')}
+                  <ChevronDown className="h-5 w-5 transition-transform group-hover:translate-y-0.5" />
+                </Button>
+              </motion.div>
             )}
           </div>
         )}
