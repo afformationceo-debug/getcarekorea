@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { createClient } from '@/lib/supabase/client';
 import { clearCTACache } from '@/lib/settings/cta';
 
 interface PaginationSettings {
@@ -84,30 +83,18 @@ export default function SystemSettingsPage() {
 
   async function loadSettings() {
     try {
-      const supabase = createClient();
-
-      // Load pagination settings
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: paginationData } = await (supabase as any)
-        .from('system_settings')
-        .select('value')
-        .eq('key', 'pagination')
-        .single();
-
-      if (paginationData?.value) {
-        setPagination(paginationData.value as PaginationSettings);
+      // Load pagination settings via API
+      const paginationRes = await fetch('/api/admin/settings?key=pagination');
+      const paginationJson = await paginationRes.json();
+      if (paginationJson.success && paginationJson.data?.value) {
+        setPagination(paginationJson.data.value as PaginationSettings);
       }
 
-      // Load CTA settings
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: ctaData } = await (supabase as any)
-        .from('system_settings')
-        .select('value')
-        .eq('key', 'cta_links')
-        .single();
-
-      if (ctaData?.value) {
-        setCtaLinks(ctaData.value as CTASettings);
+      // Load CTA settings via API
+      const ctaRes = await fetch('/api/admin/settings?key=cta_links');
+      const ctaJson = await ctaRes.json();
+      if (ctaJson.success && ctaJson.data?.value) {
+        setCtaLinks(ctaJson.data.value as CTASettings);
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -121,35 +108,39 @@ export default function SystemSettingsPage() {
     setSaveStatus('idle');
 
     try {
-      const supabase = createClient();
-
-      // Save pagination settings using upsert
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: paginationError } = await (supabase as any)
-        .from('system_settings')
-        .upsert({
+      // Save pagination settings via API
+      const paginationRes = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           key: 'pagination',
           value: pagination,
           description: 'Pagination size settings for various list pages',
           category: 'ui',
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'key' });
+        }),
+      });
 
-      if (paginationError) throw paginationError;
+      if (!paginationRes.ok) {
+        const error = await paginationRes.json();
+        throw new Error(error.error || 'Failed to save pagination');
+      }
 
-      // Save CTA settings using upsert
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: ctaError } = await (supabase as any)
-        .from('system_settings')
-        .upsert({
+      // Save CTA settings via API
+      const ctaRes = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           key: 'cta_links',
           value: ctaLinks,
           description: 'CTA messenger links per locale',
           category: 'marketing',
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'key' });
+        }),
+      });
 
-      if (ctaError) throw ctaError;
+      if (!ctaRes.ok) {
+        const error = await ctaRes.json();
+        throw new Error(error.error || 'Failed to save CTA settings');
+      }
 
       // Clear the CTA cache so changes take effect immediately
       clearCTACache();

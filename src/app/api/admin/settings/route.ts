@@ -132,29 +132,24 @@ export async function PUT(request: NextRequest) {
 
     const adminClient = await createAdminClient();
 
-    // Update setting
+    // Upsert setting (create if not exists, update if exists)
     const { data: updated, error } = await (adminClient.from('system_settings') as any)
-      .update({
+      .upsert({
+        key,
         value,
+        description: body.description || '',
+        category: body.category || 'general',
         updated_at: new Date().toISOString(),
         updated_by: user.id,
-      })
-      .eq('key', key)
+      }, { onConflict: 'key' })
       .select()
       .single();
 
     if (error) {
       console.error('Error updating setting:', error);
       return NextResponse.json(
-        { error: 'Failed to update setting' },
+        { error: 'Failed to update setting: ' + error.message },
         { status: 500 }
-      );
-    }
-
-    if (!updated) {
-      return NextResponse.json(
-        { error: 'Setting not found' },
-        { status: 404 }
       );
     }
 
