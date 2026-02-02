@@ -359,7 +359,14 @@
       "submit": "Send Inquiry",
       "submitting": "Sending...",
       "formTitle": "Inquiry Form",
-      "formDescription": "Fill out the form below and we'll get back to you within 24 hours"
+      "formDescription": "Fill out the form below and we'll get back to you within 24 hours",
+      "namePlaceholder": "Enter your full name",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "+1 234 567 8900",
+      "messengerPlaceholder": "Select messenger",
+      "messengerIdPlaceholder": "Enter your ID",
+      "procedurePlaceholder": "Select a procedure",
+      "messagePlaceholder": "Tell us about your medical needs, questions, or concerns..."
     },
     "success": {
       "title": "Thank You!",

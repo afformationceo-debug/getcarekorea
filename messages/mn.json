@@ -359,7 +359,14 @@
       "submit": "Асуулга илгээх",
       "submitting": "Илгээж байна...",
       "formTitle": "Асуулгын маягт",
-      "formDescription": "Доорх маягтыг бөглөнө үү. Бид 24 цагийн дотор холбогдоно"
+      "formDescription": "Доорх маягтыг бөглөнө үү. Бид 24 цагийн дотор холбогдоно",
+      "namePlaceholder": "Бүтэн нэрээ оруулна уу",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "+976 9911 2233",
+      "messengerPlaceholder": "Мессенжер сонгох",
+      "messengerIdPlaceholder": "ID-гаа оруулна уу",
+      "procedurePlaceholder": "Эмчилгээ сонгох",
+      "messagePlaceholder": "Эмнэлгийн хэрэгцээ, асуултаа бичнэ үү..."
     },
     "success": {
       "title": "Баярлалаа!",

@@ -1,8 +1,8 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,19 +11,17 @@ import {
   Send,
   CheckCircle,
   MessageCircle,
-  Phone,
   Mail,
   Sparkles,
   Shield,
   Clock,
   Award,
   HeartPulse,
-  ArrowRight,
   User,
   Building2,
-  Calendar,
   FileText,
   Zap,
+  Phone,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,7 +44,8 @@ import {
 } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { localeCTAConfig, type Locale } from '@/lib/i18n/config';
+import type { Locale } from '@/lib/i18n/config';
+import { getCTAForLocale, type CTAConfig } from '@/lib/settings/cta';
 
 const inquirySchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -60,17 +59,68 @@ const inquirySchema = z.object({
 
 type InquiryFormData = z.infer<typeof inquirySchema>;
 
+// Country codes with flags
+const COUNTRY_CODES = [
+  { code: '+82', country: 'KR', flag: '🇰🇷', name: 'South Korea' },
+  { code: '+1', country: 'US', flag: '🇺🇸', name: 'USA/Canada' },
+  { code: '+81', country: 'JP', flag: '🇯🇵', name: 'Japan' },
+  { code: '+886', country: 'TW', flag: '🇹🇼', name: 'Taiwan' },
+  { code: '+86', country: 'CN', flag: '🇨🇳', name: 'China' },
+  { code: '+66', country: 'TH', flag: '🇹🇭', name: 'Thailand' },
+  { code: '+976', country: 'MN', flag: '🇲🇳', name: 'Mongolia' },
+  { code: '+7', country: 'RU', flag: '🇷🇺', name: 'Russia' },
+  { code: '+44', country: 'GB', flag: '🇬🇧', name: 'UK' },
+  { code: '+49', country: 'DE', flag: '🇩🇪', name: 'Germany' },
+  { code: '+33', country: 'FR', flag: '🇫🇷', name: 'France' },
+  { code: '+61', country: 'AU', flag: '🇦🇺', name: 'Australia' },
+  { code: '+65', country: 'SG', flag: '🇸🇬', name: 'Singapore' },
+  { code: '+84', country: 'VN', flag: '🇻🇳', name: 'Vietnam' },
+  { code: '+62', country: 'ID', flag: '🇮🇩', name: 'Indonesia' },
+  { code: '+60', country: 'MY', flag: '🇲🇾', name: 'Malaysia' },
+  { code: '+63', country: 'PH', flag: '🇵🇭', name: 'Philippines' },
+  { code: '+91', country: 'IN', flag: '🇮🇳', name: 'India' },
+  { code: '+971', country: 'AE', flag: '🇦🇪', name: 'UAE' },
+];
+
+// Get default country code based on locale
+function getDefaultCountryCode(locale: string): string {
+  const localeToCountry: Record<string, string> = {
+    'ko': '+82',
+    'en': '+1',
+    'ja': '+81',
+    'zh-TW': '+886',
+    'zh-CN': '+86',
+    'th': '+66',
+    'mn': '+976',
+    'ru': '+7',
+  };
+  return localeToCountry[locale] || '+1';
+}
+
 function InquiryFormContent() {
   const t = useTranslations('inquiry');
   const locale = useLocale() as Locale;
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ctaConfig, setCtaConfig] = useState<CTAConfig | null>(null);
+  const [countryCode, setCountryCode] = useState(() => getDefaultCountryCode(locale));
 
   const hospitalId = searchParams.get('hospital');
   const preselectedProcedure = searchParams.get('procedure');
 
-  const ctaConfig = localeCTAConfig[locale];
+  // Load CTA config from database
+  useEffect(() => {
+    async function loadCTA() {
+      try {
+        const config = await getCTAForLocale(locale);
+        setCtaConfig(config);
+      } catch (error) {
+        console.error('Failed to load CTA config:', error);
+      }
+    }
+    loadCTA();
+  }, [locale]);
 
   const form = useForm<InquiryFormData>({
     resolver: zodResolver(inquirySchema),
@@ -78,7 +128,7 @@ function InquiryFormContent() {
       name: '',
       email: '',
       phone: '',
-      messengerType: ctaConfig.platform,
+      messengerType: 'whatsapp',
       messengerId: '',
       procedureInterest: preselectedProcedure || '',
       message: '',
@@ -86,40 +136,44 @@ function InquiryFormContent() {
   });
 
   const procedures = [
-    { value: 'plastic-surgery', label: 'Plastic Surgery' },
-    { value: 'dermatology', label: 'Dermatology' },
-    { value: 'dental', label: 'Dental' },
-    { value: 'ophthalmology', label: 'Ophthalmology' },
-    { value: 'hair-transplant', label: 'Hair Transplant' },
-    { value: 'health-checkup', label: 'Health Checkup' },
-    { value: 'orthopedics', label: 'Orthopedics' },
-    { value: 'fertility', label: 'Fertility' },
-    { value: 'other', label: 'Other' },
+    { value: 'plastic-surgery', label: t('procedures.plasticSurgery') },
+    { value: 'dermatology', label: t('procedures.dermatology') },
+    { value: 'dental', label: t('procedures.dental') },
+    { value: 'ophthalmology', label: t('procedures.ophthalmology') },
+    { value: 'hair-transplant', label: t('procedures.hairTransplant') },
+    { value: 'health-checkup', label: t('procedures.healthCheckup') },
+    { value: 'orthopedics', label: t('procedures.orthopedics') },
+    { value: 'fertility', label: t('procedures.fertility') },
+    { value: 'other', label: t('procedures.other') },
   ];
 
   const messengers = [
-    { value: 'whatsapp', label: 'WhatsApp' },
-    { value: 'line', label: 'LINE' },
-    { value: 'wechat', label: 'WeChat' },
-    { value: 'telegram', label: 'Telegram' },
-    { value: 'email', label: 'Email' },
+    { value: 'whatsapp', label: t('messengers.whatsapp') },
+    { value: 'line', label: t('messengers.line') },
+    { value: 'wechat', label: t('messengers.wechat') },
+    { value: 'telegram', label: t('messengers.telegram') },
+    { value: 'email', label: t('messengers.email') },
   ];
 
   const onSubmit = async (data: InquiryFormData) => {
     setIsSubmitting(true);
     try {
+      // Combine country code with phone number
+      const fullPhone = data.phone ? `${countryCode} ${data.phone}` : '';
+
       const response = await fetch('/api/inquiry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
+          phone: fullPhone,
           hospitalId,
           locale,
         }),
       });
 
       if (response.ok) {
-        setIsSubmitted(true);
+        router.push('/inquiry/success');
       }
     } catch (error) {
       console.error('Inquiry submission error:', error);
@@ -127,50 +181,6 @@ function InquiryFormContent() {
       setIsSubmitting(false);
     }
   };
-
-  if (isSubmitted) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="relative overflow-hidden bg-gradient-to-b from-emerald-950 via-green-900 to-background py-20">
-          <div className="absolute inset-0 overflow-hidden">
-            <motion.div
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-              transition={{ duration: 4, repeat: Infinity }}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-emerald-500/30 to-green-600/20 blur-3xl"
-            />
-          </div>
-
-          <div className="container relative z-10 py-20">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', duration: 0.5 }}
-              className="mx-auto max-w-md text-center"
-            >
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-green-600 shadow-2xl shadow-emerald-500/50"
-              >
-                <CheckCircle className="h-12 w-12 text-white" />
-              </motion.div>
-              <h1 className="mb-4 text-3xl font-bold text-white">{t('success.title')}</h1>
-              <p className="mb-8 text-white/70">{t('success.message')}</p>
-              <div className="space-y-3">
-                <Button
-                  variant="outline"
-                  className="w-full border-white/20 text-white hover:bg-white/10"
-                  asChild
-                >
-                  <a href="/">{t('success.backHome')}</a>
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -256,10 +266,10 @@ function InquiryFormContent() {
               className="lg:col-span-2"
             >
               <Card className="overflow-hidden border-0 shadow-2xl">
-                <CardHeader className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 pb-4">
+                <CardHeader className="pb-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600">
-                      <FileText className="h-5 w-5 text-white" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                      <FileText className="h-5 w-5 text-primary" />
                     </div>
                     <div>
                       <CardTitle>{t('form.formTitle')}</CardTitle>
@@ -282,7 +292,7 @@ function InquiryFormContent() {
                                 {t('form.name')}
                               </FormLabel>
                               <FormControl>
-                                <Input placeholder="John Doe" className="h-12 rounded-xl" {...field} />
+                                <Input placeholder={t('form.namePlaceholder')} className="!h-12 rounded-xl" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -302,8 +312,8 @@ function InquiryFormContent() {
                               <FormControl>
                                 <Input
                                   type="email"
-                                  placeholder="john@example.com"
-                                  className="h-12 rounded-xl"
+                                  placeholder={t('form.emailPlaceholder')}
+                                  className="!h-12 rounded-xl"
                                   {...field}
                                 />
                               </FormControl>
@@ -325,7 +335,31 @@ function InquiryFormContent() {
                                 {t('form.phone')}
                               </FormLabel>
                               <FormControl>
-                                <Input placeholder="+1 234 567 8900" className="h-12 rounded-xl" {...field} />
+                                <div className="flex gap-2 items-center">
+                                  <Select value={countryCode} onValueChange={setCountryCode}>
+                                    <SelectTrigger className="!h-12 w-[110px] rounded-xl flex-shrink-0">
+                                      <SelectValue>
+                                        {COUNTRY_CODES.find(c => c.code === countryCode)?.flag} {countryCode}
+                                      </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {COUNTRY_CODES.map((country) => (
+                                        <SelectItem key={country.code} value={country.code}>
+                                          <span className="flex items-center gap-2">
+                                            <span>{country.flag}</span>
+                                            <span>{country.code}</span>
+                                            <span className="text-muted-foreground text-xs">{country.name}</span>
+                                          </span>
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <Input
+                                    placeholder="010-1234-5678"
+                                    className="!h-12 rounded-xl flex-1"
+                                    {...field}
+                                  />
+                                </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -344,8 +378,8 @@ function InquiryFormContent() {
                               </FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                  <SelectTrigger className="h-12 rounded-xl">
-                                    <SelectValue placeholder="Select messenger" />
+                                  <SelectTrigger className="!h-12 rounded-xl">
+                                    <SelectValue placeholder={t('form.messengerPlaceholder')} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -378,8 +412,8 @@ function InquiryFormContent() {
                                 </FormLabel>
                                 <FormControl>
                                   <Input
-                                    placeholder={`Your ${form.watch('messengerType')} ID`}
-                                    className="h-12 rounded-xl"
+                                    placeholder={t('form.messengerIdPlaceholder')}
+                                    className="!h-12 rounded-xl"
                                     {...field}
                                   />
                                 </FormControl>
@@ -402,8 +436,8 @@ function InquiryFormContent() {
                             </FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
-                                <SelectTrigger className="h-12 rounded-xl">
-                                  <SelectValue placeholder="Select a procedure" />
+                                <SelectTrigger className="!h-12 rounded-xl">
+                                  <SelectValue placeholder={t('form.procedurePlaceholder')} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -431,7 +465,7 @@ function InquiryFormContent() {
                             </FormLabel>
                             <FormControl>
                               <Textarea
-                                placeholder="Tell us about your needs, questions, or any specific requirements..."
+                                placeholder={t('form.messagePlaceholder')}
                                 rows={5}
                                 className="rounded-xl resize-none"
                                 {...field}
@@ -476,43 +510,34 @@ function InquiryFormContent() {
             >
               {/* Quick Contact */}
               <Card className="overflow-hidden border-0 shadow-xl">
-                <CardHeader className="bg-gradient-to-r from-violet-500/10 to-purple-500/10">
+                <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-violet-500" />
+                    <Zap className="h-5 w-5 text-primary" />
                     {t('sidebar.quickContact')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 p-4">
-                  <motion.a
-                    whileHover={{ x: 5 }}
-                    href={`${ctaConfig.urlPrefix}821234567890`}
-                    className="flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-violet-500/30 hover:bg-violet-50 dark:hover:bg-violet-950/30"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600">
-                      <MessageCircle className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{ctaConfig.displayName}</p>
-                      <p className="text-sm text-muted-foreground">{t('sidebar.chatWithUs')}</p>
-                    </div>
-                  </motion.a>
-                  <motion.a
-                    whileHover={{ x: 5 }}
-                    href="tel:+821234567890"
-                    className="flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-violet-500/30 hover:bg-violet-50 dark:hover:bg-violet-950/30"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600">
-                      <Phone className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{t('sidebar.phone')}</p>
-                      <p className="text-sm text-muted-foreground">+82-2-XXX-XXXX</p>
-                    </div>
-                  </motion.a>
+                  {ctaConfig && (
+                    <motion.a
+                      whileHover={{ x: 5 }}
+                      href={ctaConfig.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-primary/30 hover:bg-primary/5"
+                    >
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${ctaConfig.color}`}>
+                        <MessageCircle className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{ctaConfig.text || t('sidebar.chatWithUs')}</p>
+                        <p className="text-sm text-muted-foreground">{t('sidebar.chatWithUs')}</p>
+                      </div>
+                    </motion.a>
+                  )}
                   <motion.a
                     whileHover={{ x: 5 }}
                     href="mailto:support@getcarekorea.com"
-                    className="flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-violet-500/30 hover:bg-violet-50 dark:hover:bg-violet-950/30"
+                    className="flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-primary/30 hover:bg-primary/5"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-green-600">
                       <Mail className="h-5 w-5 text-white" />
@@ -526,10 +551,10 @@ function InquiryFormContent() {
               </Card>
 
               {/* Why Choose Us */}
-              <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-violet-500/5 to-purple-500/10">
+              <Card className="overflow-hidden border-0 shadow-xl">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Award className="h-5 w-5 text-violet-500" />
+                    <Award className="h-5 w-5 text-primary" />
                     {t('sidebar.whyTitle')}
                   </CardTitle>
                 </CardHeader>
@@ -554,27 +579,6 @@ function InquiryFormContent() {
                       </motion.li>
                     ))}
                   </ul>
-                </CardContent>
-              </Card>
-
-              {/* AI Assistance */}
-              <Card className="overflow-hidden border-0 shadow-xl border-violet-500/20 bg-gradient-to-br from-violet-950/50 to-purple-900/50">
-                <CardContent className="p-6 text-center">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                    className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600"
-                  >
-                    <Sparkles className="h-6 w-6 text-white" />
-                  </motion.div>
-                  <h3 className="mb-2 font-bold text-white">{t('sidebar.aiTitle')}</h3>
-                  <p className="mb-4 text-sm text-white/70">
-                    {t('sidebar.aiDescription')}
-                  </p>
-                  <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    {t('sidebar.aiButton')}
-                  </Button>
                 </CardContent>
               </Card>
             </motion.div>

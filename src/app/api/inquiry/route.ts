@@ -9,7 +9,7 @@ const inquirySchema = z.object({
   messengerId: z.string().optional(),
   procedureInterest: z.string().min(1),
   message: z.string().min(10),
-  hospitalId: z.string().optional(),
+  hospitalId: z.string().nullable().optional(),
   locale: z.string().default('en'),
 });
 

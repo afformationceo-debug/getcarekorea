@@ -439,43 +439,6 @@ export default function BlogPage() {
           </>
         )}
 
-        {/* Newsletter CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-16"
-        >
-          <div className="relative overflow-hidden rounded-3xl border border-violet-500/20 bg-gradient-to-r from-violet-950/50 via-purple-900/50 to-violet-950/50 p-8 lg:p-12">
-            <div className="absolute -left-20 -top-20 h-60 w-60 rounded-full bg-violet-500/20 blur-3xl" />
-            <div className="absolute -bottom-20 -right-20 h-60 w-60 rounded-full bg-cyan-500/20 blur-3xl" />
-
-            <div className="relative z-10 text-center">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600"
-              >
-                <Sparkles className="h-8 w-8 text-white" />
-              </motion.div>
-              <h3 className="mb-3 text-2xl font-bold text-white lg:text-3xl">
-                {t('newsletter.title')}
-              </h3>
-              <p className="mx-auto mb-6 max-w-xl text-white/70">
-                {t('newsletter.description')}
-              </p>
-              <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
-                <Input
-                  placeholder={t('newsletter.placeholder')}
-                  className="h-12 rounded-xl border-white/20 bg-white/10 text-white placeholder:text-white/50"
-                />
-                <Button className="h-12 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-8">
-                  {t('newsletter.subscribe')}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </div>
   );

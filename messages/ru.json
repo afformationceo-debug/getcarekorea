@@ -359,7 +359,14 @@
       "submit": "Отправить запрос",
       "submitting": "Отправка...",
       "formTitle": "Форма запроса",
-      "formDescription": "Заполните форму ниже, и мы свяжемся с вами в течение 24 часов"
+      "formDescription": "Заполните форму ниже, и мы свяжемся с вами в течение 24 часов",
+      "namePlaceholder": "Введите ваше полное имя",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "+7 999 123 4567",
+      "messengerPlaceholder": "Выберите мессенджер",
+      "messengerIdPlaceholder": "Введите ваш ID",
+      "procedurePlaceholder": "Выберите процедуру",
+      "messagePlaceholder": "Расскажите о ваших медицинских потребностях или вопросах..."
     },
     "success": {
       "title": "Спасибо!",

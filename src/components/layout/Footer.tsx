@@ -3,8 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/navigation';
 import { Heart, Mail, Phone, MapPin } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
 export function Footer() {
@@ -131,7 +129,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact & Newsletter */}
+          {/* Contact */}
           <div className="space-y-4">
             <h3 className="font-semibold">{t('contact.title')}</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
@@ -151,23 +149,6 @@ export function Footer() {
               </li>
             </ul>
 
-            {/* Newsletter */}
-            <div className="pt-4">
-              <h4 className="mb-2 text-sm font-medium">{t('newsletter.title')}</h4>
-              <p className="mb-3 text-xs text-muted-foreground">
-                {t('newsletter.description')}
-              </p>
-              <form className="flex gap-2">
-                <Input
-                  type="email"
-                  placeholder={t('newsletter.placeholder')}
-                  className="h-9 text-sm"
-                />
-                <Button type="submit" size="sm">
-                  {t('newsletter.subscribe')}
-                </Button>
-              </form>
-            </div>
           </div>
         </div>
 

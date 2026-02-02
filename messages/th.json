@@ -359,7 +359,14 @@
       "submit": "ส่งคำถาม",
       "submitting": "กำลังส่ง...",
       "formTitle": "แบบฟอร์มสอบถาม",
-      "formDescription": "กรุณากรอกแบบฟอร์มด้านล่าง เราจะติดต่อกลับภายใน 24 ชั่วโมง"
+      "formDescription": "กรุณากรอกแบบฟอร์มด้านล่าง เราจะติดต่อกลับภายใน 24 ชั่วโมง",
+      "namePlaceholder": "กรุณากรอกชื่อ-นามสกุล",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "+66 81 234 5678",
+      "messengerPlaceholder": "เลือกแอปแชท",
+      "messengerIdPlaceholder": "กรุณากรอก ID ของคุณ",
+      "procedurePlaceholder": "เลือกหัตถการ",
+      "messagePlaceholder": "กรุณาบอกเราเกี่ยวกับความต้องการทางการแพทย์ของคุณ..."
     },
     "success": {
       "title": "ขอบคุณ!",

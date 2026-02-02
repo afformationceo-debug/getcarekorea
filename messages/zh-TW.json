@@ -359,7 +359,14 @@
       "submit": "發送詢問",
       "submitting": "發送中...",
       "formTitle": "諮詢表單",
-      "formDescription": "請填寫以下表單，我們將在24小時內回覆您"
+      "formDescription": "請填寫以下表單，我們將在24小時內回覆您",
+      "namePlaceholder": "請輸入您的姓名",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "+886 912 345 678",
+      "messengerPlaceholder": "選擇通訊軟體",
+      "messengerIdPlaceholder": "請輸入您的ID",
+      "procedurePlaceholder": "選擇療程",
+      "messagePlaceholder": "請告訴我們您的醫療需求或問題..."
     },
     "success": {
       "title": "感謝您！",

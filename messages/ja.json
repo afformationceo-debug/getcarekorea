@@ -359,7 +359,14 @@
       "submit": "送信",
       "submitting": "送信中...",
       "formTitle": "お問い合わせフォーム",
-      "formDescription": "以下のフォームにご記入ください。24時間以内にご連絡いたします"
+      "formDescription": "以下のフォームにご記入ください。24時間以内にご連絡いたします",
+      "namePlaceholder": "お名前を入力してください",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "+81 90 1234 5678",
+      "messengerPlaceholder": "メッセンジャーを選択",
+      "messengerIdPlaceholder": "IDを入力してください",
+      "procedurePlaceholder": "施術を選択してください",
+      "messagePlaceholder": "ご希望の施術やご質問についてお知らせください..."
     },
     "success": {
       "title": "ありがとうございます！",

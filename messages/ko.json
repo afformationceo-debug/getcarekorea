@@ -359,7 +359,14 @@
       "submit": "문의하기",
       "submitting": "전송 중...",
       "formTitle": "문의 양식",
-      "formDescription": "아래 양식을 작성해 주시면 24시간 이내에 연락드리겠습니다"
+      "formDescription": "아래 양식을 작성해 주시면 24시간 이내에 연락드리겠습니다",
+      "namePlaceholder": "성함을 입력해주세요",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "+82 10 1234 5678",
+      "messengerPlaceholder": "메신저 선택",
+      "messengerIdPlaceholder": "아이디를 입력해주세요",
+      "procedurePlaceholder": "시술을 선택해주세요",
+      "messagePlaceholder": "궁금한 점이나 원하시는 시술에 대해 자세히 알려주세요..."
     },
     "success": {
       "title": "감사합니다!",

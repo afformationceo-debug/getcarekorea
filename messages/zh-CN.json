@@ -359,7 +359,14 @@
       "submit": "发送询问",
       "submitting": "发送中...",
       "formTitle": "咨询表单",
-      "formDescription": "请填写以下表单，我们将在24小时内回复您"
+      "formDescription": "请填写以下表单，我们将在24小时内回复您",
+      "namePlaceholder": "请输入您的姓名",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "+86 138 1234 5678",
+      "messengerPlaceholder": "选择通讯软件",
+      "messengerIdPlaceholder": "请输入您的ID",
+      "procedurePlaceholder": "选择项目",
+      "messagePlaceholder": "请告诉我们您的医疗需求或问题..."
     },
     "success": {
       "title": "感谢您！",
