@@ -135,7 +135,7 @@ export function InterpreterFormPage({ interpreter }: InterpreterFormPageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Initialize language entries from existing data or empty for new
+  // Initialize language entries from existing data (without forcing English)
   const initialLanguageEntries = interpreter
     ? convertToLanguageEntries(
         interpreter.languages || [],
@@ -148,6 +148,7 @@ export function InterpreterFormPage({ interpreter }: InterpreterFormPageProps) {
 
   // Form state
   const [slug, setSlug] = useState(interpreter?.slug || '');
+  const [englishName, setEnglishName] = useState(interpreter?.name?.en || ''); // English name is required separately
   const [languageEntries, setLanguageEntries] = useState<LanguageEntry[]>(initialLanguageEntries);
   const [photoUrl, setPhotoUrl] = useState(interpreter?.photo_url || '');
   const [yearsOfExperience, setYearsOfExperience] = useState(String(interpreter?.years_of_experience ?? 5));
@@ -201,9 +202,14 @@ export function InterpreterFormPage({ interpreter }: InterpreterFormPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate at least one language with name
-    const validEntries = languageEntries.filter((entry) => entry.code && entry.name);
-    if (validEntries.length === 0) {
+    // Validate English name is required (as default fallback)
+    if (!englishName.trim()) {
+      toast.warning(t('messages.englishNameRequired'));
+      return;
+    }
+
+    // Validate at least one language
+    if (languageEntries.length === 0) {
       toast.warning(t('messages.atLeastOneLanguage'));
       return;
     }
@@ -212,9 +218,12 @@ export function InterpreterFormPage({ interpreter }: InterpreterFormPageProps) {
 
     const { languages, name, bioShort, bioFull, certifications } = convertFromLanguageEntries(languageEntries);
 
+    // Always include English name in the name JSONB
+    const nameWithEnglish = { ...name, en: englishName };
+
     const data = {
       slug,
-      name,
+      name: nameWithEnglish,
       bio_short: bioShort,
       bio_full: bioFull,
       photo_url: photoUrl || null,
@@ -264,13 +273,18 @@ export function InterpreterFormPage({ interpreter }: InterpreterFormPageProps) {
     }
   };
 
-  const addLanguageEntry = () => {
-    // Find a language code that's not already used
+  const addLanguageEntry = (code: string) => {
+    if (!code) return;
+
+    // Check if language already exists
     const usedCodes = languageEntries.map((e) => e.code);
-    const availableCode = LOCALE_CODES.find((c) => !usedCodes.includes(c)) || '';
+    if (usedCodes.includes(code)) {
+      toast.warning(t('messages.languageAlreadyAdded'));
+      return;
+    }
 
     const newEntry: LanguageEntry = {
-      code: availableCode,
+      code,
       proficiency: 'fluent',
       name: '',
       bioShort: '',
@@ -281,6 +295,11 @@ export function InterpreterFormPage({ interpreter }: InterpreterFormPageProps) {
     setLanguageEntries([...languageEntries, newEntry]);
     setOpenLanguages([...openLanguages, `lang-${languageEntries.length}`]);
   };
+
+  // Get available languages that haven't been added yet
+  const availableLanguagesToAdd = LOCALE_CODES.filter(
+    (code) => !languageEntries.some((e) => e.code === code)
+  );
 
   const removeLanguageEntry = (index: number) => {
     setLanguageEntries(languageEntries.filter((_, i) => i !== index));
@@ -319,12 +338,6 @@ export function InterpreterFormPage({ interpreter }: InterpreterFormPageProps) {
     setLanguageEntries(updated);
   };
 
-  // Get available language codes (not already used)
-  const getAvailableLanguages = (currentCode: string) => {
-    const usedCodes = languageEntries.map((e) => e.code).filter((c) => c !== currentCode);
-    return LOCALE_CODES.filter((c) => !usedCodes.includes(c));
-  };
-
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -337,6 +350,22 @@ export function InterpreterFormPage({ interpreter }: InterpreterFormPageProps) {
               <CardDescription>{t('descriptions.basicInfo')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* English Name - Required */}
+              <div>
+                <Label className="flex items-center gap-2">
+                  {t('fields.name')} (English) *
+                  <Badge variant="default" className="text-xs">{t('fields.required')}</Badge>
+                </Label>
+                <Input
+                  value={englishName}
+                  onChange={(e) => setEnglishName(e.target.value)}
+                  placeholder="John Doe"
+                  className="mt-1.5"
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">{t('messages.englishNameRequired')}</p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Slug (URL) *</Label>
@@ -435,16 +464,21 @@ export function InterpreterFormPage({ interpreter }: InterpreterFormPageProps) {
                   </CardTitle>
                   <CardDescription>{t('descriptions.languages')}</CardDescription>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addLanguageEntry}
-                  disabled={languageEntries.length >= LOCALE_CODES.length}
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  {t('fields.addLanguage')}
-                </Button>
+                {availableLanguagesToAdd.length > 0 && (
+                  <Select onValueChange={addLanguageEntry}>
+                    <SelectTrigger className="w-[180px]">
+                      <Plus className="w-4 h-4 mr-2" />
+                      <span>{t('fields.addLanguage')}</span>
+                    </SelectTrigger>
+                    <SelectContent position="popper" side="bottom" align="end" sideOffset={4}>
+                      {availableLanguagesToAdd.map((code) => (
+                        <SelectItem key={code} value={code}>
+                          {t(`locales.${code}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -496,22 +530,12 @@ export function InterpreterFormPage({ interpreter }: InterpreterFormPageProps) {
                       <div className="px-4 pb-4 space-y-4 border-t pt-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label>{t('fields.language')} *</Label>
-                            <Select
-                              value={entry.code}
-                              onValueChange={(value) => updateLanguageEntry(index, 'code', value)}
-                            >
-                              <SelectTrigger className="mt-1.5">
-                                <SelectValue placeholder={t('placeholders.selectLanguage')} />
-                              </SelectTrigger>
-                              <SelectContent position="popper" side="bottom" align="start" sideOffset={4}>
-                                {getAvailableLanguages(entry.code).map((code) => (
-                                  <SelectItem key={code} value={code}>
-                                    {t(`locales.${code}`)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <Label>{t('fields.language')}</Label>
+                            <Input
+                              value={entry.code ? t(`locales.${entry.code}`) : ''}
+                              className="mt-1.5 bg-muted"
+                              disabled
+                            />
                           </div>
                           <div>
                             <Label>{t('fields.proficiency')} *</Label>

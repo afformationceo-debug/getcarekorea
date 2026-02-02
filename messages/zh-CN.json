@@ -209,30 +209,113 @@
   },
   "interpreters": {
     "title": "医疗翻译",
-    "subtitle": "专业翻译协助您的医疗之旅",
-    "searchPlaceholder": "按语言、专科搜索...",
+    "subtitle": "协助您医疗之旅的专业翻译",
+    "heroTitle1": "医疗",
+    "heroTitle2": "翻译",
+    "heroDescription": "与会说您语言的认证医疗翻译联系。",
+    "freeService": "免费平台服务",
+    "aiPoweredMatching": "AI智能匹配",
+    "searchPlaceholder": "按姓名、语言、专业搜索翻译...",
+    "found": "找到 {count} 位翻译",
+    "stats": {
+      "languages": "语言",
+      "certified": "认证",
+      "support": "支持",
+      "serviceFee": "服务费"
+    },
     "filters": {
       "language": "语言",
-      "specialty": "医疗专科",
-      "availability": "可用性",
-      "priceRange": "价格范围"
+      "allLanguages": "所有语言",
+      "specialty": "专业领域",
+      "allSpecialties": "所有专业",
+      "availability": "可预约",
+      "all": "全部",
+      "availableNow": "现在可预约"
     },
     "card": {
-      "hourlyRate": "${rate}/小时",
-      "dailyRate": "${rate}/天",
-      "languages": "语言",
-      "bookings": "{count} 次完成预约",
-      "available": "现在可用",
-      "unavailable": "目前不可用"
+      "available": "可预约",
+      "unavailable": "不可预约",
+      "verified": "已认证",
+      "viewProfile": "查看资料",
+      "yearsExp": "年",
+      "years": "年",
+      "bookings": "次预约",
+      "languagesLabel": "语言",
+      "specialtiesLabel": "专业领域"
+    },
+    "noResults": {
+      "title": "未找到翻译",
+      "description": "请尝试调整筛选条件或搜索词"
+    },
+    "loadMore": "加载更多",
+    "cta": {
+      "title": "找不到合适的翻译？",
+      "description": "我们的AI将根据您的具体需求、语言和医疗专业为您匹配完美的翻译。",
+      "button": "获取AI匹配翻译"
+    },
+    "languages": {
+      "en": "英语",
+      "ko": "韩语",
+      "zh-CN": "中文（简体）",
+      "zh-TW": "中文（繁体）",
+      "ja": "日语",
+      "th": "泰语",
+      "ru": "俄语",
+      "mn": "蒙古语"
+    },
+    "specialties": {
+      "Plastic Surgery": "整形外科",
+      "Dermatology": "皮肤科",
+      "Dental": "牙科",
+      "Health Checkup": "健康检查",
+      "Fertility": "生育治疗",
+      "Hair Transplant": "植发",
+      "Ophthalmology": "眼科"
     },
     "detail": {
+      "home": "首页",
+      "interpreters": "翻译",
+      "availableNow": "现在可预约",
+      "unavailable": "目前不可",
+      "verified": "已认证",
+      "experience": "年以上经验",
+      "bookingsCompleted": "次预约完成",
+      "reviews": "条评价",
+      "watchIntro": "观看介绍",
       "about": "关于",
-      "experience": "经验",
-      "languages": "语言",
-      "specialties": "专长",
-      "reviews": "评论",
-      "availability": "可用时间",
-      "bookInterpreter": "预约翻译"
+      "servicesTab": "服务",
+      "aboutMe": "关于我",
+      "education": "教育背景",
+      "certifications": "资质证书",
+      "languageProficiency": "语言能力",
+      "native": "母语",
+      "fluent": "流利",
+      "conversational": "会话水平",
+      "servicesOffered": "提供的服务",
+      "excellentService": "优质服务",
+      "ratingDescription": "因专业性、准确性和患者护理而获得高度评价。",
+      "bookNow": "立即预约",
+      "save": "保存",
+      "share": "分享",
+      "sendMessage": "发送消息",
+      "bookYourInterpreter": "预约翻译",
+      "readyToAssist": "准备就绪",
+      "professionalInterpretation": "为您在韩国的医疗之旅提供专业翻译服务。",
+      "freeCancellation": "免费取消",
+      "response24h": "24小时响应",
+      "whyChooseMe": "为什么选择我？",
+      "verifiedProfessional": "认证专业人士",
+      "multiLingualExpert": "多语言专家",
+      "medicalCertified": "医疗认证",
+      "flexibleSchedule": "灵活时间",
+      "certifiedProfessional": "认证专业人员",
+      "services": {
+        "medicalConsultation": "医疗咨询翻译",
+        "surgeryAccompaniment": "手术陪同",
+        "hospitalCoordination": "医院协调",
+        "postOperativeCare": "术后护理支持",
+        "documentTranslation": "文件翻译"
+      }
     }
   },
   "chat": {
@@ -886,10 +969,19 @@
         "en": "英语",
         "ko": "韩语",
         "zh": "中文",
+        "zh-CN": "简体中文",
+        "zh-TW": "繁体中文",
         "ja": "日语",
         "vi": "越南语",
         "th": "泰语",
-        "ru": "俄语"
+        "mn": "蒙古语",
+        "ru": "俄语",
+        "es": "西班牙语",
+        "ar": "阿拉伯语",
+        "fr": "法语",
+        "de": "德语",
+        "pt": "葡萄牙语",
+        "id": "印尼语"
       },
       "stats": {
         "total": "总计",
@@ -941,7 +1033,8 @@
         "isVerified": "已验证",
         "isVerifiedDesc": "显示验证徽章",
         "isFeatured": "推荐",
-        "isFeaturedDesc": "显示在列表顶部"
+        "isFeaturedDesc": "显示在列表顶部",
+        "required": "必填"
       },
       "descriptions": {
         "basicInfo": "输入基本资料信息",
@@ -1008,6 +1101,9 @@
         "saveFailed": "保存失败",
         "deleteFailed": "删除失败",
         "atLeastOneLanguage": "请至少添加一种语言和姓名",
+        "englishNameRequired": "英文姓名为必填项（作为默认显示）",
+        "cannotRemoveEnglish": "英语不能删除（作为必需的默认语言）",
+        "languageAlreadyAdded": "该语言已添加",
         "imageUploaded": "图片上传成功",
         "uploadFailed": "上传失败",
         "updated": "翻译信息已更新",

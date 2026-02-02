@@ -76,7 +76,6 @@ function transformToInterpreter(persona: Record<string, unknown>, locale: string
     certifications: (persona.certifications as string[]) || [],
     preferred_messenger: persona.preferred_messenger as string | null,
     messenger_cta: ctaText,
-    target_locales: ['en'], // target_locales column removed
   };
 }
 
@@ -151,45 +150,43 @@ export async function GET(request: NextRequest) {
     // Filter parameters
     const specialty = searchParams.get('specialty');
     const language = searchParams.get('language');
-    const availableOnly = searchParams.get('available') === 'true';
     const featuredOnly = searchParams.get('featured') === 'true';
     const search = searchParams.get('search');
 
+    // Check if we need post-query filtering (language or search)
+    const needsPostQueryFilter = (language && language !== 'all') || search;
+
     // Build query from author_personas (unified table)
+    // Use count: 'exact' to get total count with pagination
     let query = supabase
       .from('author_personas')
       .select('*', { count: 'exact' })
       .eq('is_active', true);
 
     // Filter by specialty
-    if (specialty) {
+    if (specialty && specialty !== 'all') {
       const specialtySlug = specialty.toLowerCase().replace(/\s+/g, '-');
       query = query.or(
         `primary_specialty.eq.${specialtySlug},secondary_specialties.cs.{"${specialtySlug}"}`
       );
     }
 
-    // Filter by availability - is_available column removed
-    // All active interpreters are considered available
-    // if (availableOnly) { ... }
-
     // Filter by featured
     if (featuredOnly) {
       query = query.eq('is_featured', true);
     }
 
-    // Text search - search in JSONB fields
-    // Note: For JSONB text search, we filter post-query since Supabase doesn't support ilike on JSONB directly
-    // This is handled below after the query results
-
-    // Apply sorting - featured first, then by rating
+    // Apply sorting - featured first, then by rating, then by id for stable ordering
     query = query
       .order('is_featured', { ascending: false })
       .order('display_order', { ascending: true, nullsFirst: false })
-      .order('avg_rating', { ascending: false });
+      .order('avg_rating', { ascending: false })
+      .order('id', { ascending: true }); // Tie-breaker for stable pagination
 
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1);
+    // Only apply DB pagination if no post-query filters needed
+    if (!needsPostQueryFilter) {
+      query = query.range(offset, offset + limit - 1);
+    }
 
     const startTime = Date.now();
     const { data, error, count } = await query;
@@ -198,7 +195,6 @@ export async function GET(request: NextRequest) {
     secureLog('info', 'Interpreters query executed', {
       responseTimeMs: responseTime,
       recordCount: data?.length || 0,
-      totalCount: count || 0,
       locale,
     });
 
@@ -208,39 +204,47 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform data for frontend
-    const interpreters = (data || []).map((persona) => transformToInterpreter(persona, locale));
+    let interpreters = (data || []).map((persona) => transformToInterpreter(persona, locale));
 
-    // Post-query filters
-    let filteredInterpreters = interpreters;
+    // When using DB-level pagination, return directly with count from query
+    if (!needsPostQueryFilter) {
+      const total = count || interpreters.length;
+      return createSuccessResponse(interpreters, {
+        page,
+        limit,
+        total,
+        hasMore: offset + limit < total,
+      });
+    }
 
-    // Text search filter (post-query for JSONB fields)
+    // Post-query filters (only when needsPostQueryFilter is true)
+    // Language filter
+    if (language && language !== 'all') {
+      interpreters = interpreters.filter((interpreter) =>
+        interpreter.languages.some((l) => l.code === language)
+      );
+    }
+
+    // Text search filter
     if (search) {
       const searchLower = search.toLowerCase();
-      filteredInterpreters = filteredInterpreters.filter((interpreter) =>
+      interpreters = interpreters.filter((interpreter) =>
         interpreter.name.toLowerCase().includes(searchLower) ||
         interpreter.bio.toLowerCase().includes(searchLower)
       );
     }
 
-    // Language filter
-    if (language) {
-      const langLower = language.toLowerCase();
-      filteredInterpreters = filteredInterpreters.filter((interpreter) =>
-        interpreter.languages.some((l) => l.name.toLowerCase().includes(langLower))
-      );
-    }
+    // Calculate total after filtering
+    const total = interpreters.length;
 
-    // Filter by locale - strict matching
-    // Only show interpreters whose target_locales includes the current locale
-    filteredInterpreters = filteredInterpreters.filter((interpreter) =>
-      interpreter.target_locales.includes(locale)
-    );
+    // Apply pagination in memory
+    const paginatedInterpreters = interpreters.slice(offset, offset + limit);
 
-    return createSuccessResponse(filteredInterpreters, {
+    return createSuccessResponse(paginatedInterpreters, {
       page,
       limit,
-      total: count || 0,
-      hasMore: offset + limit < (count || 0),
+      total,
+      hasMore: offset + limit < total,
     });
   } catch (error) {
     return createErrorResponse(error);

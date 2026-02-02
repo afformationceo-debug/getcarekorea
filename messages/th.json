@@ -209,30 +209,113 @@
   },
   "interpreters": {
     "title": "ล่ามแพทย์",
-    "subtitle": "ล่ามมืออาชีพเพื่อช่วยเหลือการเดินทางทางการแพทย์ของคุณ",
-    "searchPlaceholder": "ค้นหาตามภาษา สาขาเฉพาะทาง...",
+    "subtitle": "ล่ามมืออาชีพช่วยเหลือการเดินทางทางการแพทย์ของคุณ",
+    "heroTitle1": "ล่าม",
+    "heroTitle2": "แพทย์",
+    "heroDescription": "เชื่อมต่อกับล่ามแพทย์ที่ได้รับการรับรองที่พูดภาษาของคุณ",
+    "freeService": "บริการแพลตฟอร์มฟรี",
+    "aiPoweredMatching": "การจับคู่ด้วย AI",
+    "searchPlaceholder": "ค้นหาล่ามตามชื่อ ภาษา ความเชี่ยวชาญ...",
+    "found": "พบ {count} ล่าม",
+    "stats": {
+      "languages": "ภาษา",
+      "certified": "รับรอง",
+      "support": "สนับสนุน",
+      "serviceFee": "ค่าบริการ"
+    },
     "filters": {
       "language": "ภาษา",
-      "specialty": "สาขาเฉพาะทาง",
-      "availability": "ความพร้อม",
-      "priceRange": "ช่วงราคา"
+      "allLanguages": "ทุกภาษา",
+      "specialty": "ความเชี่ยวชาญ",
+      "allSpecialties": "ทุกความเชี่ยวชาญ",
+      "availability": "พร้อมให้บริการ",
+      "all": "ทั้งหมด",
+      "availableNow": "พร้อมให้บริการตอนนี้"
     },
     "card": {
-      "hourlyRate": "${rate}/ชั่วโมง",
-      "dailyRate": "${rate}/วัน",
-      "languages": "ภาษา",
-      "bookings": "การจองที่สำเร็จ {count} ครั้ง",
       "available": "พร้อมให้บริการ",
-      "unavailable": "ไม่พร้อมให้บริการ"
+      "unavailable": "ไม่พร้อม",
+      "verified": "ยืนยันแล้ว",
+      "viewProfile": "ดูโปรไฟล์",
+      "yearsExp": "ปี",
+      "years": "ปี",
+      "bookings": "การจอง",
+      "languagesLabel": "ภาษา",
+      "specialtiesLabel": "ความเชี่ยวชาญ"
+    },
+    "noResults": {
+      "title": "ไม่พบล่าม",
+      "description": "ลองปรับตัวกรองหรือคำค้นหา"
+    },
+    "loadMore": "โหลดเพิ่มเติม",
+    "cta": {
+      "title": "หาล่ามที่เหมาะสมไม่ได้?",
+      "description": "AI ของเราจะจับคู่คุณกับล่ามที่สมบูรณ์แบบตามความต้องการ ภาษา และความเชี่ยวชาญทางการแพทย์ของคุณ",
+      "button": "รับล่ามที่จับคู่ด้วย AI"
+    },
+    "languages": {
+      "en": "อังกฤษ",
+      "ko": "เกาหลี",
+      "zh-CN": "จีน (ตัวย่อ)",
+      "zh-TW": "จีน (ตัวเต็ม)",
+      "ja": "ญี่ปุ่น",
+      "th": "ไทย",
+      "ru": "รัสเซีย",
+      "mn": "มองโกเลีย"
+    },
+    "specialties": {
+      "Plastic Surgery": "ศัลยกรรมตกแต่ง",
+      "Dermatology": "ผิวหนัง",
+      "Dental": "ทันตกรรม",
+      "Health Checkup": "ตรวจสุขภาพ",
+      "Fertility": "การเจริญพันธุ์",
+      "Hair Transplant": "ปลูกผม",
+      "Ophthalmology": "จักษุ"
     },
     "detail": {
-      "about": "เกี่ยวกับ",
-      "experience": "ประสบการณ์",
-      "languages": "ภาษา",
-      "specialties": "ความเชี่ยวชาญ",
+      "home": "หน้าแรก",
+      "interpreters": "ล่าม",
+      "availableNow": "พร้อมให้บริการ",
+      "unavailable": "ไม่พร้อมในขณะนี้",
+      "verified": "ยืนยันแล้ว",
+      "experience": "ปีขึ้นไป",
+      "bookingsCompleted": "การจองเสร็จสิ้น",
       "reviews": "รีวิว",
-      "availability": "ตารางว่าง",
-      "bookInterpreter": "จองล่าม"
+      "watchIntro": "ดูวิดีโอแนะนำ",
+      "about": "เกี่ยวกับ",
+      "servicesTab": "บริการ",
+      "aboutMe": "เกี่ยวกับฉัน",
+      "education": "การศึกษา",
+      "certifications": "ใบรับรอง",
+      "languageProficiency": "ความสามารถทางภาษา",
+      "native": "เจ้าของภาษา",
+      "fluent": "คล่องแคล่ว",
+      "conversational": "สนทนาได้",
+      "servicesOffered": "บริการที่เสนอ",
+      "excellentService": "บริการยอดเยี่ยม",
+      "ratingDescription": "ได้รับการจัดอันดับสูงจากผู้ป่วยสำหรับความเป็นมืออาชีพ ความแม่นยำ และการดูแลผู้ป่วย",
+      "bookNow": "จองเลย",
+      "save": "บันทึก",
+      "share": "แชร์",
+      "sendMessage": "ส่งข้อความ",
+      "bookYourInterpreter": "จองล่ามของคุณ",
+      "readyToAssist": "พร้อมช่วยเหลือ",
+      "professionalInterpretation": "บริการแปลมืออาชีพสำหรับการเดินทางทางการแพทย์ในเกาหลี",
+      "freeCancellation": "ยกเลิกฟรี",
+      "response24h": "ตอบกลับใน 24 ชม.",
+      "whyChooseMe": "ทำไมต้องเลือกฉัน?",
+      "verifiedProfessional": "ผู้เชี่ยวชาญที่ยืนยันแล้ว",
+      "multiLingualExpert": "ผู้เชี่ยวชาญหลายภาษา",
+      "medicalCertified": "รับรองทางการแพทย์",
+      "flexibleSchedule": "ตารางเวลายืดหยุ่น",
+      "certifiedProfessional": "ผู้เชี่ยวชาญที่ได้รับการรับรอง",
+      "services": {
+        "medicalConsultation": "ล่ามปรึกษาแพทย์",
+        "surgeryAccompaniment": "ติดตามผ่าตัด",
+        "hospitalCoordination": "ประสานงานโรงพยาบาล",
+        "postOperativeCare": "ดูแลหลังผ่าตัด",
+        "documentTranslation": "แปลเอกสาร"
+      }
     }
   },
   "chat": {
@@ -932,7 +1015,8 @@
         "isVerified": "ยืนยันแล้ว",
         "isVerifiedDesc": "แสดงตราสัญลักษณ์ยืนยัน",
         "isFeatured": "แนะนำ",
-        "isFeaturedDesc": "แสดงที่ด้านบนของรายการ"
+        "isFeaturedDesc": "แสดงที่ด้านบนของรายการ",
+        "required": "จำเป็น"
       },
       "descriptions": {
         "basicInfo": "กรอกข้อมูลโปรไฟล์พื้นฐาน",
@@ -989,10 +1073,19 @@
         "en": "อังกฤษ",
         "ko": "เกาหลี",
         "zh": "จีน",
+        "zh-CN": "จีน (ตัวย่อ)",
+        "zh-TW": "จีน (ตัวเต็ม)",
         "ja": "ญี่ปุ่น",
         "vi": "เวียดนาม",
         "th": "ไทย",
-        "ru": "รัสเซีย"
+        "mn": "มองโกเลีย",
+        "ru": "รัสเซีย",
+        "es": "สเปน",
+        "ar": "อาหรับ",
+        "fr": "ฝรั่งเศส",
+        "de": "เยอรมัน",
+        "pt": "โปรตุเกส",
+        "id": "อินโดนีเซีย"
       },
       "actions": {
         "view": "ดู",
@@ -1008,6 +1101,9 @@
         "saveFailed": "บันทึกไม่สำเร็จ",
         "deleteFailed": "ลบไม่สำเร็จ",
         "atLeastOneLanguage": "กรุณาเพิ่มอย่างน้อยหนึ่งภาษาและชื่อ",
+        "englishNameRequired": "ชื่อภาษาอังกฤษเป็นข้อมูลจำเป็น (ใช้เป็นค่าเริ่มต้น)",
+        "cannotRemoveEnglish": "ไม่สามารถลบภาษาอังกฤษได้ (จำเป็นเป็นภาษาเริ่มต้น)",
+        "languageAlreadyAdded": "ภาษานี้ถูกเพิ่มแล้ว",
         "imageUploaded": "อัปโหลดรูปภาพสำเร็จ",
         "uploadFailed": "อัปโหลดไม่สำเร็จ",
         "updated": "อัปเดตข้อมูลล่ามสำเร็จ",

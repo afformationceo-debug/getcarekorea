@@ -208,31 +208,114 @@
     }
   },
   "interpreters": {
-    "title": "醫療口譯員",
-    "subtitle": "專業口譯員協助您的醫療之旅",
-    "searchPlaceholder": "按語言、專科搜尋...",
+    "title": "醫療翻譯",
+    "subtitle": "協助您醫療之旅的專業翻譯",
+    "heroTitle1": "醫療",
+    "heroTitle2": "翻譯",
+    "heroDescription": "與會說您語言的認證醫療翻譯聯繫。",
+    "freeService": "免費平台服務",
+    "aiPoweredMatching": "AI智能配對",
+    "searchPlaceholder": "按姓名、語言、專業搜尋翻譯...",
+    "found": "找到 {count} 位翻譯",
+    "stats": {
+      "languages": "語言",
+      "certified": "認證",
+      "support": "支援",
+      "serviceFee": "服務費"
+    },
     "filters": {
       "language": "語言",
-      "specialty": "醫療專科",
-      "availability": "可用性",
-      "priceRange": "價格範圍"
+      "allLanguages": "所有語言",
+      "specialty": "專業領域",
+      "allSpecialties": "所有專業",
+      "availability": "可預約",
+      "all": "全部",
+      "availableNow": "現在可預約"
     },
     "card": {
-      "hourlyRate": "${rate}/小時",
-      "dailyRate": "${rate}/天",
-      "languages": "語言",
-      "bookings": "{count} 次完成預約",
-      "available": "現在可用",
-      "unavailable": "目前不可用"
+      "available": "可預約",
+      "unavailable": "不可預約",
+      "verified": "已認證",
+      "viewProfile": "查看資料",
+      "yearsExp": "年",
+      "years": "年",
+      "bookings": "次預約",
+      "languagesLabel": "語言",
+      "specialtiesLabel": "專業領域"
+    },
+    "noResults": {
+      "title": "未找到翻譯",
+      "description": "請嘗試調整篩選條件或搜尋詞"
+    },
+    "loadMore": "載入更多",
+    "cta": {
+      "title": "找不到合適的翻譯？",
+      "description": "我們的AI將根據您的具體需求、語言和醫療專業為您配對完美的翻譯。",
+      "button": "獲取AI配對翻譯"
+    },
+    "languages": {
+      "en": "英語",
+      "ko": "韓語",
+      "zh-CN": "中文（簡體）",
+      "zh-TW": "中文（繁體）",
+      "ja": "日語",
+      "th": "泰語",
+      "ru": "俄語",
+      "mn": "蒙古語"
+    },
+    "specialties": {
+      "Plastic Surgery": "整形外科",
+      "Dermatology": "皮膚科",
+      "Dental": "牙科",
+      "Health Checkup": "健康檢查",
+      "Fertility": "生育治療",
+      "Hair Transplant": "植髮",
+      "Ophthalmology": "眼科"
     },
     "detail": {
+      "home": "首頁",
+      "interpreters": "翻譯",
+      "availableNow": "現在可預約",
+      "unavailable": "目前不可",
+      "verified": "已認證",
+      "experience": "年以上經驗",
+      "bookingsCompleted": "次預約完成",
+      "reviews": "則評價",
+      "watchIntro": "觀看介紹",
       "about": "關於",
-      "experience": "經驗",
-      "languages": "語言",
-      "specialties": "專長",
-      "reviews": "評論",
-      "availability": "可用時間",
-      "bookInterpreter": "預約口譯員"
+      "servicesTab": "服務",
+      "aboutMe": "關於我",
+      "education": "教育背景",
+      "certifications": "資格證書",
+      "languageProficiency": "語言能力",
+      "native": "母語",
+      "fluent": "流利",
+      "conversational": "會話程度",
+      "servicesOffered": "提供的服務",
+      "excellentService": "優質服務",
+      "ratingDescription": "因專業性、準確性和患者護理而獲得高度評價。",
+      "bookNow": "立即預約",
+      "save": "儲存",
+      "share": "分享",
+      "sendMessage": "發送訊息",
+      "bookYourInterpreter": "預約翻譯",
+      "readyToAssist": "準備就緒",
+      "professionalInterpretation": "為您在韓國的醫療之旅提供專業翻譯服務。",
+      "freeCancellation": "免費取消",
+      "response24h": "24小時回應",
+      "whyChooseMe": "為什麼選擇我？",
+      "verifiedProfessional": "認證專業人士",
+      "multiLingualExpert": "多語言專家",
+      "medicalCertified": "醫療認證",
+      "flexibleSchedule": "彈性時間",
+      "certifiedProfessional": "認證專業人員",
+      "services": {
+        "medicalConsultation": "醫療諮詢口譯",
+        "surgeryAccompaniment": "手術陪同",
+        "hospitalCoordination": "醫院協調",
+        "postOperativeCare": "術後護理支援",
+        "documentTranslation": "文件翻譯"
+      }
     }
   },
   "chat": {
@@ -932,7 +1015,8 @@
         "isVerified": "已驗證",
         "isVerifiedDesc": "顯示驗證徽章",
         "isFeatured": "推薦",
-        "isFeaturedDesc": "顯示在列表頂部"
+        "isFeaturedDesc": "顯示在列表頂部",
+        "required": "必填"
       },
       "descriptions": {
         "basicInfo": "輸入基本資料資訊",
@@ -989,10 +1073,19 @@
         "en": "英語",
         "ko": "韓語",
         "zh": "中文",
+        "zh-CN": "簡體中文",
+        "zh-TW": "繁體中文",
         "ja": "日語",
         "vi": "越南語",
         "th": "泰語",
-        "ru": "俄語"
+        "mn": "蒙古語",
+        "ru": "俄語",
+        "es": "西班牙語",
+        "ar": "阿拉伯語",
+        "fr": "法語",
+        "de": "德語",
+        "pt": "葡萄牙語",
+        "id": "印尼語"
       },
       "actions": {
         "view": "檢視",
@@ -1008,6 +1101,9 @@
         "saveFailed": "儲存失敗",
         "deleteFailed": "刪除失敗",
         "atLeastOneLanguage": "請至少添加一種語言和姓名",
+        "englishNameRequired": "英文姓名為必填項（作為預設顯示）",
+        "cannotRemoveEnglish": "英語不能刪除（作為必需的預設語言）",
+        "languageAlreadyAdded": "該語言已新增",
         "imageUploaded": "圖片上傳成功",
         "uploadFailed": "上傳失敗",
         "updated": "翻譯資訊已更新",

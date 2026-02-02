@@ -208,31 +208,114 @@
     }
   },
   "interpreters": {
-    "title": "医療通訳",
-    "subtitle": "医療の旅をサポートするプロの通訳",
-    "searchPlaceholder": "言語、専門で検索...",
+    "title": "医療通訳士",
+    "subtitle": "医療ツアーをサポートするプロの通訳士",
+    "heroTitle1": "医療",
+    "heroTitle2": "通訳士",
+    "heroDescription": "あなたの言語を話す認定医療通訳士とつながりましょう。",
+    "freeService": "無料プラットフォームサービス",
+    "aiPoweredMatching": "AIマッチング",
+    "searchPlaceholder": "名前、言語、専門分野で通訳士を検索...",
+    "found": "通訳士 {count}名 見つかりました",
+    "stats": {
+      "languages": "言語",
+      "certified": "認定",
+      "support": "サポート",
+      "serviceFee": "サービス料"
+    },
     "filters": {
       "language": "言語",
-      "specialty": "専門科目",
-      "availability": "空き状況",
-      "priceRange": "価格帯"
+      "allLanguages": "全ての言語",
+      "specialty": "専門分野",
+      "allSpecialties": "全ての専門分野",
+      "availability": "予約可能",
+      "all": "全て",
+      "availableNow": "今すぐ可能"
     },
     "card": {
-      "hourlyRate": "${rate}/時間",
-      "dailyRate": "${rate}/日",
-      "languages": "言語",
-      "bookings": "{count}件の予約実績",
-      "available": "今すぐ予約可能",
-      "unavailable": "現在予約不可"
+      "available": "予約可能",
+      "unavailable": "予約不可",
+      "verified": "認証済み",
+      "viewProfile": "プロフィールを見る",
+      "yearsExp": "年",
+      "years": "年間",
+      "bookings": "予約完了",
+      "languagesLabel": "対応言語",
+      "specialtiesLabel": "専門分野"
+    },
+    "noResults": {
+      "title": "通訳士が見つかりません",
+      "description": "フィルターや検索条件を調整してみてください"
+    },
+    "loadMore": "もっと見る",
+    "cta": {
+      "title": "適切な通訳士が見つかりませんか？",
+      "description": "AIがあなたのニーズ、言語、医療専門分野に合った完璧な通訳士をマッチングします。",
+      "button": "AIマッチング通訳士を探す"
+    },
+    "languages": {
+      "en": "英語",
+      "ko": "韓国語",
+      "zh-CN": "中国語（簡体字）",
+      "zh-TW": "中国語（繁体字）",
+      "ja": "日本語",
+      "th": "タイ語",
+      "ru": "ロシア語",
+      "mn": "モンゴル語"
+    },
+    "specialties": {
+      "Plastic Surgery": "美容整形",
+      "Dermatology": "皮膚科",
+      "Dental": "歯科",
+      "Health Checkup": "健康診断",
+      "Fertility": "不妊治療",
+      "Hair Transplant": "植毛",
+      "Ophthalmology": "眼科"
     },
     "detail": {
-      "about": "紹介",
-      "experience": "経験",
-      "languages": "言語",
-      "specialties": "専門",
+      "home": "ホーム",
+      "interpreters": "通訳士",
+      "availableNow": "今すぐ可能",
+      "unavailable": "現在不可",
+      "verified": "認証済み",
+      "experience": "年以上の経験",
+      "bookingsCompleted": "予約完了",
       "reviews": "レビュー",
-      "availability": "空き状況",
-      "bookInterpreter": "通訳を予約"
+      "watchIntro": "紹介動画を見る",
+      "about": "紹介",
+      "servicesTab": "サービス",
+      "aboutMe": "自己紹介",
+      "education": "学歴",
+      "certifications": "資格",
+      "languageProficiency": "言語能力",
+      "native": "ネイティブ",
+      "fluent": "流暢",
+      "conversational": "会話可能",
+      "servicesOffered": "提供サービス",
+      "excellentService": "優れたサービス",
+      "ratingDescription": "専門性、正確性、患者ケアで高い評価を受けています。",
+      "bookNow": "今すぐ予約",
+      "save": "保存",
+      "share": "共有",
+      "sendMessage": "メッセージを送る",
+      "bookYourInterpreter": "通訳士を予約",
+      "readyToAssist": "サポート準備完了",
+      "professionalInterpretation": "韓国での医療旅行のためのプロフェッショナル通訳サービス。",
+      "freeCancellation": "無料キャンセル",
+      "response24h": "24時間対応",
+      "whyChooseMe": "私を選ぶ理由",
+      "verifiedProfessional": "認証済み専門家",
+      "multiLingualExpert": "多言語エキスパート",
+      "medicalCertified": "医療認定",
+      "flexibleSchedule": "柔軟なスケジュール",
+      "certifiedProfessional": "認定プロフェッショナル",
+      "services": {
+        "medicalConsultation": "医療相談通訳",
+        "surgeryAccompaniment": "手術同行",
+        "hospitalCoordination": "病院調整",
+        "postOperativeCare": "術後ケアサポート",
+        "documentTranslation": "書類翻訳"
+      }
     }
   },
   "chat": {
@@ -886,10 +969,19 @@
         "en": "英語",
         "ko": "韓国語",
         "zh": "中国語",
+        "zh-CN": "中国語(簡体)",
+        "zh-TW": "中国語(繁体)",
         "ja": "日本語",
         "vi": "ベトナム語",
         "th": "タイ語",
-        "ru": "ロシア語"
+        "mn": "モンゴル語",
+        "ru": "ロシア語",
+        "es": "スペイン語",
+        "ar": "アラビア語",
+        "fr": "フランス語",
+        "de": "ドイツ語",
+        "pt": "ポルトガル語",
+        "id": "インドネシア語"
       },
       "stats": {
         "total": "合計",
@@ -941,7 +1033,8 @@
         "isVerified": "認証済み",
         "isVerifiedDesc": "認証バッジを表示",
         "isFeatured": "おすすめ",
-        "isFeaturedDesc": "リストの上部に表示"
+        "isFeaturedDesc": "リストの上部に表示",
+        "required": "必須"
       },
       "descriptions": {
         "basicInfo": "基本プロフィール情報を入力してください",
@@ -1008,6 +1101,9 @@
         "saveFailed": "保存失敗",
         "deleteFailed": "削除に失敗しました",
         "atLeastOneLanguage": "少なくとも1つの言語と名前を追加してください",
+        "englishNameRequired": "英語名は必須です（デフォルトとして使用）",
+        "cannotRemoveEnglish": "英語は削除できません（必須のデフォルト言語）",
+        "languageAlreadyAdded": "この言語は既に追加されています",
         "imageUploaded": "画像がアップロードされました",
         "uploadFailed": "アップロードに失敗しました",
         "updated": "通訳者情報が更新されました",

@@ -210,29 +210,112 @@
   "interpreters": {
     "title": "Медицинские переводчики",
     "subtitle": "Профессиональные переводчики для вашего медицинского путешествия",
-    "searchPlaceholder": "Поиск по языку, специализации...",
+    "heroTitle1": "Медицинские",
+    "heroTitle2": "Переводчики",
+    "heroDescription": "Свяжитесь с сертифицированными медицинскими переводчиками, говорящими на вашем языке.",
+    "freeService": "Бесплатный сервис платформы",
+    "aiPoweredMatching": "AI-подбор",
+    "searchPlaceholder": "Поиск переводчиков по имени, языку, специализации...",
+    "found": "Найдено {count} переводчиков",
+    "stats": {
+      "languages": "Языки",
+      "certified": "Сертифицированы",
+      "support": "Поддержка",
+      "serviceFee": "Плата за услуги"
+    },
     "filters": {
       "language": "Язык",
-      "specialty": "Медицинская специализация",
+      "allLanguages": "Все языки",
+      "specialty": "Специализация",
+      "allSpecialties": "Все специализации",
       "availability": "Доступность",
-      "priceRange": "Ценовой диапазон"
+      "all": "Все",
+      "availableNow": "Доступен сейчас"
     },
     "card": {
-      "hourlyRate": "${rate}/час",
-      "dailyRate": "${rate}/день",
-      "languages": "Языки",
-      "bookings": "{count} выполненных заказов",
-      "available": "Доступен сейчас",
-      "unavailable": "Недоступен"
+      "available": "Доступен",
+      "unavailable": "Недоступен",
+      "verified": "Подтверждён",
+      "viewProfile": "Смотреть профиль",
+      "yearsExp": "лет",
+      "years": "лет",
+      "bookings": "бронирований",
+      "languagesLabel": "Языки",
+      "specialtiesLabel": "Специализация"
+    },
+    "noResults": {
+      "title": "Переводчики не найдены",
+      "description": "Попробуйте изменить фильтры или поисковый запрос"
+    },
+    "loadMore": "Загрузить ещё",
+    "cta": {
+      "title": "Не можете найти подходящего переводчика?",
+      "description": "Наш AI подберёт идеального переводчика на основе ваших потребностей, языка и медицинской специализации.",
+      "button": "Получить AI-подбор переводчика"
+    },
+    "languages": {
+      "en": "Английский",
+      "ko": "Корейский",
+      "zh-CN": "Китайский (упрощённый)",
+      "zh-TW": "Китайский (традиционный)",
+      "ja": "Японский",
+      "th": "Тайский",
+      "ru": "Русский",
+      "mn": "Монгольский"
+    },
+    "specialties": {
+      "Plastic Surgery": "Пластическая хирургия",
+      "Dermatology": "Дерматология",
+      "Dental": "Стоматология",
+      "Health Checkup": "Медосмотр",
+      "Fertility": "Лечение бесплодия",
+      "Hair Transplant": "Пересадка волос",
+      "Ophthalmology": "Офтальмология"
     },
     "detail": {
-      "about": "О переводчике",
-      "experience": "Опыт",
-      "languages": "Языки",
-      "specialties": "Специализации",
-      "reviews": "Отзывы",
-      "availability": "Доступность",
-      "bookInterpreter": "Забронировать переводчика"
+      "home": "Главная",
+      "interpreters": "Переводчики",
+      "availableNow": "Доступен сейчас",
+      "unavailable": "Недоступен сейчас",
+      "verified": "Подтверждён",
+      "experience": "лет опыта",
+      "bookingsCompleted": "бронирований выполнено",
+      "reviews": "отзывов",
+      "watchIntro": "Смотреть презентацию",
+      "about": "О себе",
+      "servicesTab": "Услуги",
+      "aboutMe": "Обо мне",
+      "education": "Образование",
+      "certifications": "Сертификаты",
+      "languageProficiency": "Владение языками",
+      "native": "Родной",
+      "fluent": "Свободный",
+      "conversational": "Разговорный",
+      "servicesOffered": "Предлагаемые услуги",
+      "excellentService": "Отличный сервис",
+      "ratingDescription": "Высоко оценён пациентами за профессионализм, точность и заботу о пациентах.",
+      "bookNow": "Забронировать",
+      "save": "Сохранить",
+      "share": "Поделиться",
+      "sendMessage": "Отправить сообщение",
+      "bookYourInterpreter": "Забронировать переводчика",
+      "readyToAssist": "Готов помочь",
+      "professionalInterpretation": "Профессиональный перевод для вашего медицинского путешествия в Корею.",
+      "freeCancellation": "Бесплатная отмена",
+      "response24h": "Ответ в течение 24ч",
+      "whyChooseMe": "Почему выбрать меня?",
+      "verifiedProfessional": "Проверенный специалист",
+      "multiLingualExpert": "Эксперт по языкам",
+      "medicalCertified": "Медицинский сертификат",
+      "flexibleSchedule": "Гибкий график",
+      "certifiedProfessional": "Сертифицированный специалист",
+      "services": {
+        "medicalConsultation": "Устный перевод консультаций",
+        "surgeryAccompaniment": "Сопровождение на операцию",
+        "hospitalCoordination": "Координация с клиникой",
+        "postOperativeCare": "Послеоперационная поддержка",
+        "documentTranslation": "Перевод документов"
+      }
     }
   },
   "chat": {
@@ -932,7 +1015,8 @@
         "isVerified": "Проверен",
         "isVerifiedDesc": "Показывать значок проверки",
         "isFeatured": "Рекомендуемый",
-        "isFeaturedDesc": "Показывать в начале списка"
+        "isFeaturedDesc": "Показывать в начале списка",
+        "required": "Обязательно"
       },
       "descriptions": {
         "basicInfo": "Введите основную информацию профиля",
@@ -989,10 +1073,19 @@
         "en": "Английский",
         "ko": "Корейский",
         "zh": "Китайский",
+        "zh-CN": "Китайский (упрощённый)",
+        "zh-TW": "Китайский (традиционный)",
         "ja": "Японский",
         "vi": "Вьетнамский",
         "th": "Тайский",
-        "ru": "Русский"
+        "mn": "Монгольский",
+        "ru": "Русский",
+        "es": "Испанский",
+        "ar": "Арабский",
+        "fr": "Французский",
+        "de": "Немецкий",
+        "pt": "Португальский",
+        "id": "Индонезийский"
       },
       "actions": {
         "view": "Просмотр",
@@ -1008,6 +1101,9 @@
         "saveFailed": "Ошибка сохранения",
         "deleteFailed": "Не удалось удалить",
         "atLeastOneLanguage": "Пожалуйста, добавьте хотя бы один язык с именем",
+        "englishNameRequired": "Имя на английском обязательно (используется по умолчанию)",
+        "cannotRemoveEnglish": "Английский нельзя удалить (обязательный язык по умолчанию)",
+        "languageAlreadyAdded": "Этот язык уже добавлен",
         "imageUploaded": "Изображение загружено",
         "uploadFailed": "Ошибка загрузки",
         "updated": "Информация о переводчике обновлена",

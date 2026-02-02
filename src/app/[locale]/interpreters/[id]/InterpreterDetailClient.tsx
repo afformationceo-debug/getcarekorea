@@ -4,22 +4,17 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/lib/i18n/navigation';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   Star,
   MapPin,
-  Phone,
-  Mail,
   Languages,
   Calendar,
-  Video,
   BadgeCheck,
   MessageCircle,
   Clock,
   ChevronRight,
-  ChevronLeft,
   Play,
-  Heart,
-  Share2,
   Check,
   Award,
   Shield,
@@ -27,6 +22,7 @@ import {
   User,
   Briefcase,
   GraduationCap,
+  Mail,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -53,7 +49,7 @@ interface Review {
 interface Interpreter {
   id: string;
   name: string;
-  photo_url: string;
+  photo_url: string | null;
   languages: Language[];
   specialties: string[];
   bio: string;
@@ -68,7 +64,7 @@ interface Interpreter {
   education: string;
   certifications: string[];
   services: string[];
-  availability: {
+  availability?: {
     [key: string]: { start: string; end: string }[];
   };
 }
@@ -84,8 +80,36 @@ export function InterpreterDetailClient({
   reviews,
   locale,
 }: InterpreterDetailClientProps) {
+  const t = useTranslations('interpreters');
   const [activeTab, setActiveTab] = useState('about');
-  const [isFavorite, setIsFavorite] = useState(false);
+
+  // Helper to get translated language name
+  const getLanguageName = (code: string) => {
+    try {
+      return t(`languages.${code}`);
+    } catch {
+      return code.toUpperCase();
+    }
+  };
+
+  // Helper to get translated specialty name
+  const getSpecialtyName = (specialty: string) => {
+    try {
+      return t(`specialties.${specialty}`);
+    } catch {
+      return specialty;
+    }
+  };
+
+  // Helper to get translated service name
+  const getServiceName = (service: string) => {
+    const serviceKey = service.toLowerCase().replace(/\s+/g, '');
+    try {
+      return t(`detail.services.${serviceKey}`);
+    } catch {
+      return service;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-violet-50/50 via-background to-background dark:from-violet-950/20">
@@ -98,11 +122,11 @@ export function InterpreterDetailClient({
         <div className="container py-3">
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
             <Link href="/" className="hover:text-foreground transition-colors">
-              Home
+              {t('detail.home')}
             </Link>
             <ChevronRight className="h-4 w-4" />
             <Link href={`/interpreters`} className="hover:text-foreground transition-colors">
-              Interpreters
+              {t('detail.interpreters')}
             </Link>
             <ChevronRight className="h-4 w-4" />
             <span className="font-medium text-foreground">{interpreter.name}</span>
@@ -141,15 +165,23 @@ export function InterpreterDetailClient({
               className="relative mx-auto lg:mx-0"
             >
               <div className="relative h-64 w-64 overflow-hidden rounded-3xl shadow-2xl lg:h-80 lg:w-80">
-                <Image
-                  src={interpreter.photo_url}
-                  alt={interpreter.name}
-                  fill
-                  sizes="(max-width: 1024px) 256px, 320px"
-                  className="object-cover"
-                  priority
-                  unoptimized={interpreter.photo_url?.includes('.svg') || interpreter.photo_url?.includes('dicebear')}
-                />
+                {interpreter.photo_url ? (
+                  <Image
+                    src={interpreter.photo_url}
+                    alt={interpreter.name}
+                    fill
+                    sizes="(max-width: 1024px) 256px, 320px"
+                    className="object-cover"
+                    priority
+                    unoptimized={interpreter.photo_url.includes('.svg') || interpreter.photo_url.includes('dicebear')}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
+                    <span className="text-8xl font-bold text-primary/40">
+                      {interpreter.name[0]?.toUpperCase() || '?'}
+                    </span>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
 
                 {/* Video play button */}
@@ -160,7 +192,7 @@ export function InterpreterDetailClient({
                     className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 font-medium shadow-lg backdrop-blur-sm"
                   >
                     <Play className="h-5 w-5 fill-violet-600 text-violet-600" />
-                    Watch Intro
+                    {t('detail.watchIntro')}
                   </motion.button>
                 )}
               </div>
@@ -175,11 +207,11 @@ export function InterpreterDetailClient({
                 {interpreter.is_available ? (
                   <Badge className="bg-green-500 px-4 py-2 text-sm text-white shadow-lg">
                     <span className="mr-2 h-2 w-2 animate-pulse rounded-full bg-white" />
-                    Available Now
+                    {t('detail.availableNow')}
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="px-4 py-2 text-sm shadow-lg">
-                    Currently Unavailable
+                    {t('detail.unavailable')}
                   </Badge>
                 )}
               </motion.div>
@@ -198,7 +230,7 @@ export function InterpreterDetailClient({
                 {interpreter.is_verified && (
                   <Badge className="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
                     <BadgeCheck className="mr-1 h-4 w-4" />
-                    Verified
+                    {t('detail.verified')}
                   </Badge>
                 )}
               </div>
@@ -212,12 +244,12 @@ export function InterpreterDetailClient({
                 <span className="hidden lg:inline">•</span>
                 <div className="flex items-center gap-1.5">
                   <Briefcase className="h-4 w-4 text-violet-500" />
-                  {interpreter.experience_years}+ years experience
+                  {interpreter.experience_years}{t('detail.experience')}
                 </div>
                 <span className="hidden lg:inline">•</span>
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4 text-violet-500" />
-                  {interpreter.total_bookings} bookings completed
+                  {interpreter.total_bookings} {t('detail.bookingsCompleted')}
                 </div>
               </div>
 
@@ -231,28 +263,34 @@ export function InterpreterDetailClient({
                     </span>
                   </div>
                   <span className="text-muted-foreground">
-                    ({interpreter.review_count} reviews)
+                    ({interpreter.review_count} {t('detail.reviews')})
                   </span>
                 </div>
               </div>
 
-              {/* Languages */}
+              {/* Languages - sorted by proficiency */}
               <div className="mb-6">
-                <div className="mb-2 text-sm font-medium text-muted-foreground">Languages</div>
+                <div className="mb-2 text-sm font-medium text-muted-foreground">{t('card.languagesLabel')}</div>
                 <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
-                  {interpreter.languages.map((lang) => (
+                  {[...interpreter.languages]
+                    .sort((a, b) => {
+                      const order = { native: 0, fluent: 1, conversational: 2 };
+                      return (order[a.level as keyof typeof order] ?? 2) - (order[b.level as keyof typeof order] ?? 2);
+                    })
+                    .map((lang) => (
                     <Badge
                       key={lang.code}
                       variant="outline"
-                      className="border-2 px-3 py-1.5 text-sm"
+                      className={`border-2 px-3 py-1.5 text-sm ${
+                        lang.level === 'native'
+                          ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/30'
+                          : ''
+                      }`}
                     >
-                      {lang.name}
-                      {lang.level === 'native' && (
-                        <span className="ml-1.5 text-violet-500">★</span>
-                      )}
-                      {lang.level === 'fluent' && (
-                        <span className="ml-1.5 text-xs text-muted-foreground">(Fluent)</span>
-                      )}
+                      {getLanguageName(lang.code)}
+                      <span className="ml-1.5 text-xs text-muted-foreground">
+                        ({lang.level === 'native' ? t('detail.native') : lang.level === 'fluent' ? t('detail.fluent') : t('detail.conversational')})
+                      </span>
                     </Badge>
                   ))}
                 </div>
@@ -260,45 +298,19 @@ export function InterpreterDetailClient({
 
               {/* Specialties */}
               <div className="mb-6">
-                <div className="mb-2 text-sm font-medium text-muted-foreground">Specialties</div>
+                <div className="mb-2 text-sm font-medium text-muted-foreground">{t('card.specialtiesLabel')}</div>
                 <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
                   {interpreter.specialties.map((specialty) => (
                     <Badge
                       key={specialty}
                       className="bg-violet-100 px-3 py-1.5 text-sm text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
                     >
-                      {specialty}
+                      {getSpecialtyName(specialty)}
                     </Badge>
                   ))}
                 </div>
               </div>
 
-              {/* Action buttons */}
-              <div className="flex flex-wrap justify-center gap-3 lg:justify-start">
-                <Button
-                  size="lg"
-                  className="gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-8 hover:opacity-90"
-                  asChild
-                >
-                  <Link href={`/inquiry?interpreter=${interpreter.id}`}>
-                    <MessageCircle className="h-5 w-5" />
-                    Book Now
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="gap-2 rounded-xl border-2 px-6"
-                  onClick={() => setIsFavorite(!isFavorite)}
-                >
-                  <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-                  Save
-                </Button>
-                <Button size="lg" variant="outline" className="gap-2 rounded-xl border-2 px-6">
-                  <Share2 className="h-5 w-5" />
-                  Share
-                </Button>
-              </div>
             </motion.div>
           </div>
         </div>
@@ -316,13 +328,17 @@ export function InterpreterDetailClient({
             >
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="w-full justify-start gap-2 bg-transparent p-0 h-auto flex-wrap">
-                  {['about', 'services', 'reviews'].map((tab) => (
+                  {[
+                    { key: 'about', label: t('detail.about') },
+                    { key: 'services', label: t('detail.servicesTab') },
+                    { key: 'reviews', label: t('detail.reviews') },
+                  ].map((tab) => (
                     <TabsTrigger
-                      key={tab}
-                      value={tab}
-                      className="relative rounded-full px-6 py-2.5 data-[state=active]:bg-violet-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all"
+                      key={tab.key}
+                      value={tab.key}
+                      className="relative rounded-full px-6 py-2.5 border-2 border-violet-200 bg-white text-violet-700 hover:bg-violet-50 hover:border-violet-300 data-[state=active]:bg-violet-600 data-[state=active]:text-white data-[state=active]:border-violet-600 data-[state=active]:shadow-lg dark:bg-violet-950/30 dark:border-violet-800 dark:text-violet-300 dark:hover:bg-violet-900/50 dark:data-[state=active]:bg-violet-600 transition-all"
                     >
-                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                      {tab.label}
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -353,84 +369,116 @@ export function InterpreterDetailClient({
 }
 
 function AboutSection({ interpreter }: { interpreter: Interpreter }) {
+  const t = useTranslations('interpreters');
+
+  // Helper to get translated language name
+  const getLanguageName = (code: string) => {
+    try {
+      return t(`languages.${code}`);
+    } catch {
+      return code.toUpperCase();
+    }
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      {/* Bio */}
-      <Card className="overflow-hidden border-0 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-violet-500/5 to-purple-500/10">
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5 text-violet-500" />
-            About Me
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <p className="leading-relaxed text-muted-foreground">{interpreter.bio}</p>
-        </CardContent>
-      </Card>
+      {/* Bio - only show if bio exists */}
+      {interpreter.bio && (
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b py-3">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/30">
+                <User className="h-3.5 w-3.5 text-violet-600" />
+              </div>
+              {t('detail.aboutMe')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3">
+            <p className="text-sm leading-relaxed text-muted-foreground">{interpreter.bio}</p>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Education & Certifications */}
-      <Card className="overflow-hidden border-0 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-violet-500/5 to-purple-500/10">
-          <CardTitle className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-violet-500" />
-            Education & Certifications
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/30">
-                <GraduationCap className="h-5 w-5 text-violet-600" />
+      {/* Education & Certifications - only show if education or certifications exist */}
+      {(interpreter.education || interpreter.certifications.length > 0) && (
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b py-3">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/30">
+                <GraduationCap className="h-3.5 w-3.5 text-violet-600" />
               </div>
-              <div>
-                <p className="font-medium">Education</p>
-                <p className="text-sm text-muted-foreground">{interpreter.education}</p>
-              </div>
+              {t('detail.education')} & {t('detail.certifications')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3">
+            <div className="space-y-2.5">
+              {interpreter.education && (
+                <div className="flex items-start gap-2.5">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/30">
+                    <GraduationCap className="h-3.5 w-3.5 text-violet-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{t('detail.education')}</p>
+                    <p className="text-xs text-muted-foreground">{interpreter.education}</p>
+                  </div>
+                </div>
+              )}
+              {interpreter.certifications.map((cert, index) => (
+                <div key={index} className="flex items-start gap-2.5">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                    <Award className="h-3.5 w-3.5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{cert}</p>
+                    <p className="text-xs text-muted-foreground">{t('detail.certifiedProfessional')}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-            {interpreter.certifications.map((cert, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                  <Award className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="font-medium">{cert}</p>
-                  <p className="text-sm text-muted-foreground">Certified Professional</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Language Proficiency */}
-      <Card className="overflow-hidden border-0 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-violet-500/5 to-purple-500/10">
-          <CardTitle className="flex items-center gap-2">
-            <Languages className="h-5 w-5 text-violet-500" />
-            Language Proficiency
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            {interpreter.languages.map((lang, index) => (
-              <motion.div
-                key={lang.code}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center justify-between"
-              >
-                <span className="font-medium">{lang.name}</span>
-                <div className="flex items-center gap-2">
+      {/* Language Proficiency - only show if languages exist */}
+      {interpreter.languages.length > 0 && (
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b py-3">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/30">
+                <Languages className="h-3.5 w-3.5 text-violet-600" />
+              </div>
+              {t('detail.languageProficiency')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-3">
+            <div className="space-y-3">
+              {[...interpreter.languages]
+                .sort((a, b) => {
+                  const order = { native: 0, fluent: 1, conversational: 2 };
+                  return (order[a.level as keyof typeof order] ?? 2) - (order[b.level as keyof typeof order] ?? 2);
+                })
+                .map((lang, index) => (
+                <motion.div
+                  key={lang.code}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{getLanguageName(lang.code)}</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {lang.level === 'native' ? t('detail.native') : lang.level === 'fluent' ? t('detail.fluent') : t('detail.conversational')}
+                    </Badge>
+                  </div>
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map((level) => (
                       <div
                         key={level}
-                        className={`h-2 w-6 rounded ${
+                        className={`h-1.5 w-5 rounded ${
                           level <= (lang.level === 'native' ? 5 : lang.level === 'fluent' ? 4 : 3)
                             ? 'bg-violet-500'
                             : 'bg-muted'
@@ -438,20 +486,40 @@ function AboutSection({ interpreter }: { interpreter: Interpreter }) {
                       />
                     ))}
                   </div>
-                  <Badge variant="secondary" className="text-xs">
-                    {lang.level === 'native' ? 'Native' : lang.level === 'fluent' ? 'Fluent' : 'Conversational'}
-                  </Badge>
-                </div>
-              </motion.div>
+                </motion.div>
             ))}
           </div>
         </CardContent>
       </Card>
+      )}
     </motion.div>
   );
 }
 
 function ServicesSection({ interpreter }: { interpreter: Interpreter }) {
+  const t = useTranslations('interpreters');
+
+  // Service keys for translation
+  const serviceKeys: Record<string, string> = {
+    'Medical Consultation Interpretation': 'medicalConsultation',
+    'Surgery Accompaniment': 'surgeryAccompaniment',
+    'Hospital Coordination': 'hospitalCoordination',
+    'Post-operative Care Support': 'postOperativeCare',
+    'Document Translation': 'documentTranslation',
+  };
+
+  const getServiceName = (service: string) => {
+    const key = serviceKeys[service];
+    if (key) {
+      try {
+        return t(`detail.services.${key}`);
+      } catch {
+        return service;
+      }
+    }
+    return service;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -459,33 +527,36 @@ function ServicesSection({ interpreter }: { interpreter: Interpreter }) {
       className="space-y-6"
     >
       {/* Services */}
-      <Card className="overflow-hidden border-0 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-violet-500/5 to-purple-500/10">
-          <CardTitle className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-violet-500" />
-            Services Offered
+      {interpreter.services.length > 0 && (
+      <Card className="border shadow-sm">
+        <CardHeader className="border-b py-3">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/30">
+              <Briefcase className="h-3.5 w-3.5 text-violet-600" />
+            </div>
+            {t('detail.servicesOffered')}
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid gap-3 sm:grid-cols-2">
+        <CardContent className="py-3">
+          <div className="grid gap-2 sm:grid-cols-2">
             {interpreter.services.map((service, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-3 rounded-xl bg-violet-50 p-4 dark:bg-violet-950/30"
+                className="flex items-center gap-2 rounded-lg bg-violet-50 p-3 dark:bg-violet-950/30"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900">
-                  <Check className="h-4 w-4 text-violet-600" />
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900">
+                  <Check className="h-3 w-3 text-violet-600" />
                 </div>
-                <span className="font-medium">{service}</span>
+                <span className="text-sm">{getServiceName(service)}</span>
               </motion.div>
             ))}
           </div>
         </CardContent>
       </Card>
-
+      )}
     </motion.div>
   );
 }
@@ -497,6 +568,7 @@ function ReviewsSection({
   reviews: Review[];
   interpreter: Interpreter;
 }) {
+  const t = useTranslations('interpreters');
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -504,7 +576,7 @@ function ReviewsSection({
       className="space-y-6"
     >
       {/* Rating Summary */}
-      <Card className="overflow-hidden border-0 shadow-lg">
+      <Card className="border shadow-sm">
         <CardContent className="p-8">
           <div className="flex flex-col items-center gap-6 md:flex-row">
             <div className="text-center">
@@ -529,13 +601,13 @@ function ReviewsSection({
                 ))}
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                {interpreter.review_count} reviews
+                {interpreter.review_count} {t('detail.reviews')}
               </p>
             </div>
             <div className="flex-1 text-center md:text-left">
-              <h3 className="mb-2 text-lg font-semibold">Excellent Service</h3>
+              <h3 className="mb-2 text-lg font-semibold">{t('detail.excellentService')}</h3>
               <p className="text-muted-foreground">
-                Highly rated by patients for professionalism, accuracy, and patient care.
+                {t('detail.ratingDescription')}
               </p>
             </div>
           </div>
@@ -551,7 +623,7 @@ function ReviewsSection({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Card className="overflow-hidden border-0 shadow-lg">
+            <Card className="border shadow-sm">
               <CardContent className="p-6">
                 <div className="mb-4 flex items-start justify-between">
                   <div className="flex items-center gap-3">
@@ -591,6 +663,7 @@ function ReviewsSection({
 }
 
 function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; locale: Locale }) {
+  const t = useTranslations('interpreters');
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -609,11 +682,11 @@ function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; loc
               className="mb-4 inline-flex items-center gap-2 rounded-full bg-violet-100 px-4 py-2 text-sm font-medium text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
             >
               <Sparkles className="h-4 w-4" />
-              Book Your Interpreter
+              {t('detail.bookYourInterpreter')}
             </motion.div>
-            <h3 className="mb-2 text-xl font-bold">Ready to Assist</h3>
+            <h3 className="mb-2 text-xl font-bold">{t('detail.readyToAssist')}</h3>
             <p className="text-sm text-muted-foreground">
-              Professional interpretation for your medical journey in Korea.
+              {t('detail.professionalInterpretation')}
             </p>
           </div>
 
@@ -624,7 +697,7 @@ function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; loc
             >
               <Link href={`/inquiry?interpreter=${interpreter.id}`}>
                 <MessageCircle className="h-5 w-5" />
-                Book Now
+                {t('detail.bookNow')}
               </Link>
             </Button>
             <Button
@@ -634,7 +707,7 @@ function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; loc
             >
               <Link href={`/inquiry?interpreter=${interpreter.id}&type=inquiry`}>
                 <Mail className="h-5 w-5" />
-                Send Message
+                {t('detail.sendMessage')}
               </Link>
             </Button>
           </div>
@@ -642,11 +715,11 @@ function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; loc
           <div className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Check className="h-3 w-3 text-green-500" />
-              Free Cancellation
+              {t('detail.freeCancellation')}
             </div>
             <div className="flex items-center gap-1">
               <Check className="h-3 w-3 text-green-500" />
-              24h Response
+              {t('detail.response24h')}
             </div>
           </div>
         </CardContent>
@@ -655,14 +728,14 @@ function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; loc
       {/* Why Choose Me */}
       <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-violet-500/5 to-purple-500/5">
         <CardHeader>
-          <CardTitle className="text-base">Why Choose Me?</CardTitle>
+          <CardTitle className="text-base">{t('detail.whyChooseMe')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {[
-            { icon: Shield, text: 'Verified Professional' },
-            { icon: Languages, text: 'Multi-lingual Expert' },
-            { icon: Award, text: 'Medical Certified' },
-            { icon: Clock, text: 'Flexible Schedule' },
+            { icon: Shield, text: t('detail.verifiedProfessional') },
+            { icon: Languages, text: t('detail.multiLingualExpert') },
+            { icon: Award, text: t('detail.medicalCertified') },
+            { icon: Clock, text: t('detail.flexibleSchedule') },
           ].map((item, index) => (
             <motion.div
               key={index}

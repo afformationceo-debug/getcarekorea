@@ -210,29 +210,112 @@
   "interpreters": {
     "title": "Medical Interpreters",
     "subtitle": "Professional interpreters to assist your medical journey",
-    "searchPlaceholder": "Search by language, specialty...",
+    "heroTitle1": "Medical",
+    "heroTitle2": "Interpreters",
+    "heroDescription": "Connect with certified medical interpreters who speak your language.",
+    "freeService": "Free platform service.",
+    "aiPoweredMatching": "AI-Powered Matching",
+    "searchPlaceholder": "Search interpreters by name, language, specialty...",
+    "found": "Found {count} interpreters",
+    "stats": {
+      "languages": "Languages",
+      "certified": "Certified",
+      "support": "Support",
+      "serviceFee": "Service Fee"
+    },
     "filters": {
       "language": "Language",
-      "specialty": "Medical Specialty",
+      "allLanguages": "All Languages",
+      "specialty": "Specialty",
+      "allSpecialties": "All Specialties",
       "availability": "Availability",
-      "priceRange": "Price Range"
+      "all": "All",
+      "availableNow": "Available Now"
     },
     "card": {
-      "hourlyRate": "${rate}/hour",
-      "dailyRate": "${rate}/day",
-      "languages": "Languages",
-      "bookings": "{count} completed bookings",
-      "available": "Available Now",
-      "unavailable": "Currently Unavailable"
+      "available": "Available",
+      "unavailable": "Unavailable",
+      "verified": "Verified",
+      "viewProfile": "View Profile",
+      "yearsExp": "yrs",
+      "years": "years",
+      "bookings": "bookings",
+      "languagesLabel": "Languages",
+      "specialtiesLabel": "Specialties"
+    },
+    "noResults": {
+      "title": "No interpreters found",
+      "description": "Try adjusting your filters or search term"
+    },
+    "loadMore": "Load More",
+    "cta": {
+      "title": "Can't find the right interpreter?",
+      "description": "Our AI will match you with the perfect interpreter based on your specific needs, language, and medical specialty.",
+      "button": "Get AI-Matched Interpreter"
+    },
+    "languages": {
+      "en": "English",
+      "ko": "Korean",
+      "zh-CN": "Chinese (Simplified)",
+      "zh-TW": "Chinese (Traditional)",
+      "ja": "Japanese",
+      "th": "Thai",
+      "ru": "Russian",
+      "mn": "Mongolian"
+    },
+    "specialties": {
+      "Plastic Surgery": "Plastic Surgery",
+      "Dermatology": "Dermatology",
+      "Dental": "Dental",
+      "Health Checkup": "Health Checkup",
+      "Fertility": "Fertility",
+      "Hair Transplant": "Hair Transplant",
+      "Ophthalmology": "Ophthalmology"
     },
     "detail": {
+      "home": "Home",
+      "interpreters": "Interpreters",
+      "availableNow": "Available Now",
+      "unavailable": "Currently Unavailable",
+      "verified": "Verified",
+      "experience": "+ years experience",
+      "bookingsCompleted": "bookings completed",
+      "reviews": "reviews",
+      "watchIntro": "Watch Intro",
       "about": "About",
-      "experience": "Experience",
-      "languages": "Languages",
-      "specialties": "Specialties",
-      "reviews": "Reviews",
-      "availability": "Availability",
-      "bookInterpreter": "Book Interpreter"
+      "servicesTab": "Services",
+      "aboutMe": "About Me",
+      "education": "Education",
+      "certifications": "Certifications",
+      "languageProficiency": "Language Proficiency",
+      "native": "Native",
+      "fluent": "Fluent",
+      "conversational": "Conversational",
+      "servicesOffered": "Services Offered",
+      "excellentService": "Excellent Service",
+      "ratingDescription": "Highly rated by patients for professionalism, accuracy, and patient care.",
+      "bookNow": "Book Now",
+      "save": "Save",
+      "share": "Share",
+      "sendMessage": "Send Message",
+      "bookYourInterpreter": "Book Your Interpreter",
+      "readyToAssist": "Ready to Assist",
+      "professionalInterpretation": "Professional interpretation for your medical journey in Korea.",
+      "freeCancellation": "Free Cancellation",
+      "response24h": "24h Response",
+      "whyChooseMe": "Why Choose Me?",
+      "verifiedProfessional": "Verified Professional",
+      "multiLingualExpert": "Multi-lingual Expert",
+      "medicalCertified": "Medical Certified",
+      "flexibleSchedule": "Flexible Schedule",
+      "certifiedProfessional": "Certified Professional",
+      "services": {
+        "medicalConsultation": "Medical Consultation Interpretation",
+        "surgeryAccompaniment": "Surgery Accompaniment",
+        "hospitalCoordination": "Hospital Coordination",
+        "postOperativeCare": "Post-operative Care Support",
+        "documentTranslation": "Document Translation"
+      }
     }
   },
   "chat": {
@@ -887,10 +970,19 @@
         "en": "English",
         "ko": "Korean",
         "zh": "Chinese",
+        "zh-CN": "Chinese (Simplified)",
+        "zh-TW": "Chinese (Traditional)",
         "ja": "Japanese",
         "vi": "Vietnamese",
         "th": "Thai",
-        "ru": "Russian"
+        "mn": "Mongolian",
+        "ru": "Russian",
+        "es": "Spanish",
+        "ar": "Arabic",
+        "fr": "French",
+        "de": "German",
+        "pt": "Portuguese",
+        "id": "Indonesian"
       },
       "stats": {
         "total": "Total",
@@ -942,7 +1034,8 @@
         "isVerified": "Verified",
         "isVerifiedDesc": "Show verified badge",
         "isFeatured": "Featured",
-        "isFeaturedDesc": "Show at top of listings"
+        "isFeaturedDesc": "Show at top of listings",
+        "required": "Required"
       },
       "descriptions": {
         "basicInfo": "Enter basic profile information",
@@ -1009,6 +1102,9 @@
         "saveFailed": "Failed to save",
         "deleteFailed": "Failed to delete",
         "atLeastOneLanguage": "Please add at least one language with a name",
+        "englishNameRequired": "English name is required (used as default)",
+        "cannotRemoveEnglish": "English cannot be removed (required as default)",
+        "languageAlreadyAdded": "This language has already been added",
         "imageUploaded": "Image uploaded successfully",
         "uploadFailed": "Upload failed",
         "updated": "Interpreter updated successfully",

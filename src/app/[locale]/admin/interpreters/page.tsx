@@ -47,11 +47,25 @@ interface Stats {
 
 const PAGE_SIZE = 40;
 
-// Get first available name
-function getDisplayName(name: LocalizedField | undefined): string {
+// Get localized name with English fallback
+function getDisplayName(name: LocalizedField | undefined, locale: string): string {
   if (!name) return 'No name';
-  return name.en || name.ko || Object.values(name).find(v => v) || 'No name';
+  return name[locale] || name.en || Object.values(name).find(v => v) || 'No name';
 }
+
+// Language code to translation key mapping
+const LANGUAGE_KEYS: Record<string, string> = {
+  'en': 'en',
+  'ko': 'ko',
+  'ja': 'ja',
+  'zh': 'zh',
+  'zh-CN': 'zh-CN',
+  'zh-TW': 'zh-TW',
+  'th': 'th',
+  'mn': 'mn',
+  'ru': 'ru',
+  'vi': 'vi',
+};
 
 export default function InterpretersAdminPage() {
   const router = useRouter();
@@ -161,7 +175,7 @@ export default function InterpretersAdminPage() {
             {row.photo_url ? (
               <Image
                 src={row.photo_url}
-                alt={getDisplayName(row.name)}
+                alt={getDisplayName(row.name, currentLocale)}
                 fill
                 sizes="40px"
                 className="object-cover"
@@ -169,12 +183,12 @@ export default function InterpretersAdminPage() {
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
-                {getDisplayName(row.name)[0] || '?'}
+                {getDisplayName(row.name, currentLocale)[0] || '?'}
               </div>
             )}
           </div>
           <div>
-            <p className="font-medium">{getDisplayName(row.name)}</p>
+            <p className="font-medium">{getDisplayName(row.name, currentLocale)}</p>
             <p className="text-xs text-muted-foreground">/{row.slug}</p>
           </div>
         </div>
@@ -183,20 +197,25 @@ export default function InterpretersAdminPage() {
     {
       id: 'languages',
       header: t('table.languages'),
-      cell: (row) => (
-        <div className="flex flex-wrap gap-1">
-          {row.languages?.[0] && (
-            <Badge variant="outline" className="text-xs font-normal">
-              {row.languages[0].code.toUpperCase()}
-            </Badge>
-          )}
-          {row.languages?.length > 1 && (
-            <Badge variant="outline" className="text-xs font-normal">
-              +{row.languages.length - 1}
-            </Badge>
-          )}
-        </div>
-      ),
+      cell: (row) => {
+        const getLanguageName = (code: string) => {
+          const key = LANGUAGE_KEYS[code] || code;
+          try {
+            return t(`languages.${key}`);
+          } catch {
+            return code.toUpperCase();
+          }
+        };
+        return (
+          <div className="flex flex-wrap gap-1">
+            {row.languages?.map((lang, idx) => (
+              <Badge key={idx} variant="outline" className="text-xs font-normal">
+                {getLanguageName(lang.code)}
+              </Badge>
+            ))}
+          </div>
+        );
+      },
     },
     {
       id: 'specialty',

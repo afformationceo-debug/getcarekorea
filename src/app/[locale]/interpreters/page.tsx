@@ -195,7 +195,9 @@ function transformToInterpreter(persona: Record<string, unknown>, locale: string
   };
 }
 
-async function fetchInterpreters(locale: string) {
+const ITEMS_PER_PAGE = 16;
+
+async function fetchInterpreters(locale: string): Promise<{ interpreters: ReturnType<typeof transformToInterpreter>[]; total: number }> {
   try {
     const supabase = await createAdminClient();
 
@@ -205,21 +207,31 @@ async function fetchInterpreters(locale: string) {
       .eq('is_active', true)
       .order('is_featured', { ascending: false })
       .order('display_order', { ascending: true, nullsFirst: false })
-      .order('avg_rating', { ascending: false });
+      .order('avg_rating', { ascending: false })
+      .order('id', { ascending: true }); // Tie-breaker for stable pagination
 
     if (error) {
       console.error('Error fetching interpreters:', error);
-      return [];
+      return { interpreters: [], total: 0 };
     }
 
-    // Transform all interpreters (no locale filtering - user can filter by language in UI)
-    const interpreters = (data || [])
+    // Transform all interpreters
+    const allInterpreters = (data || [])
       .map((persona) => transformToInterpreter(persona, locale));
 
-    return interpreters;
+    // Filter by locale language (initial filter)
+    const filteredInterpreters = allInterpreters.filter((interpreter) =>
+      interpreter.languages.some((l) => l.code === locale)
+    );
+
+    // Return first page and total count
+    return {
+      interpreters: filteredInterpreters.slice(0, ITEMS_PER_PAGE),
+      total: filteredInterpreters.length,
+    };
   } catch (error) {
     console.error('Error in fetchInterpreters:', error);
-    return [];
+    return { interpreters: [], total: 0 };
   }
 }
 
@@ -228,8 +240,8 @@ export default async function InterpretersPage({ params }: PageProps) {
   setRequestLocale(locale);
 
   // Fetch real data from author_personas table
-  const interpreters = await fetchInterpreters(locale);
-  const schemaMarkup = generateInterpretersSchema(locale as Locale, interpreters.length);
+  const { interpreters, total } = await fetchInterpreters(locale);
+  const schemaMarkup = generateInterpretersSchema(locale as Locale, total);
 
   return (
     <>
@@ -242,7 +254,11 @@ export default async function InterpretersPage({ params }: PageProps) {
         }}
       />
       <Suspense fallback={<InterpretersPageSkeleton />}>
-        <InterpretersPageClient interpreters={interpreters} locale={locale as Locale} />
+        <InterpretersPageClient
+          initialInterpreters={interpreters}
+          initialTotal={total}
+          locale={locale as Locale}
+        />
       </Suspense>
     </>
   );

@@ -210,29 +210,112 @@
   "interpreters": {
     "title": "의료 통역사",
     "subtitle": "의료 여행을 도와드릴 전문 통역사",
-    "searchPlaceholder": "언어, 전문 분야로 검색...",
+    "heroTitle1": "의료",
+    "heroTitle2": "통역사",
+    "heroDescription": "귀하의 언어를 구사하는 인증된 의료 통역사를 만나보세요.",
+    "freeService": "무료 플랫폼 서비스",
+    "aiPoweredMatching": "AI 기반 매칭",
+    "searchPlaceholder": "이름, 언어, 전문 분야로 통역사 검색...",
+    "found": "통역사 {count}명 검색됨",
+    "stats": {
+      "languages": "언어",
+      "certified": "인증",
+      "support": "지원",
+      "serviceFee": "서비스 비용"
+    },
     "filters": {
       "language": "언어",
-      "specialty": "의료 전문 분야",
-      "availability": "예약 가능 여부",
-      "priceRange": "가격대"
+      "allLanguages": "전체 언어",
+      "specialty": "전문 분야",
+      "allSpecialties": "전체 전문 분야",
+      "availability": "예약 가능",
+      "all": "전체",
+      "availableNow": "지금 가능"
     },
     "card": {
-      "hourlyRate": "시간당 {rate}원",
-      "dailyRate": "일당 {rate}원",
-      "languages": "언어",
-      "bookings": "완료된 예약 {count}건",
       "available": "예약 가능",
-      "unavailable": "현재 예약 불가"
+      "unavailable": "예약 불가",
+      "verified": "인증됨",
+      "viewProfile": "프로필 보기",
+      "yearsExp": "년 경력",
+      "years": "년",
+      "bookings": "예약 완료",
+      "languagesLabel": "언어",
+      "specialtiesLabel": "전문 분야"
+    },
+    "noResults": {
+      "title": "검색 결과가 없습니다",
+      "description": "필터나 검색어를 조정해 보세요"
+    },
+    "loadMore": "더 보기",
+    "cta": {
+      "title": "적합한 통역사를 찾지 못하셨나요?",
+      "description": "AI가 귀하의 요구 사항, 언어, 의료 전문 분야에 맞는 완벽한 통역사를 매칭해 드립니다.",
+      "button": "AI 매칭 통역사 찾기"
+    },
+    "languages": {
+      "en": "영어",
+      "ko": "한국어",
+      "zh-CN": "중국어(간체)",
+      "zh-TW": "중국어(번체)",
+      "ja": "일본어",
+      "th": "태국어",
+      "ru": "러시아어",
+      "mn": "몽골어"
+    },
+    "specialties": {
+      "Plastic Surgery": "성형외과",
+      "Dermatology": "피부과",
+      "Dental": "치과",
+      "Health Checkup": "건강검진",
+      "Fertility": "난임치료",
+      "Hair Transplant": "모발이식",
+      "Ophthalmology": "안과"
     },
     "detail": {
-      "about": "소개",
-      "experience": "경력",
-      "languages": "언어",
-      "specialties": "전문 분야",
+      "home": "홈",
+      "interpreters": "통역사",
+      "availableNow": "지금 가능",
+      "unavailable": "현재 불가",
+      "verified": "인증됨",
+      "experience": "년 이상 경력",
+      "bookingsCompleted": "예약 완료",
       "reviews": "리뷰",
-      "availability": "예약 가능 시간",
-      "bookInterpreter": "통역사 예약"
+      "watchIntro": "소개 영상 보기",
+      "about": "소개",
+      "servicesTab": "서비스",
+      "aboutMe": "자기 소개",
+      "education": "학력",
+      "certifications": "자격증",
+      "languageProficiency": "언어 능력",
+      "native": "원어민",
+      "fluent": "유창",
+      "conversational": "회화 가능",
+      "servicesOffered": "제공 서비스",
+      "excellentService": "우수한 서비스",
+      "ratingDescription": "전문성, 정확성, 환자 케어로 높은 평가를 받고 있습니다.",
+      "bookNow": "지금 예약",
+      "save": "저장",
+      "share": "공유",
+      "sendMessage": "메시지 보내기",
+      "bookYourInterpreter": "통역사 예약",
+      "readyToAssist": "도움 준비 완료",
+      "professionalInterpretation": "한국에서의 의료 여정을 위한 전문 통역 서비스.",
+      "freeCancellation": "무료 취소",
+      "response24h": "24시간 응답",
+      "whyChooseMe": "왜 저를 선택해야 하나요?",
+      "verifiedProfessional": "검증된 전문가",
+      "multiLingualExpert": "다국어 전문가",
+      "medicalCertified": "의료 인증",
+      "flexibleSchedule": "유연한 일정",
+      "certifiedProfessional": "인증된 전문가",
+      "services": {
+        "medicalConsultation": "의료 상담 통역",
+        "surgeryAccompaniment": "수술 동행",
+        "hospitalCoordination": "병원 조율",
+        "postOperativeCare": "수술 후 케어 지원",
+        "documentTranslation": "문서 번역"
+      }
     }
   },
   "chat": {
@@ -887,10 +970,19 @@
         "en": "영어",
         "ko": "한국어",
         "zh": "중국어",
+        "zh-CN": "중국어(간체)",
+        "zh-TW": "중국어(번체)",
         "ja": "일본어",
         "vi": "베트남어",
         "th": "태국어",
-        "ru": "러시아어"
+        "mn": "몽골어",
+        "ru": "러시아어",
+        "es": "스페인어",
+        "ar": "아랍어",
+        "fr": "프랑스어",
+        "de": "독일어",
+        "pt": "포르투갈어",
+        "id": "인도네시아어"
       },
       "stats": {
         "total": "전체",
@@ -942,7 +1034,8 @@
         "isVerified": "인증 완료",
         "isVerifiedDesc": "인증 배지 표시",
         "isFeatured": "추천",
-        "isFeaturedDesc": "목록 상단에 표시"
+        "isFeaturedDesc": "목록 상단에 표시",
+        "required": "필수"
       },
       "descriptions": {
         "basicInfo": "기본 프로필 정보를 입력하세요",
@@ -1009,6 +1102,9 @@
         "saveFailed": "저장 실패",
         "deleteFailed": "삭제에 실패했습니다",
         "atLeastOneLanguage": "최소 한 개의 언어와 이름을 입력해주세요",
+        "englishNameRequired": "영어 이름은 필수입니다 (기본값으로 사용)",
+        "cannotRemoveEnglish": "영어는 삭제할 수 없습니다 (기본 필수 언어)",
+        "languageAlreadyAdded": "이미 추가된 언어입니다",
         "imageUploaded": "이미지가 업로드되었습니다",
         "uploadFailed": "업로드에 실패했습니다",
         "updated": "통역사 정보가 수정되었습니다",
@@ -1169,50 +1265,6 @@
         "publish": "발행"
       },
       "preview": {
-        "back": "뒤로",
-        "previewUrl": "미리보기 URL",
-        "readyToStart": "여정을 시작할 준비가 되셨나요?",
-        "getConsultation": "의료 관광 전문가와 무료 상담을 받으세요.",
-        "getFreeQuote": "무료 견적 받기"
-      },
-      "edit": {
-        "title": "게시글 수정",
-        "description": "게시글 내용을 수정합니다",
-        "slug": "슬러그",
-        "articleTitle": "제목",
-        "excerpt": "요약",
-        "content": "내용",
-        "category": "카테고리",
-        "status": "상태",
-        "cancel": "취소",
-        "saveChanges": "변경사항 저장"
-      },
-      "delete": {
-        "title": "게시글 삭제",
-        "description": "이 게시글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
-      },
-      "feedback": {
-        "title": "콘텐츠 피드백",
-        "description": "콘텐츠를 검토하고 피드백을 제공하거나 바로 발행할 수 있습니다.",
-        "fullPreview": "전체 미리보기",
-        "keywordLabel": "키워드",
-        "feedbackContent": "피드백 내용 (선택사항)",
-        "feedbackPlaceholder": "개선이 필요한 부분이나 수정 요청 사항을 작성해주세요...",
-        "feedbackHint": "피드백은 AI 학습에 활용됩니다.",
-        "cancel": "취소",
-        "regenerate": "피드백 반영 후 재생성",
-        "publishNow": "바로 발행",
-        "published": "발행됨"
-      },
-      "messages": {
-        "publishSuccess": "발행 완료!",
-        "publishFailed": "발행 실패",
-        "feedbackSuccess": "피드백이 반영되어 콘텐츠가 재생성되었습니다.",
-        "feedbackFailed": "피드백 반영 실패",
-        "noPendingReview": "검토 대기 중인 게시글이 없습니다",
-        "noDrafts": "초안 게시글이 없습니다"
-      },
-      "preview": {
         "back": "돌아가기",
         "previewUrl": "미리보기 URL",
         "readyToStart": "여정을 시작할 준비가 되셨나요?",
@@ -1234,6 +1286,27 @@
       "delete": {
         "title": "게시글 삭제",
         "description": "이 게시글을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+      },
+      "feedback": {
+        "title": "콘텐츠 피드백",
+        "description": "콘텐츠를 검토하고 피드백을 제공하거나 바로 발행할 수 있습니다.",
+        "fullPreview": "전체 미리보기",
+        "keywordLabel": "키워드",
+        "feedbackContent": "피드백 내용 (선택사항)",
+        "feedbackPlaceholder": "개선이 필요한 부분이나 수정 요청 사항을 작성해주세요...",
+        "feedbackHint": "피드백은 AI 학습에 활용됩니다.",
+        "cancel": "취소",
+        "regenerate": "피드백 반영 후 재생성",
+        "publishNow": "바로 발행",
+        "published": "발행됨"
+      },
+      "messages": {
+        "publishSuccess": "발행 완료!",
+        "publishFailed": "발행 실패",
+        "feedbackSuccess": "피드백이 반영되어 콘텐츠가 재생성되었습니다.",
+        "feedbackFailed": "피드백 반영 실패",
+        "noPendingReview": "검토 대기 중인 게시글이 없습니다",
+        "noDrafts": "초안 게시글이 없습니다"
       }
     },
     "cron": {

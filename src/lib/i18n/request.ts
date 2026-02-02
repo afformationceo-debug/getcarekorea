@@ -37,7 +37,6 @@ export default getRequestConfig(async ({ requestLocale }) => {
       locale,
       messages: enMessages,
       timeZone: 'Asia/Seoul',
-      now: new Date(),
     };
   }
 
@@ -49,6 +48,5 @@ export default getRequestConfig(async ({ requestLocale }) => {
     locale,
     messages: mergedMessages,
     timeZone: 'Asia/Seoul',
-    now: new Date(),
   };
 });

@@ -50,10 +50,10 @@ async function getInterpreter(id: string): Promise<AuthorPersona | null> {
   return data as AuthorPersona;
 }
 
-// Get first available name from localized field
-function getDisplayName(name: LocalizedField | undefined): string {
+// Get localized name with English fallback
+function getDisplayName(name: LocalizedField | undefined, locale: string): string {
   if (!name) return 'No name';
-  return name.en || name.ko || Object.values(name).find(v => v) || 'No name';
+  return name[locale] || name.en || Object.values(name).find(v => v) || 'No name';
 }
 
 export default async function InterpreterDetailPage({ params }: PageProps) {
@@ -78,7 +78,7 @@ export default async function InterpreterDetailPage({ params }: PageProps) {
         <div>
           <h1 className="text-2xl font-bold">{t('editInterpreter')}</h1>
           <p className="text-muted-foreground text-sm">
-            {getDisplayName(interpreter.name)} · /{interpreter.slug}
+            {getDisplayName(interpreter.name, locale)} · /{interpreter.slug}
           </p>
         </div>
       </div>

@@ -1,21 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Link } from '@/lib/i18n/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
   Search,
   Star,
-  Languages,
   Calendar,
-  Video,
-  Filter,
   Grid,
   List,
   BadgeCheck,
-  MessageCircle,
   Clock,
   Sparkles,
   Users,
@@ -26,12 +22,13 @@ import {
   MapPin,
   Zap,
   Globe,
-  Heart,
+  Loader2,
 } from 'lucide-react';
+
+const ITEMS_PER_PAGE = 16;
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -69,80 +66,200 @@ interface Interpreter {
 }
 
 interface InterpretersPageClientProps {
-  interpreters: Interpreter[];
+  initialInterpreters: Interpreter[];
+  initialTotal: number;
   locale: Locale;
 }
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 100,
-      damping: 15,
-    }
-  },
-};
-
-export function InterpretersPageClient({ interpreters, locale }: InterpretersPageClientProps) {
+export function InterpretersPageClient({ initialInterpreters, initialTotal, locale }: InterpretersPageClientProps) {
   const t = useTranslations('interpreters');
+  // Deduplicate initial data (only on mount using initializer function)
+  const [interpreters, setInterpreters] = useState<Interpreter[]>(() =>
+    initialInterpreters.filter(
+      (interpreter, index, self) => self.findIndex(i => i.id === interpreter.id) === index
+    )
+  );
+  const [total, setTotal] = useState(initialTotal);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLanguage, setSelectedLanguage] = useState('all');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(locale);
   const [selectedSpecialty, setSelectedSpecialty] = useState('all');
-  const [selectedAvailability, setSelectedAvailability] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(false); // Only enable after first "Load More" click
+  const [hasMore, setHasMore] = useState(initialInterpreters.length < initialTotal); // Track hasMore as state
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const isFetchingRef = useRef(false); // Ref to prevent race conditions in infinite scroll
 
   const languages = [
-    { code: 'en', name: 'English' },
-    { code: 'ko', name: 'Korean' },
-    { code: 'zh-CN', name: 'Chinese (Simplified)' },
-    { code: 'zh-TW', name: 'Chinese (Traditional)' },
-    { code: 'ja', name: 'Japanese' },
-    { code: 'th', name: 'Thai' },
-    { code: 'ru', name: 'Russian' },
-    { code: 'mn', name: 'Mongolian' },
+    { code: 'all', name: t('filters.allLanguages') },
+    { code: 'en', name: t('languages.en') },
+    { code: 'ko', name: t('languages.ko') },
+    { code: 'zh-CN', name: t('languages.zh-CN') },
+    { code: 'zh-TW', name: t('languages.zh-TW') },
+    { code: 'ja', name: t('languages.ja') },
+    { code: 'th', name: t('languages.th') },
+    { code: 'ru', name: t('languages.ru') },
+    { code: 'mn', name: t('languages.mn') },
   ];
 
   const specialties = [
-    'Plastic Surgery',
-    'Dermatology',
-    'Dental',
-    'Health Checkup',
-    'Fertility',
-    'Hair Transplant',
-    'Ophthalmology',
+    { key: 'all', name: t('filters.allSpecialties') },
+    { key: 'Plastic Surgery', name: t('specialties.Plastic Surgery') },
+    { key: 'Dermatology', name: t('specialties.Dermatology') },
+    { key: 'Dental', name: t('specialties.Dental') },
+    { key: 'Health Checkup', name: t('specialties.Health Checkup') },
+    { key: 'Fertility', name: t('specialties.Fertility') },
+    { key: 'Hair Transplant', name: t('specialties.Hair Transplant') },
+    { key: 'Ophthalmology', name: t('specialties.Ophthalmology') },
   ];
 
-  // Filter interpreters
-  const filteredInterpreters = interpreters.filter((interpreter) => {
-    const matchesSearch =
-      interpreter.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      interpreter.bio.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLanguage =
-      selectedLanguage === 'all' ||
-      interpreter.languages.some((l) => l.code === selectedLanguage);
-    const matchesSpecialty =
-      selectedSpecialty === 'all' ||
-      interpreter.specialties.some((s) => s.toLowerCase().includes(selectedSpecialty.toLowerCase()));
-    const matchesAvailability =
-      selectedAvailability === 'all' ||
-      (selectedAvailability === 'available' && interpreter.is_available);
+  // Fetch interpreters from API with filters
+  const fetchInterpreters = useCallback(async (pageNum: number, append: boolean = false) => {
+    // Prevent concurrent fetches using ref (for race condition prevention)
+    if (append && isFetchingRef.current) {
+      return;
+    }
 
-    return matchesSearch && matchesLanguage && matchesSpecialty && matchesAvailability;
-  });
+    if (append) {
+      isFetchingRef.current = true;
+      setIsLoadingMore(true);
+    } else {
+      setIsLoading(true);
+    }
+
+    try {
+      const params = new URLSearchParams({
+        locale,
+        page: String(pageNum),
+        limit: String(ITEMS_PER_PAGE),
+        ...(selectedLanguage !== 'all' && { language: selectedLanguage }),
+        ...(selectedSpecialty !== 'all' && { specialty: selectedSpecialty }),
+        ...(searchQuery && { search: searchQuery }),
+      });
+
+      const response = await fetch(`/api/interpreters?${params}`);
+
+      if (!response.ok) {
+        console.error('API error:', response.status);
+        // Stop further loading attempts on error
+        setHasMore(false);
+        return;
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const newTotal = result.meta?.total || result.data.length;
+        const apiHasMore = result.meta?.hasMore ?? false;
+
+        if (append) {
+          // Deduplicate when appending
+          setInterpreters(prev => {
+            const existingIds = new Set(prev.map(i => i.id));
+            const duplicates = result.data.filter((i: Interpreter) => existingIds.has(i.id));
+            const newItems = result.data.filter((i: Interpreter) => !existingIds.has(i.id));
+
+            // Log duplicates for debugging
+            if (duplicates.length > 0) {
+              console.warn(`[Pagination] Found ${duplicates.length} duplicate(s) on page ${pageNum}:`,
+                duplicates.map((d: Interpreter) => ({ id: d.id, name: d.name }))
+              );
+            }
+            console.log(`[Pagination] Page ${pageNum}: ${result.data.length} fetched, ${newItems.length} new, ${duplicates.length} duplicates, total: ${prev.length + newItems.length}/${newTotal}`);
+
+            const updated = [...prev, ...newItems];
+            // If no new items were added or API says no more, stop loading
+            if (newItems.length === 0) {
+              setHasMore(false);
+            } else {
+              setHasMore(apiHasMore);
+            }
+            return updated;
+          });
+        } else {
+          setInterpreters(result.data);
+          setInfiniteScrollEnabled(false); // Reset on filter change
+          setHasMore(apiHasMore);
+        }
+        setTotal(newTotal);
+        setPage(pageNum);
+      } else {
+        // API returned error, stop further loading
+        console.error('API returned error:', result.error);
+        if (append) {
+          setHasMore(false);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch interpreters:', error);
+      // Stop further loading attempts on error
+      if (append) {
+        setHasMore(false);
+      }
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+      isFetchingRef.current = false;
+    }
+  }, [locale, selectedLanguage, selectedSpecialty, searchQuery]);
+
+  // Fetch when filters change (reset to page 1)
+  useEffect(() => {
+    const isInitialState = selectedLanguage === locale && selectedSpecialty === 'all' && searchQuery === '';
+    if (!isInitialState) {
+      fetchInterpreters(1, false);
+    }
+  }, [selectedLanguage, selectedSpecialty, searchQuery, fetchInterpreters, locale]);
+
+  // Load more function (first click enables infinite scroll)
+  const loadMore = useCallback(() => {
+    // Use ref to check for concurrent fetches (prevents race condition)
+    if (isFetchingRef.current || isLoadingMore || !hasMore) {
+      return;
+    }
+    fetchInterpreters(page + 1, true);
+    // Enable infinite scroll after first manual load
+    if (!infiniteScrollEnabled) {
+      setInfiniteScrollEnabled(true);
+    }
+  }, [fetchInterpreters, page, isLoadingMore, hasMore, infiniteScrollEnabled]);
+
+  // Intersection Observer for infinite scroll (only active after first "Load More" click)
+  useEffect(() => {
+    if (!infiniteScrollEnabled) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Use ref check to prevent race conditions (ref always has current value)
+        if (entries[0].isIntersecting && hasMore && !isFetchingRef.current && !isLoadingMore && !isLoading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [loadMore, hasMore, isLoadingMore, isLoading, infiniteScrollEnabled]);
+
+  const filteredInterpreters = interpreters;
+
+  // Helper to get translated specialty name
+  const getSpecialtyName = (specialty: string) => {
+    const found = specialties.find(s => s.key.toLowerCase() === specialty.toLowerCase());
+    return found ? found.name : specialty;
+  };
+
+  // Helper to get translated language name from code
+  const getLanguageName = (code: string) => {
+    const found = languages.find(l => l.code === code);
+    return found ? found.name : code;
+  };
 
   return (
     <div className="min-h-screen bg-ai-mesh">
@@ -198,9 +315,9 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
               >
                 <Zap className="h-5 w-5 text-primary" />
               </motion.div>
-              <span className="font-semibold text-primary">AI-Powered Matching</span>
+              <span className="font-semibold text-primary">{t('aiPoweredMatching')}</span>
               <Badge className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white">
-                {interpreters.length}+ Interpreters
+                {interpreters.length}+ {t('title')}
               </Badge>
             </motion.div>
 
@@ -211,10 +328,10 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
               transition={{ delay: 0.3 }}
               className="mb-6 text-5xl font-black tracking-tight md:text-6xl lg:text-7xl"
             >
-              <span className="text-ai-gradient">Medical</span>
+              <span className="text-ai-gradient">{t('heroTitle1')}</span>
               <br />
               <span className="relative">
-                Interpreters
+                {t('heroTitle2')}
                 <motion.span
                   className="absolute -right-8 top-0 text-2xl"
                   animate={{ rotate: [0, 15, 0], scale: [1, 1.2, 1] }}
@@ -231,8 +348,8 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
               transition={{ delay: 0.4 }}
               className="mx-auto mb-10 max-w-2xl text-xl text-muted-foreground"
             >
-              Connect with certified medical interpreters who speak your language.
-              <span className="font-semibold text-foreground"> Free platform service.</span>
+              {t('heroDescription')}
+              <span className="font-semibold text-foreground"> {t('freeService')}</span>
             </motion.p>
 
             {/* Stats Cards with 3D Effect */}
@@ -243,10 +360,10 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
               className="mb-12 flex flex-wrap justify-center gap-4"
             >
               {[
-                { icon: Globe, value: '10+', label: 'Languages', color: 'from-violet-500 to-purple-600' },
-                { icon: Award, value: '100%', label: 'Certified', color: 'from-cyan-500 to-blue-600' },
-                { icon: Clock, value: '24/7', label: 'Support', color: 'from-emerald-500 to-green-600' },
-                { icon: Shield, value: 'Free', label: 'Service Fee', color: 'from-amber-500 to-orange-600' },
+                { icon: Globe, value: '10+', label: t('stats.languages'), color: 'from-violet-500 to-purple-600' },
+                { icon: Award, value: '100%', label: t('stats.certified'), color: 'from-cyan-500 to-blue-600' },
+                { icon: Clock, value: '24/7', label: t('stats.support'), color: 'from-emerald-500 to-green-600' },
+                { icon: Shield, value: 'Free', label: t('stats.serviceFee'), color: 'from-amber-500 to-orange-600' },
               ].map((stat, index) => (
                 <motion.div
                   key={index}
@@ -291,7 +408,7 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-primary" />
                 <Input
-                  placeholder="Search interpreters by name, language, specialty..."
+                  placeholder={t('searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="h-14 rounded-xl border-2 border-primary/20 bg-white pl-12 text-lg transition-all focus:border-primary focus:ring-4 focus:ring-primary/20 dark:bg-gray-800"
@@ -301,12 +418,11 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
               {/* Filters */}
               <div className="flex flex-wrap items-center gap-3">
                 <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                  <SelectTrigger className="h-12 w-[180px] rounded-xl border-2 border-primary/20 bg-white dark:bg-gray-800">
-                    <Globe className="mr-2 h-4 w-4 text-primary" />
-                    <SelectValue placeholder="Language" />
+                  <SelectTrigger className="!h-14 w-[180px] rounded-xl border-2 border-primary/20 bg-white text-sm dark:bg-gray-800">
+                    <Globe className="mr-2 h-5 w-5 text-primary" />
+                    <SelectValue placeholder={t('filters.language')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Languages</SelectItem>
                     {languages.map((lang) => (
                       <SelectItem key={lang.code} value={lang.code}>
                         {lang.name}
@@ -316,28 +432,16 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
                 </Select>
 
                 <Select value={selectedSpecialty} onValueChange={setSelectedSpecialty}>
-                  <SelectTrigger className="h-12 w-[170px] rounded-xl border-2 border-primary/20 bg-white dark:bg-gray-800">
-                    <Award className="mr-2 h-4 w-4 text-primary" />
-                    <SelectValue placeholder="Specialty" />
+                  <SelectTrigger className="!h-14 w-[180px] rounded-xl border-2 border-primary/20 bg-white text-sm dark:bg-gray-800">
+                    <Award className="mr-2 h-5 w-5 text-primary" />
+                    <SelectValue placeholder={t('filters.specialty')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Specialties</SelectItem>
                     {specialties.map((specialty) => (
-                      <SelectItem key={specialty} value={specialty.toLowerCase()}>
-                        {specialty}
+                      <SelectItem key={specialty.key} value={specialty.key}>
+                        {specialty.name}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={selectedAvailability} onValueChange={setSelectedAvailability}>
-                  <SelectTrigger className="h-12 w-[150px] rounded-xl border-2 border-primary/20 bg-white dark:bg-gray-800">
-                    <Clock className="mr-2 h-4 w-4 text-primary" />
-                    <SelectValue placeholder="Availability" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="available">Available Now</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -370,47 +474,79 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
       <section className="container py-12">
         <div className="mb-8 flex items-center justify-between">
           <p className="text-lg text-muted-foreground">
-            Found <span className="font-bold text-foreground">{filteredInterpreters.length}</span> interpreters
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t('filters.all')}...
+              </span>
+            ) : (
+              <>
+                {t('found', { count: total })}
+                {hasMore && (
+                  <span className="ml-2 text-sm">
+                    ({filteredInterpreters.length} / {total})
+                  </span>
+                )}
+              </>
+            )}
           </p>
         </div>
 
-        <AnimatePresence mode="wait">
-          {viewMode === 'grid' ? (
-            <motion.div
-              key="grid"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            >
-              {filteredInterpreters.map((interpreter) => (
-                <InterpreterCard3D
-                  key={interpreter.id}
-                  interpreter={interpreter}
-                  locale={locale}
-                />
-              ))}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="list"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="space-y-6"
-            >
-              {filteredInterpreters.map((interpreter) => (
-                <InterpreterListCard
-                  key={interpreter.id}
-                  interpreter={interpreter}
-                  locale={locale}
-                />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {isLoading ? (
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-[400px] animate-pulse rounded-3xl bg-muted" />
+            ))}
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredInterpreters.map((interpreter) => (
+              <InterpreterCard3D
+                key={interpreter.id}
+                interpreter={interpreter}
+                locale={locale}
+                getLanguageName={getLanguageName}
+                getSpecialtyName={getSpecialtyName}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {filteredInterpreters.map((interpreter) => (
+              <InterpreterListCard
+                key={interpreter.id}
+                interpreter={interpreter}
+                locale={locale}
+                getLanguageName={getLanguageName}
+                getSpecialtyName={getSpecialtyName}
+              />
+            ))}
+          </div>
+        )}
 
-        {filteredInterpreters.length === 0 && (
+        {/* Load More / Infinite Scroll Trigger */}
+        {hasMore && !isLoading && (
+          <div ref={loadMoreRef} className="mt-12 flex justify-center">
+            {isLoadingMore ? (
+              <div className="flex items-center gap-3 text-muted-foreground">
+                <Loader2 className="h-6 w-6 animate-spin" />
+                <span>{t('filters.all')}...</span>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={loadMore}
+                className="gap-2 rounded-xl border-2 px-8"
+              >
+                {t('loadMore')}
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
+        )}
+
+        {filteredInterpreters.length === 0 && !isLoading && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -419,9 +555,9 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
             <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20">
               <Search className="h-10 w-10 text-primary" />
             </div>
-            <h3 className="mb-3 text-2xl font-bold">No interpreters found</h3>
+            <h3 className="mb-3 text-2xl font-bold">{t('noResults.title')}</h3>
             <p className="text-muted-foreground">
-              Try adjusting your filters or search term
+              {t('noResults.description')}
             </p>
           </motion.div>
         )}
@@ -460,10 +596,10 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
               <Sparkles className="mx-auto mb-6 h-16 w-16 opacity-80" />
             </motion.div>
             <h2 className="mb-4 text-3xl font-black lg:text-5xl">
-              Can't find the right interpreter?
+              {t('cta.title')}
             </h2>
             <p className="mx-auto mb-8 max-w-2xl text-lg text-white/80">
-              Our AI will match you with the perfect interpreter based on your specific needs, language, and medical specialty.
+              {t('cta.description')}
             </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
@@ -473,7 +609,7 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
               >
                 <Link href={`/inquiry`}>
                   <Zap className="h-5 w-5" />
-                  Get AI-Matched Interpreter
+                  {t('cta.button')}
                 </Link>
               </Button>
             </motion.div>
@@ -487,23 +623,26 @@ export function InterpretersPageClient({ interpreters, locale }: InterpretersPag
 function InterpreterCard3D({
   interpreter,
   locale,
+  getLanguageName,
+  getSpecialtyName,
 }: {
   interpreter: Interpreter;
   locale: Locale;
+  getLanguageName: (code: string) => string;
+  getSpecialtyName: (specialty: string) => string;
 }) {
+  const t = useTranslations('interpreters');
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <motion.div
-      variants={itemVariants}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       whileHover={{
-        y: -12,
-        rotateY: 3,
-        rotateX: -3,
+        y: -8,
+        scale: 1.02,
       }}
-      style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       className="group"
     >
       <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/20 bg-white shadow-xl transition-shadow duration-500 hover:shadow-2xl dark:bg-gray-900">
@@ -555,12 +694,12 @@ function InterpreterCard3D({
               >
                 <Badge className="border-0 bg-gradient-to-r from-emerald-500 to-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg">
                   <span className="mr-2 h-2 w-2 animate-pulse rounded-full bg-white" />
-                  Available
+                  {t('card.available')}
                 </Badge>
               </motion.div>
             ) : (
               <Badge variant="secondary" className="bg-black/60 px-4 py-2 text-white backdrop-blur-sm">
-                Unavailable
+                {t('card.unavailable')}
               </Badge>
             )}
           </div>
@@ -600,7 +739,7 @@ function InterpreterCard3D({
               </span>
             </div>
             <span className="text-sm font-medium text-muted-foreground">
-              {interpreter.experience_years}+ yrs
+              {interpreter.experience_years}+ {t('card.yearsExp')}
             </span>
           </div>
 
@@ -613,7 +752,7 @@ function InterpreterCard3D({
                   variant="outline"
                   className="border-2 border-primary/30 bg-primary/5 px-3 py-1 font-medium"
                 >
-                  {lang.name}
+                  {getLanguageName(lang.code)}
                   {lang.level === 'native' && (
                     <Star className="ml-1 h-3 w-3 fill-primary text-primary" />
                   )}
@@ -634,7 +773,7 @@ function InterpreterCard3D({
                 key={specialty}
                 className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 px-3 py-1 text-xs font-semibold text-violet-700 dark:text-violet-300"
               >
-                {specialty}
+                {getSpecialtyName(specialty)}
               </Badge>
             ))}
           </div>
@@ -646,7 +785,7 @@ function InterpreterCard3D({
               asChild
             >
               <Link href={`/interpreters/${interpreter.slug || interpreter.id}`}>
-                View Profile
+                {t('card.viewProfile')}
                 <ChevronRight className="h-5 w-5" />
               </Link>
             </Button>
@@ -660,14 +799,19 @@ function InterpreterCard3D({
 function InterpreterListCard({
   interpreter,
   locale,
+  getLanguageName,
+  getSpecialtyName,
 }: {
   interpreter: Interpreter;
   locale: Locale;
+  getLanguageName: (code: string) => string;
+  getSpecialtyName: (specialty: string) => string;
 }) {
+  const t = useTranslations('interpreters');
   return (
     <motion.div
-      variants={itemVariants}
-      whileHover={{ x: 8, scale: 1.01 }}
+      whileHover={{ x: 4, scale: 1.005 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       className="group"
     >
       <div className="overflow-hidden rounded-3xl border border-white/20 bg-white shadow-xl transition-all hover:shadow-2xl dark:bg-gray-900">
@@ -697,17 +841,17 @@ function InterpreterListCard({
               {interpreter.is_available ? (
                 <Badge className="bg-gradient-to-r from-emerald-500 to-green-600 text-white">
                   <span className="mr-2 h-2 w-2 animate-pulse rounded-full bg-white" />
-                  Available
+                  {t('card.available')}
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="bg-black/60 text-white backdrop-blur-sm">
-                  Unavailable
+                  {t('card.unavailable')}
                 </Badge>
               )}
               {interpreter.is_verified && (
                 <Badge className="bg-cyan-500/90 text-white">
                   <BadgeCheck className="mr-1 h-3 w-3" />
-                  Verified
+                  {t('card.verified')}
                 </Badge>
               )}
             </div>
@@ -736,11 +880,11 @@ function InterpreterListCard({
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4 text-primary" />
-                      {interpreter.experience_years}+ years
+                      {interpreter.experience_years}+ {t('card.years')}
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="h-4 w-4 text-primary" />
-                      {interpreter.total_bookings} bookings
+                      {interpreter.total_bookings} {t('card.bookings')}
                     </div>
                   </div>
                 </div>
@@ -754,7 +898,7 @@ function InterpreterListCard({
                 <div className="flex flex-wrap gap-6">
                   <div>
                     <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Languages
+                      {t('card.languagesLabel')}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {interpreter.languages.map((lang) => (
@@ -763,7 +907,7 @@ function InterpreterListCard({
                           variant="outline"
                           className="border-2 border-primary/30 bg-primary/5"
                         >
-                          {lang.name}
+                          {getLanguageName(lang.code)}
                           {lang.level === 'native' && (
                             <Star className="ml-1 h-3 w-3 fill-primary text-primary" />
                           )}
@@ -773,7 +917,7 @@ function InterpreterListCard({
                   </div>
                   <div>
                     <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Specialties
+                      {t('card.specialtiesLabel')}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {interpreter.specialties.map((specialty) => (
@@ -781,7 +925,7 @@ function InterpreterListCard({
                           key={specialty}
                           className="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
                         >
-                          {specialty}
+                          {getSpecialtyName(specialty)}
                         </Badge>
                       ))}
                     </div>
@@ -810,7 +954,7 @@ function InterpreterListCard({
                     asChild
                   >
                     <Link href={`/interpreters/${interpreter.slug || interpreter.id}`}>
-                      View Profile
+                      {t('card.viewProfile')}
                       <ChevronRight className="h-5 w-5" />
                     </Link>
                   </Button>

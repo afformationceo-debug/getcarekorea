@@ -208,31 +208,114 @@
     }
   },
   "interpreters": {
-    "title": "Эмнэлгийн орчуулагчид",
-    "subtitle": "Эмнэлгийн аялалд тань туслах мэргэжлийн орчуулагчид",
-    "searchPlaceholder": "Хэл, мэргэшлээр хайх...",
+    "title": "Эмнэлгийн орчуулагч",
+    "subtitle": "Таны эмнэлгийн аялалд туслах мэргэжлийн орчуулагч",
+    "heroTitle1": "Эмнэлгийн",
+    "heroTitle2": "орчуулагч",
+    "heroDescription": "Таны хэлээр ярьдаг баталгаажсан эмнэлгийн орчуулагчтай холбогдоорой.",
+    "freeService": "Үнэгүй платформ үйлчилгээ",
+    "aiPoweredMatching": "AI-ээр тохирох",
+    "searchPlaceholder": "Нэр, хэл, мэргэшлээр орчуулагч хайх...",
+    "found": "{count} орчуулагч олдлоо",
+    "stats": {
+      "languages": "Хэл",
+      "certified": "Баталгаажсан",
+      "support": "Дэмжлэг",
+      "serviceFee": "Үйлчилгээний төлбөр"
+    },
     "filters": {
       "language": "Хэл",
-      "specialty": "Эмнэлгийн мэргэшил",
-      "availability": "Боломжтой эсэх",
-      "priceRange": "Үнийн хүрээ"
+      "allLanguages": "Бүх хэл",
+      "specialty": "Мэргэшил",
+      "allSpecialties": "Бүх мэргэшил",
+      "availability": "Боломжтой",
+      "all": "Бүгд",
+      "availableNow": "Одоо боломжтой"
     },
     "card": {
-      "hourlyRate": "${rate}/цаг",
-      "dailyRate": "${rate}/өдөр",
-      "languages": "Хэлүүд",
-      "bookings": "{count} захиалга гүйцэтгэсэн",
       "available": "Боломжтой",
-      "unavailable": "Боломжгүй"
+      "unavailable": "Боломжгүй",
+      "verified": "Баталгаажсан",
+      "viewProfile": "Профайл харах",
+      "yearsExp": "жил",
+      "years": "жил",
+      "bookings": "захиалга",
+      "languagesLabel": "Хэл",
+      "specialtiesLabel": "Мэргэшил"
+    },
+    "noResults": {
+      "title": "Орчуулагч олдсонгүй",
+      "description": "Шүүлтүүр эсвэл хайлтын нөхцөлөө тохируулна уу"
+    },
+    "loadMore": "Цааш үзэх",
+    "cta": {
+      "title": "Тохирох орчуулагч олж чадахгүй байна уу?",
+      "description": "Манай AI таны хэрэгцээ, хэл, эмнэлгийн мэргэшилд тохирсон төгс орчуулагчийг олж өгнө.",
+      "button": "AI-ээр орчуулагч олох"
+    },
+    "languages": {
+      "en": "Англи",
+      "ko": "Солонгос",
+      "zh-CN": "Хятад (Хялбаршуулсан)",
+      "zh-TW": "Хятад (Уламжлалт)",
+      "ja": "Япон",
+      "th": "Тайланд",
+      "ru": "Орос",
+      "mn": "Монгол"
+    },
+    "specialties": {
+      "Plastic Surgery": "Гоо сайхны мэс засал",
+      "Dermatology": "Арьс судлал",
+      "Dental": "Шүдний эмчилгээ",
+      "Health Checkup": "Эрүүл мэндийн үзлэг",
+      "Fertility": "Үргүйдлийн эмчилгээ",
+      "Hair Transplant": "Үс суулгах",
+      "Ophthalmology": "Нүдний эмчилгээ"
     },
     "detail": {
-      "about": "Танилцуулга",
-      "experience": "Туршлага",
-      "languages": "Хэлүүд",
-      "specialties": "Мэргэшил",
-      "reviews": "Сэтгэгдэл",
-      "availability": "Хуваарь",
-      "bookInterpreter": "Орчуулагч захиалах"
+      "home": "Нүүр",
+      "interpreters": "Орчуулагч",
+      "availableNow": "Одоо боломжтой",
+      "unavailable": "Одоогоор боломжгүй",
+      "verified": "Баталгаажсан",
+      "experience": "жил дээш туршлагатай",
+      "bookingsCompleted": "захиалга гүйцэтгэсэн",
+      "reviews": "сэтгэгдэл",
+      "watchIntro": "Танилцуулга үзэх",
+      "about": "Тухай",
+      "servicesTab": "Үйлчилгээ",
+      "aboutMe": "Миний тухай",
+      "education": "Боловсрол",
+      "certifications": "Гэрчилгээ",
+      "languageProficiency": "Хэлний чадвар",
+      "native": "Төрөлх",
+      "fluent": "Чөлөөтэй",
+      "conversational": "Харилцааны түвшин",
+      "servicesOffered": "Үзүүлэх үйлчилгээ",
+      "excellentService": "Маш сайн үйлчилгээ",
+      "ratingDescription": "Мэргэжлийн ур чадвар, нарийвчлал, өвчтөний халамжаар өндөр үнэлгээ авсан.",
+      "bookNow": "Одоо захиалах",
+      "save": "Хадгалах",
+      "share": "Хуваалцах",
+      "sendMessage": "Мессеж илгээх",
+      "bookYourInterpreter": "Орчуулагч захиалах",
+      "readyToAssist": "Туслахад бэлэн",
+      "professionalInterpretation": "Солонгос дахь эмнэлгийн аялалд зориулсан мэргэжлийн орчуулгын үйлчилгээ.",
+      "freeCancellation": "Үнэгүй цуцлалт",
+      "response24h": "24 цагийн хариулт",
+      "whyChooseMe": "Яагаад намайг сонгох вэ?",
+      "verifiedProfessional": "Баталгаажсан мэргэжилтэн",
+      "multiLingualExpert": "Олон хэлний мэргэжилтэн",
+      "medicalCertified": "Эмнэлгийн гэрчилгээтэй",
+      "flexibleSchedule": "Уян хатан цагийн хуваарь",
+      "certifiedProfessional": "Гэрчилгээтэй мэргэжилтэн",
+      "services": {
+        "medicalConsultation": "Эмнэлгийн зөвлөгөөний орчуулга",
+        "surgeryAccompaniment": "Мэс засалд дагалдах",
+        "hospitalCoordination": "Эмнэлгийн зохицуулалт",
+        "postOperativeCare": "Мэс заслын дараах тусламж",
+        "documentTranslation": "Баримт бичгийн орчуулга"
+      }
     }
   },
   "chat": {
@@ -932,7 +1015,8 @@
         "isVerified": "Баталгаажсан",
         "isVerifiedDesc": "Баталгаажсан тэмдэг харуулах",
         "isFeatured": "Онцлох",
-        "isFeaturedDesc": "Жагсаалтын дээд хэсэгт харуулах"
+        "isFeaturedDesc": "Жагсаалтын дээд хэсэгт харуулах",
+        "required": "Заавал"
       },
       "descriptions": {
         "basicInfo": "Үндсэн профайл мэдээлэл оруулна уу",
@@ -989,10 +1073,19 @@
         "en": "Англи",
         "ko": "Солонгос",
         "zh": "Хятад",
+        "zh-CN": "Хятад (Хялбаршуулсан)",
+        "zh-TW": "Хятад (Уламжлалт)",
         "ja": "Япон",
         "vi": "Вьетнам",
         "th": "Тайланд",
-        "ru": "Орос"
+        "mn": "Монгол",
+        "ru": "Орос",
+        "es": "Испани",
+        "ar": "Араб",
+        "fr": "Франц",
+        "de": "Герман",
+        "pt": "Португал",
+        "id": "Индонези"
       },
       "actions": {
         "view": "Харах",
@@ -1008,6 +1101,9 @@
         "saveFailed": "Хадгалж чадсангүй",
         "deleteFailed": "Устгаж чадсангүй",
         "atLeastOneLanguage": "Хамгийн багадаа нэг хэл болон нэр оруулна уу",
+        "englishNameRequired": "Англи нэр заавал шаардлагатай (үндсэн утга болгон ашиглана)",
+        "cannotRemoveEnglish": "Англи хэлийг устгах боломжгүй (заавал шаардлагатай үндсэн хэл)",
+        "languageAlreadyAdded": "Энэ хэл аль хэдийн нэмэгдсэн байна",
         "imageUploaded": "Зураг амжилттай байршуулагдсан",
         "uploadFailed": "Байршуулж чадсангүй",
         "updated": "Орчуулагчийн мэдээлэл шинэчлэгдсэн",
