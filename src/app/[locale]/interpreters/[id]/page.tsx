@@ -3,6 +3,9 @@ import { setRequestLocale } from 'next-intl/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { InterpreterDetailClient } from './InterpreterDetailClient';
 import type { Locale } from '@/lib/i18n/config';
+import type { Metadata } from 'next';
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://getcarekorea.com';
 
 interface PageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -10,6 +13,80 @@ interface PageProps {
 
 // Type for localized JSONB fields
 type LocalizedField = Record<string, string>;
+
+// Generate metadata for SEO
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale, id } = await params;
+  const supabase = await createAdminClient();
+
+  // Check if it's a UUID format
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query = (supabase.from('author_personas') as any)
+    .select('name, bio_short, photo_url, primary_specialty, slug, languages')
+    .eq('is_active', true);
+
+  if (isUUID) {
+    query = query.eq('id', id);
+  } else {
+    query = query.eq('slug', id);
+  }
+
+  const { data: interpreter } = await query.single();
+
+  if (!interpreter) {
+    return {
+      title: 'Interpreter Not Found',
+    };
+  }
+
+  const nameData = interpreter.name as LocalizedField;
+  const name = nameData?.[locale] || nameData?.['en'] || 'Medical Interpreter';
+  const bioData = interpreter.bio_short as LocalizedField;
+  const bio = bioData?.[locale] || bioData?.['en'] || '';
+  const slug = interpreter.slug || id;
+
+  const languages = Array.isArray(interpreter.languages)
+    ? interpreter.languages.map((l: { code: string }) => l.code).join(', ')
+    : '';
+
+  const specialty = interpreter.primary_specialty
+    ? interpreter.primary_specialty.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    : 'Medical Tourism';
+
+  const description = bio || `${name} - Professional medical interpreter specializing in ${specialty}. Languages: ${languages}`;
+
+  return {
+    title: `${name} | Medical Interpreter | GetCareKorea`,
+    description: description.slice(0, 160),
+    openGraph: {
+      title: `${name} - Medical Interpreter Korea`,
+      description: description.slice(0, 160),
+      url: `${baseUrl}/${locale}/interpreters/${slug}`,
+      siteName: 'GetCareKorea',
+      images: interpreter.photo_url ? [{ url: interpreter.photo_url, width: 400, height: 400 }] : [],
+      locale: locale,
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary',
+      title: `${name} | Medical Interpreter`,
+      description: description.slice(0, 160),
+      images: interpreter.photo_url ? [interpreter.photo_url] : [],
+    },
+    alternates: {
+      canonical: `${baseUrl}/${locale}/interpreters/${slug}`,
+      languages: {
+        'en': `${baseUrl}/en/interpreters/${slug}`,
+        'ko': `${baseUrl}/ko/interpreters/${slug}`,
+        'ja': `${baseUrl}/ja/interpreters/${slug}`,
+        'zh-CN': `${baseUrl}/zh-CN/interpreters/${slug}`,
+        'zh-TW': `${baseUrl}/zh-TW/interpreters/${slug}`,
+      },
+    },
+  };
+}
 
 // Get localized value from JSONB field with fallback to English
 function getLocalizedValue(field: unknown, locale: string): string {

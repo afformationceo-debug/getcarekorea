@@ -1518,5 +1518,35 @@
         "description": "We typically respond to inquiries within 24 hours. For urgent matters, please contact us via KakaoTalk or WhatsApp."
       }
     }
+  },
+  "proceduresPage": {
+    "badge": "AI-Matched Procedures",
+    "title1": "Medical",
+    "title2": "Procedures",
+    "description": "Explore world-class medical procedures available in Korea at competitive prices with exceptional quality.",
+    "searchPlaceholder": "Search procedures...",
+    "popular": "Popular",
+    "viewHospitals": "View Hospitals",
+    "stats": {
+      "procedures": "Procedures",
+      "jciCertified": "JCI Certified",
+      "costSavings": "Cost Savings",
+      "avgRating": "Avg Rating"
+    },
+    "categories": {
+      "plastic_surgery": "Plastic Surgery",
+      "dermatology": "Dermatology",
+      "dental": "Dental",
+      "ophthalmology": "Ophthalmology",
+      "hair_transplant": "Hair Transplant",
+      "health_checkup": "Health Checkup",
+      "fertility": "Fertility",
+      "orthopedics": "Orthopedics"
+    },
+    "cta": {
+      "title": "Not sure which procedure is right for you?",
+      "description": "Our AI assistant can help analyze your needs and recommend the best procedures based on your goals and medical history.",
+      "button": "Get AI Consultation"
+    }
   }
 }

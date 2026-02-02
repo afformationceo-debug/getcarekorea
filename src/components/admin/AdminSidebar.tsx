@@ -33,9 +33,9 @@ const navItems = [
   { href: '/admin/progress', labelKey: 'progress', icon: Gauge, disabled: true },
   { href: '/admin/feedback', labelKey: 'feedback', icon: MessageCircle, disabled: true },
   { href: '/admin/analytics', labelKey: 'analytics', icon: BarChart3, disabled: true },
-  { href: '/admin/system', labelKey: 'system', icon: Activity, disabled: true },
+  { href: '/admin/system', labelKey: 'system', icon: Activity },
+  { href: '/admin/system/settings', labelKey: 'settings', icon: Settings },
   { href: '/admin/notifications', labelKey: 'notifications', icon: Bell, disabled: true },
-  { href: '/admin/settings', labelKey: 'settings', icon: Settings },
 ];
 
 export function AdminSidebar() {

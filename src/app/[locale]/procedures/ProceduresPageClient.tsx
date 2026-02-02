@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from '@/lib/i18n/navigation';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import {
   Search,
   Sparkles,
@@ -68,6 +69,7 @@ const itemVariants = {
 };
 
 export function ProceduresPageClient({ procedures, locale }: Props) {
+  const t = useTranslations('proceduresPage');
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -126,19 +128,19 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
                 <Sparkles className="h-4 w-4 text-cyan-400" />
               </motion.div>
               <span className="text-sm font-medium text-white/90">
-                AI-Matched Procedures
+                {t('badge')}
               </span>
             </motion.div>
 
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-white lg:text-6xl">
-              <span className="block">Medical</span>
+              <span className="block">{t('title1')}</span>
               <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
-                Procedures
+                {t('title2')}
               </span>
             </h1>
 
             <p className="mx-auto mb-10 max-w-2xl text-lg text-white/70 lg:text-xl">
-              Explore world-class medical procedures available in Korea at competitive prices with exceptional quality.
+              {t('description')}
             </p>
 
             {/* Stats */}
@@ -149,10 +151,10 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
               className="mx-auto grid max-w-3xl grid-cols-2 gap-4 md:grid-cols-4"
             >
               {[
-                { icon: Stethoscope, value: '50+', label: 'Procedures' },
-                { icon: Shield, value: '100%', label: 'JCI Certified' },
-                { icon: TrendingUp, value: '40%', label: 'Cost Savings' },
-                { icon: Star, value: '4.9', label: 'Avg Rating' },
+                { icon: Stethoscope, value: '50+', label: t('stats.procedures') },
+                { icon: Shield, value: '100%', label: t('stats.jciCertified') },
+                { icon: TrendingUp, value: '40%', label: t('stats.costSavings') },
+                { icon: Star, value: '4.9', label: t('stats.avgRating') },
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}
@@ -187,7 +189,7 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
             <div className="relative">
               <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search procedures..."
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-14 rounded-xl border-0 bg-background/50 pl-12 text-base shadow-inner focus-visible:ring-2 focus-visible:ring-primary"
@@ -212,7 +214,7 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
                 onHoverStart={() => setHoveredId(procedure.id)}
                 onHoverEnd={() => setHoveredId(null)}
               >
-                <Link href={`/procedures/${procedure.slug}`}>
+                <Link href="/hospitals">
                   <motion.div
                     whileHover={{
                       y: -12,
@@ -223,7 +225,7 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
                     className="group h-full overflow-hidden rounded-2xl border border-border/50 bg-card shadow-lg transition-all duration-500 hover:border-violet-500/30 hover:shadow-2xl hover:shadow-violet-500/10"
                   >
                     {/* Image */}
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-48 overflow-hidden rounded-t-2xl">
                       {procedure.image ? (
                         <Image
                           src={procedure.image}
@@ -252,7 +254,7 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
                       {procedure.popularity > 0 && (
                         <Badge className="absolute left-4 top-4 bg-black/50 backdrop-blur-sm">
                           <TrendingUp className="mr-1 h-3 w-3" />
-                          {procedure.popularity}% Popular
+                          {procedure.popularity}% {t('popular')}
                         </Badge>
                       )}
 
@@ -271,7 +273,7 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
                       {/* Category Tag */}
                       <div className="mb-4">
                         <Badge variant="secondary" className="bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300">
-                          {procedure.category.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                          {t(`categories.${procedure.category.replace('-', '_')}`)}
                         </Badge>
                       </div>
 
@@ -297,7 +299,7 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
                         animate={{ opacity: hoveredId === procedure.id ? 1 : 0, y: hoveredId === procedure.id ? 0 : 10 }}
                         className="mt-4 flex items-center justify-center gap-2 text-primary"
                       >
-                        <span className="font-medium">Explore Procedure</span>
+                        <span className="font-medium">{t('viewHospitals')}</span>
                         <ArrowRight className="h-4 w-4" />
                       </motion.div>
                     </div>
@@ -329,10 +331,10 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
               </motion.div>
               <div className="flex-1">
                 <h3 className="mb-2 text-2xl font-bold text-white lg:text-3xl">
-                  Not sure which procedure is right for you?
+                  {t('cta.title')}
                 </h3>
                 <p className="text-white/70">
-                  Our AI assistant can help analyze your needs and recommend the best procedures based on your goals and medical history.
+                  {t('cta.description')}
                 </p>
               </div>
               <Link href={`/inquiry`}>
@@ -341,7 +343,7 @@ export function ProceduresPageClient({ procedures, locale }: Props) {
                   className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/25"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
-                  Get AI Consultation
+                  {t('cta.button')}
                 </Button>
               </Link>
             </div>

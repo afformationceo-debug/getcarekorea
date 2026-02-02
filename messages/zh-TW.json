@@ -1393,5 +1393,35 @@
         "priorityThresholdHint": "僅處理具有此優先級或更高優先級的關鍵字（0 = 全部處理）"
       }
     }
+  },
+  "proceduresPage": {
+    "badge": "AI匹配療程",
+    "title1": "醫療",
+    "title2": "療程",
+    "description": "以優惠的價格和卓越的品質在韓國體驗世界級醫療療程。",
+    "searchPlaceholder": "搜尋療程...",
+    "popular": "熱門",
+    "viewHospitals": "查看醫院",
+    "stats": {
+      "procedures": "療程",
+      "jciCertified": "JCI認證",
+      "costSavings": "節省成本",
+      "avgRating": "平均評分"
+    },
+    "categories": {
+      "plastic_surgery": "整形外科",
+      "dermatology": "皮膚科",
+      "dental": "牙科",
+      "ophthalmology": "眼科",
+      "hair_transplant": "植髮",
+      "health_checkup": "健康檢查",
+      "fertility": "生育治療",
+      "orthopedics": "骨科"
+    },
+    "cta": {
+      "title": "不確定哪種療程適合您？",
+      "description": "我們的AI助手可以根據您的目標和病史為您推薦最適合的療程。",
+      "button": "獲取AI諮詢"
+    }
   }
 }

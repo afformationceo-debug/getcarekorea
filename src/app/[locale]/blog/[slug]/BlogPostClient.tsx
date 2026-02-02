@@ -8,6 +8,7 @@ import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import { getCTASettings, type CTASettings } from '@/lib/settings/cta';
 import rehypeSanitize from 'rehype-sanitize';
 import {
   ArrowLeft,
@@ -159,15 +160,10 @@ function getDefaultAuthorBio(locale: string): string {
   return DEFAULT_AUTHOR.bio_en;
 }
 
-// Messenger configuration by locale - All using WhatsApp
-const MESSENGER_CONFIG: Record<string, { messenger: string; icon: string; link: string; label: string }> = {
+// Messenger configuration is now loaded from system_settings
+// This is kept as a fallback only
+const DEFAULT_MESSENGER_CONFIG: Record<string, { messenger: string; icon: string; link: string; label: string }> = {
   'en': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'Get Free Consultation via WhatsApp' },
-  'ru': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'Бесплатная консультация через WhatsApp' },
-  'mn': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'WhatsApp-аар үнэгүй зөвлөгөө авах' },
-  'zh-TW': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'WhatsApp免費諮詢' },
-  'zh-CN': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'WhatsApp免费咨询' },
-  'ja': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'WhatsAppで無料相談' },
-  'th': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'ปรึกษาฟรีผ่าน WhatsApp' },
   'ko': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'WhatsApp 무료상담' },
 };
 
@@ -188,20 +184,33 @@ function getLocalizedAuthorName(persona: AuthorPersona, locale: string): string 
   return (persona[key] as string | null) || persona.name_en;
 }
 
-// Get messenger CTA for locale
-function getMessengerCTA(locale: string, persona?: AuthorPersona | null): { messenger: string; label: string; link: string } {
-  // First check if persona has custom CTA
-  if (persona?.messenger_cta_text?.[locale]) {
-    const defaultConfig = MESSENGER_CONFIG[locale] || MESSENGER_CONFIG['en'];
+// Get messenger CTA for locale - now uses system settings
+function getMessengerCTAFromSettings(
+  locale: string,
+  ctaSettings: CTASettings | null,
+  persona?: AuthorPersona | null
+): { messenger: string; label: string; link: string } {
+  // First check system settings
+  const systemCTA = ctaSettings?.[locale];
+  if (systemCTA) {
+    // If persona has custom text, use it with system URL
+    if (persona?.messenger_cta_text?.[locale]) {
+      return {
+        messenger: systemCTA.type,
+        label: persona.messenger_cta_text[locale],
+        link: systemCTA.url,
+      };
+    }
     return {
-      messenger: persona.preferred_messenger || defaultConfig.messenger,
-      label: persona.messenger_cta_text[locale],
-      link: defaultConfig.link,
+      messenger: systemCTA.type,
+      label: systemCTA.text,
+      link: systemCTA.url,
     };
   }
 
   // Fall back to default config
-  return MESSENGER_CONFIG[locale] || MESSENGER_CONFIG['en'];
+  const defaultConfig = DEFAULT_MESSENGER_CONFIG[locale] || DEFAULT_MESSENGER_CONFIG['en'];
+  return defaultConfig;
 }
 
 // Translations
@@ -549,8 +558,22 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
   const [isLiked, setIsLiked] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [activeHeading, setActiveHeading] = useState<string>('');
+  const [ctaSettings, setCtaSettings] = useState<CTASettings | null>(null);
 
   const t = useCallback((key: string) => getTranslation(locale, key), [locale]);
+
+  // Fetch CTA settings from system_settings
+  useEffect(() => {
+    async function loadCTASettings() {
+      try {
+        const settings = await getCTASettings();
+        setCtaSettings(settings);
+      } catch (error) {
+        console.error('Failed to load CTA settings:', error);
+      }
+    }
+    loadCTASettings();
+  }, []);
 
   // Fetch post data if not provided initially
   useEffect(() => {
@@ -658,7 +681,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
 
   const readingTime = calculateReadingTime(post.content || '');
   const headings = extractHeadings(post.content || '');
-  const messengerCTA = getMessengerCTA(locale, post.authorPersona);
+  const messengerCTA = getMessengerCTAFromSettings(locale, ctaSettings, post.authorPersona);
 
   // Get author info
   const authorName = post.authorPersona

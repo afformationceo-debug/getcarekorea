@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Link } from '@/lib/i18n/navigation';
 import { motion } from 'framer-motion';
@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Locale } from '@/lib/i18n/config';
+import { getCTAForLocale, type CTAConfig } from '@/lib/settings/cta';
 
 interface Language {
   code: string;
@@ -331,7 +332,6 @@ export function InterpreterDetailClient({
                   {[
                     { key: 'about', label: t('detail.about') },
                     { key: 'services', label: t('detail.servicesTab') },
-                    { key: 'reviews', label: t('detail.reviews') },
                   ].map((tab) => (
                     <TabsTrigger
                       key={tab.key}
@@ -349,10 +349,6 @@ export function InterpreterDetailClient({
 
                 <TabsContent value="services" className="mt-8">
                   <ServicesSection interpreter={interpreter} />
-                </TabsContent>
-
-                <TabsContent value="reviews" className="mt-8">
-                  <ReviewsSection reviews={reviews} interpreter={interpreter} />
                 </TabsContent>
               </Tabs>
             </motion.div>
@@ -664,6 +660,20 @@ function ReviewsSection({
 
 function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; locale: Locale }) {
   const t = useTranslations('interpreters');
+  const [ctaConfig, setCTAConfig] = useState<CTAConfig | null>(null);
+
+  useEffect(() => {
+    async function loadCTA() {
+      try {
+        const config = await getCTAForLocale(locale);
+        setCTAConfig(config);
+      } catch (error) {
+        console.error('Failed to load CTA config:', error);
+      }
+    }
+    loadCTA();
+  }, [locale]);
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -692,23 +702,17 @@ function SidebarSection({ interpreter, locale }: { interpreter: Interpreter; loc
 
           <div className="space-y-3">
             <Button
-              className="w-full gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 py-6 text-lg hover:opacity-90"
+              className={`w-full gap-2 rounded-xl bg-gradient-to-r ${ctaConfig?.color || 'from-violet-600 to-purple-600'} py-6 text-lg hover:opacity-90`}
               asChild
             >
-              <Link href={`/inquiry?interpreter=${interpreter.id}`}>
+              <a
+                href={ctaConfig?.url || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <MessageCircle className="h-5 w-5" />
-                {t('detail.bookNow')}
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full gap-2 rounded-xl border-2 py-6 text-lg"
-              asChild
-            >
-              <Link href={`/inquiry?interpreter=${interpreter.id}&type=inquiry`}>
-                <Mail className="h-5 w-5" />
                 {t('detail.sendMessage')}
-              </Link>
+              </a>
             </Button>
           </div>
 

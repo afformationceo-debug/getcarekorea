@@ -1393,5 +1393,35 @@
         "priorityThresholdHint": "この値以上の優先度を持つキーワードのみ処理 (0 = 全て処理)"
       }
     }
+  },
+  "proceduresPage": {
+    "badge": "AIマッチング施術",
+    "title1": "医療",
+    "title2": "施術",
+    "description": "韓国で世界水準の医療施術を競争力のある価格と優れた品質でお受けください。",
+    "searchPlaceholder": "施術を検索...",
+    "popular": "人気",
+    "viewHospitals": "病院を見る",
+    "stats": {
+      "procedures": "施術",
+      "jciCertified": "JCI認証",
+      "costSavings": "コスト削減",
+      "avgRating": "平均評価"
+    },
+    "categories": {
+      "plastic_surgery": "美容整形",
+      "dermatology": "皮膚科",
+      "dental": "歯科",
+      "ophthalmology": "眼科",
+      "hair_transplant": "植毛",
+      "health_checkup": "健康診断",
+      "fertility": "不妊治療",
+      "orthopedics": "整形外科"
+    },
+    "cta": {
+      "title": "どの施術が最適かわかりませんか？",
+      "description": "AIアシスタントがあなたの目標と医療履歴に基づいて最適な施術をご提案します。",
+      "button": "AI相談を受ける"
+    }
   }
 }

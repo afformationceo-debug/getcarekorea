@@ -1393,5 +1393,35 @@
         "priorityThresholdHint": "仅处理具有此优先级或更高优先级的关键词（0 = 全部处理）"
       }
     }
+  },
+  "proceduresPage": {
+    "badge": "AI匹配项目",
+    "title1": "医疗",
+    "title2": "项目",
+    "description": "以优惠的价格和卓越的品质在韩国体验世界级医疗项目。",
+    "searchPlaceholder": "搜索项目...",
+    "popular": "热门",
+    "viewHospitals": "查看医院",
+    "stats": {
+      "procedures": "项目",
+      "jciCertified": "JCI认证",
+      "costSavings": "节省成本",
+      "avgRating": "平均评分"
+    },
+    "categories": {
+      "plastic_surgery": "整形外科",
+      "dermatology": "皮肤科",
+      "dental": "牙科",
+      "ophthalmology": "眼科",
+      "hair_transplant": "植发",
+      "health_checkup": "健康检查",
+      "fertility": "生育治疗",
+      "orthopedics": "骨科"
+    },
+    "cta": {
+      "title": "不确定哪种项目适合您？",
+      "description": "我们的AI助手可以根据您的目标和病史为您推荐最适合的项目。",
+      "button": "获取AI咨询"
+    }
   }
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { ChatWidget } from '@/components/chat/ChatWidget';
 import { MessengerCTA } from '@/components/cta/MessengerCTA';
 
 export function ClientFloatingWidgets() {
@@ -14,10 +13,5 @@ export function ClientFloatingWidgets() {
     return null;
   }
 
-  return (
-    <>
-      <ChatWidget />
-      <MessengerCTA variant="floating" size="lg" />
-    </>
-  );
+  return <MessengerCTA variant="floating" size="lg" />;
 }
