@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { createClient } from '@/lib/supabase/client';
+import { clearCTACache } from '@/lib/settings/cta';
 
 interface PaginationSettings {
   interpreters_per_page: number;
@@ -122,29 +123,36 @@ export default function SystemSettingsPage() {
     try {
       const supabase = createClient();
 
-      // Save pagination settings
+      // Save pagination settings using upsert
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: paginationError } = await (supabase as any)
         .from('system_settings')
-        .update({
+        .upsert({
+          key: 'pagination',
           value: pagination,
+          description: 'Pagination size settings for various list pages',
+          category: 'ui',
           updated_at: new Date().toISOString(),
-        })
-        .eq('key', 'pagination');
+        }, { onConflict: 'key' });
 
       if (paginationError) throw paginationError;
 
-      // Save CTA settings
+      // Save CTA settings using upsert
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: ctaError } = await (supabase as any)
         .from('system_settings')
-        .update({
+        .upsert({
+          key: 'cta_links',
           value: ctaLinks,
+          description: 'CTA messenger links per locale',
+          category: 'marketing',
           updated_at: new Date().toISOString(),
-        })
-        .eq('key', 'cta_links');
+        }, { onConflict: 'key' });
 
       if (ctaError) throw ctaError;
+
+      // Clear the CTA cache so changes take effect immediately
+      clearCTACache();
 
       setSaveStatus('success');
       setTimeout(() => setSaveStatus('idle'), 3000);
