@@ -64,8 +64,12 @@ const MESSENGER_TYPES = [
 export default function SystemSettingsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  // Separate saving states for each section
+  const [savingPagination, setSavingPagination] = useState(false);
+  const [savingCTA, setSavingCTA] = useState(false);
+  const [paginationStatus, setPaginationStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [ctaStatus, setCtaStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const [pagination, setPagination] = useState<PaginationSettings>({
     interpreters_per_page: 16,
@@ -103,13 +107,12 @@ export default function SystemSettingsPage() {
     }
   }
 
-  async function saveSettings() {
-    setSaving(true);
-    setSaveStatus('idle');
+  async function savePagination() {
+    setSavingPagination(true);
+    setPaginationStatus('idle');
 
     try {
-      // Save pagination settings via API
-      const paginationRes = await fetch('/api/admin/settings', {
+      const res = await fetch('/api/admin/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -120,13 +123,27 @@ export default function SystemSettingsPage() {
         }),
       });
 
-      if (!paginationRes.ok) {
-        const error = await paginationRes.json();
+      if (!res.ok) {
+        const error = await res.json();
         throw new Error(error.error || 'Failed to save pagination');
       }
 
-      // Save CTA settings via API
-      const ctaRes = await fetch('/api/admin/settings', {
+      setPaginationStatus('success');
+      setTimeout(() => setPaginationStatus('idle'), 3000);
+    } catch (error) {
+      console.error('Failed to save pagination:', error);
+      setPaginationStatus('error');
+    } finally {
+      setSavingPagination(false);
+    }
+  }
+
+  async function saveCTA() {
+    setSavingCTA(true);
+    setCtaStatus('idle');
+
+    try {
+      const res = await fetch('/api/admin/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -137,21 +154,21 @@ export default function SystemSettingsPage() {
         }),
       });
 
-      if (!ctaRes.ok) {
-        const error = await ctaRes.json();
+      if (!res.ok) {
+        const error = await res.json();
         throw new Error(error.error || 'Failed to save CTA settings');
       }
 
       // Clear the CTA cache so changes take effect immediately
       clearCTACache();
 
-      setSaveStatus('success');
-      setTimeout(() => setSaveStatus('idle'), 3000);
+      setCtaStatus('success');
+      setTimeout(() => setCtaStatus('idle'), 3000);
     } catch (error) {
-      console.error('Failed to save settings:', error);
-      setSaveStatus('error');
+      console.error('Failed to save CTA:', error);
+      setCtaStatus('error');
     } finally {
-      setSaving(false);
+      setSavingCTA(false);
     }
   }
 
@@ -186,38 +203,38 @@ export default function SystemSettingsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Settings className="h-8 w-8" />
-            System Settings
-          </h1>
-          <p className="text-muted-foreground">Configure pagination and CTA settings</p>
-        </div>
-        <Button onClick={saveSettings} disabled={saving} className="gap-2">
-          {saving ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : saveStatus === 'success' ? (
-            <Check className="h-4 w-4" />
-          ) : saveStatus === 'error' ? (
-            <AlertCircle className="h-4 w-4" />
-          ) : (
-            <Save className="h-4 w-4" />
-          )}
-          {saving ? 'Saving...' : saveStatus === 'success' ? 'Saved!' : 'Save Changes'}
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Settings className="h-8 w-8" />
+          System Settings
+        </h1>
+        <p className="text-muted-foreground">Configure pagination and CTA settings</p>
       </div>
 
       {/* Pagination Settings */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LayoutGrid className="h-5 w-5" />
-            Pagination Settings
-          </CardTitle>
-          <CardDescription>
-            Configure how many items to show per page on list pages
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <LayoutGrid className="h-5 w-5" />
+              Pagination Settings
+            </CardTitle>
+            <CardDescription>
+              Configure how many items to show per page on list pages
+            </CardDescription>
+          </div>
+          <Button onClick={savePagination} disabled={savingPagination} size="sm" className="gap-2">
+            {savingPagination ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : paginationStatus === 'success' ? (
+              <Check className="h-4 w-4" />
+            ) : paginationStatus === 'error' ? (
+              <AlertCircle className="h-4 w-4" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            {savingPagination ? 'Saving...' : paginationStatus === 'success' ? 'Saved!' : 'Save'}
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -283,14 +300,28 @@ export default function SystemSettingsPage() {
 
       {/* CTA Settings */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5" />
-            CTA Links by Locale
-          </CardTitle>
-          <CardDescription>
-            Configure messenger CTA buttons for each language
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              CTA Links by Locale
+            </CardTitle>
+            <CardDescription>
+              Configure messenger CTA buttons for each language
+            </CardDescription>
+          </div>
+          <Button onClick={saveCTA} disabled={savingCTA} size="sm" className="gap-2">
+            {savingCTA ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : ctaStatus === 'success' ? (
+              <Check className="h-4 w-4" />
+            ) : ctaStatus === 'error' ? (
+              <AlertCircle className="h-4 w-4" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            {savingCTA ? 'Saving...' : ctaStatus === 'success' ? 'Saved!' : 'Save'}
+          </Button>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Locale Selector */}
