@@ -2,10 +2,11 @@ import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 
-export const runtime = 'edge';
+// Use Node.js runtime for Supabase compatibility
+export const runtime = 'nodejs';
 
-// Cache for 1 week (OG images rarely change)
-export const revalidate = 604800;
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 // Localized content
 const localeContent: Record<string, { title: string; subtitle: string }> = {
