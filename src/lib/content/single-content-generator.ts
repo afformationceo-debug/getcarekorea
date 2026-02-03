@@ -18,7 +18,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 // ⚠️ CRITICAL: v7 프롬프트 사용 (통역사 페르소나)
 // 절대 v6로 변경하지 말 것 - v6는 정보성 블로그 스타일임
-import { buildInterpreterSystemPrompt, LOCALE_CULTURAL_CONTEXT } from './prompts/system-prompt-v7-interpreter';
+import { buildInterpreterSystemPrompt, LOCALE_CULTURAL_CONTEXT, type CTAOverride } from './prompts/system-prompt-v7-interpreter';
+import { getLocaleCTAFromDB } from './prompts/locale-prompts';
 import { getAuthorForKeyword } from './persona';
 import { buildEnhancedRAGContext, formatRAGContextForPrompt, type RAGContext } from './rag-helper';
 import type { AuthorPersona } from './persona';
@@ -209,12 +210,29 @@ export async function generateSingleLanguageContent(
     // Get locale cultural context for messaging
     const cultureContext = LOCALE_CULTURAL_CONTEXT[locale] || LOCALE_CULTURAL_CONTEXT['en'];
 
+    // Fetch CTA from database (system_settings)
+    let ctaOverride: CTAOverride | undefined;
+    try {
+      const dbCTA = await getLocaleCTAFromDB(locale as any);
+      if (dbCTA) {
+        ctaOverride = {
+          messenger: dbCTA.type.toUpperCase(),
+          messengerCTA: dbCTA.text,
+          url: dbCTA.url,
+        };
+        console.log(`   ✅ CTA from DB: ${ctaOverride.messenger} - "${ctaOverride.messengerCTA}"`);
+      }
+    } catch (ctaError) {
+      console.warn(`   ⚠️ Failed to fetch CTA from DB, using defaults`);
+    }
+
     // ⚠️ IMPORTANT: 통역사 페르소나 프롬프트 (v7)
     const systemPrompt = buildInterpreterSystemPrompt({
       author,
       locale,
       ragContext: ragPrompt,
       additionalInstructions: instructions,
+      ctaOverride,
     });
 
     // 4. Generate content with Claude

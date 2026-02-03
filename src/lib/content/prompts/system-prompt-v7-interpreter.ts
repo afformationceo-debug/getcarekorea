@@ -207,11 +207,19 @@ export const LOCALE_CULTURAL_CONTEXT: Record<string, LocaleCulturalContext> = {
 // 메인 프롬프트 빌더
 // =====================================================
 
+export interface CTAOverride {
+  messenger: string;
+  messengerCTA: string;
+  url?: string;
+}
+
 export interface InterpreterPromptOptions {
   author: AuthorPersona;
   locale: string;
   ragContext?: string;
   additionalInstructions?: string;
+  /** CTA override from database (system_settings) */
+  ctaOverride?: CTAOverride;
 }
 
 /**
@@ -221,8 +229,15 @@ export interface InterpreterPromptOptions {
  * 변경 시 콘텐츠 품질과 설득력이 크게 저하됩니다
  */
 export function buildInterpreterSystemPrompt(options: InterpreterPromptOptions): string {
-  const { author, locale, ragContext, additionalInstructions } = options;
-  const culture = LOCALE_CULTURAL_CONTEXT[locale] || LOCALE_CULTURAL_CONTEXT['en'];
+  const { author, locale, ragContext, additionalInstructions, ctaOverride } = options;
+  const baseCulture = LOCALE_CULTURAL_CONTEXT[locale] || LOCALE_CULTURAL_CONTEXT['en'];
+
+  // Use CTA from database if available, otherwise use hardcoded defaults
+  const culture = ctaOverride ? {
+    ...baseCulture,
+    messenger: ctaOverride.messenger,
+    messengerCTA: ctaOverride.messengerCTA,
+  } : baseCulture;
 
   const authorName = locale === 'en' ? author.name_en :
                      (author.name_local?.[locale] || author.name_en);
