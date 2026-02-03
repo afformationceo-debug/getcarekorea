@@ -38,6 +38,7 @@ export interface LocaleCulturalContext {
   // 메신저
   messenger: string;
   messengerCTA: string;
+  messengerUrl: string;  // 실제 메신저 URL
   // 인사 스타일
   greeting: string;
   // 감정 표현 스타일
@@ -63,6 +64,7 @@ export const LOCALE_CULTURAL_CONTEXT: Record<string, LocaleCulturalContext> = {
     communicationStyle: 'Direct, facts-first, logical flow with emotional story',
     messenger: 'WhatsApp',
     messengerCTA: 'Chat with me on WhatsApp',
+    messengerUrl: 'https://wa.me/821086081915',
     greeting: 'Hey there!',
     emotionalTone: 'Friendly professional, like a helpful colleague',
     costAttitude: 'Wants exact numbers upfront, appreciates clear pricing',
@@ -82,6 +84,7 @@ export const LOCALE_CULTURAL_CONTEXT: Record<string, LocaleCulturalContext> = {
     communicationStyle: '丁寧で詳細、不安に寄り添う',
     messenger: 'LINE',
     messengerCTA: 'LINEで無料相談する',
+    messengerUrl: 'https://line.me/R/ti/p/@400kgowf',
     greeting: 'こんにちは！',
     emotionalTone: '親しみやすいお姉さん/お兄さん的存在',
     costAttitude: '品質と価格のバランス重視、安すぎると不安',
@@ -101,6 +104,7 @@ export const LOCALE_CULTURAL_CONTEXT: Record<string, LocaleCulturalContext> = {
     communicationStyle: '直接但亲切，强调性价比和效果',
     messenger: 'WeChat',
     messengerCTA: '加微信免费咨询',
+    messengerUrl: 'https://line.me/R/ti/p/@400kgowf',
     greeting: '亲爱的～',
     emotionalTone: '闺蜜分享式，真诚不做作',
     costAttitude: '追求性价比，愿意为好效果付费',
@@ -120,6 +124,7 @@ export const LOCALE_CULTURAL_CONTEXT: Record<string, LocaleCulturalContext> = {
     communicationStyle: '溫和親切，細心解說',
     messenger: 'LINE',
     messengerCTA: 'LINE免費諮詢',
+    messengerUrl: 'https://line.me/R/ti/p/@400kgowf',
     greeting: '嗨～',
     emotionalTone: '像好閨蜜分享祕密',
     costAttitude: '願意為好品質付費，但也在意CP值',
@@ -139,6 +144,7 @@ export const LOCALE_CULTURAL_CONTEXT: Record<string, LocaleCulturalContext> = {
     communicationStyle: 'เป็นกันเอง สนุกสนาน แต่ให้ข้อมูลครบ',
     messenger: 'LINE',
     messengerCTA: 'แอดไลน์ปรึกษาฟรี',
+    messengerUrl: 'https://line.me/R/ti/p/@400kgowf',
     greeting: 'สวัสดีค่า~',
     emotionalTone: 'เหมือนพี่สาวที่ไว้ใจได้',
     costAttitude: 'ต้องคุ้มค่า แต่ไม่ต้องถูกที่สุด',
@@ -158,6 +164,7 @@ export const LOCALE_CULTURAL_CONTEXT: Record<string, LocaleCulturalContext> = {
     communicationStyle: 'Шууд, нээлттэй, найрсаг',
     messenger: 'WhatsApp',
     messengerCTA: 'WhatsApp-р холбогдох',
+    messengerUrl: 'https://line.me/R/ti/p/@400kgowf',
     greeting: 'Сайн байна уу!',
     emotionalTone: 'Найзын адил ойрхон',
     costAttitude: 'Үнэ чухал, харьцуулалт хийдэг',
@@ -177,6 +184,7 @@ export const LOCALE_CULTURAL_CONTEXT: Record<string, LocaleCulturalContext> = {
     communicationStyle: 'Прямой, честный, с конкретными фактами',
     messenger: 'Telegram',
     messengerCTA: 'Написать в Telegram',
+    messengerUrl: 'https://line.me/R/ti/p/@400kgowf',
     greeting: 'Привет!',
     emotionalTone: 'Как старший друг, который реально помогает',
     costAttitude: 'Важно соотношение цена/качество',
@@ -196,6 +204,7 @@ export const LOCALE_CULTURAL_CONTEXT: Record<string, LocaleCulturalContext> = {
     communicationStyle: '친근하고 전문적인',
     messenger: 'KakaoTalk',
     messengerCTA: '카카오톡으로 상담하기',
+    messengerUrl: 'https://line.me/R/ti/p/@400kgowf',
     greeting: '안녕하세요!',
     emotionalTone: '믿을 수 있는 언니/오빠 같은',
     costAttitude: '가성비 중시, 합리적 가격 선호',
@@ -232,12 +241,17 @@ export function buildInterpreterSystemPrompt(options: InterpreterPromptOptions):
   const { author, locale, ragContext, additionalInstructions, ctaOverride } = options;
   const baseCulture = LOCALE_CULTURAL_CONTEXT[locale] || LOCALE_CULTURAL_CONTEXT['en'];
 
-  // Use CTA from database if available, otherwise use hardcoded defaults
-  const culture = ctaOverride ? {
+  // CTA는 반드시 DB에서 가져온 값만 사용 (fallback 없음)
+  const culture = {
     ...baseCulture,
-    messenger: ctaOverride.messenger,
-    messengerCTA: ctaOverride.messengerCTA,
-  } : baseCulture;
+    // DB CTA가 있을 때만 덮어쓰기
+    messenger: ctaOverride?.messenger || '',
+    messengerCTA: ctaOverride?.messengerCTA || '',
+    messengerUrl: ctaOverride?.url || '',
+  };
+
+  // CTA 사용 가능 여부
+  const hasCTA = !!(ctaOverride?.url && ctaOverride?.messengerCTA);
 
   const authorName = locale === 'en' ? author.name_en :
                      (author.name_local?.[locale] || author.name_en);
@@ -325,8 +339,8 @@ ${culture.trustSignals.map((t, i) => `${i + 1}. ${t}`).join('\n')}
 - "많이 물어보시는 건데..."
 
 ## 7. CTA (Call to Action)
-- "${culture.messengerCTA}"
-- 긴급성 부여 (선착순, 이번 달 등)
+${hasCTA ? `- "${culture.messengerCTA}"
+- 긴급성 부여 (선착순, 이번 달 등)` : '- [CTA 생략 - DB 설정 필요]'}
 
 ---
 
@@ -539,13 +553,13 @@ ${culture.trustSignals.map((t, i) => `${i + 1}. ${t}`).join('\n')}
     <h2>Ready to Take the Next Step?</h2>
     <p>[따뜻하고 친근한 마무리 - 통역사 톤 유지]</p>
     <p>[긴급성 또는 혜택 언급]</p>
-
+${hasCTA ? `
     <div class="cta-box">
       <h3>${culture.messengerCTA}</h3>
       <p>[클릭 유도 문구 - "궁금한 점 있으시면 편하게 물어보세요"]</p>
-      <a href="#contact" class="cta-button">${culture.messengerCTA} →</a>
+      <a href="${culture.messengerUrl}" target="_blank" rel="noopener noreferrer" class="cta-button">${culture.messengerCTA} →</a>
       <p class="urgency"><em>[이번 달 무료 상담 자리 X개 남음]</em></p>
-    </div>
+    </div>` : ''}
   </section>
 
   <!-- 13. 저자 정보 (E-E-A-T) -->
@@ -598,7 +612,7 @@ ${culture.trustSignals.map((t, i) => `${i + 1}. ${t}`).join('\n')}
   "content": "위 HTML 구조를 정확히 따른 전체 콘텐츠 (시맨틱 태그 필수)",
   "contentFormat": "html",
   "metaTitle": "[키워드] in Korea: [가치 제안] | GetCareKorea",
-  "metaDescription": "[키워드] in Korea costs $X,XXX-$XX,XXX. [통역사 관점 설명]. ${culture.messengerCTA}. (155자)",
+  "metaDescription": "[키워드] in Korea costs $X,XXX-$XX,XXX. [통역사 관점 설명].${hasCTA ? ` ${culture.messengerCTA}.` : ''} (155자)",
   "aiSummary": {
     "keyTakeaways": ["핵심1", "핵심2", "핵심3", "핵심4", "핵심5"],
     "quickAnswer": "40-60단어 직접 답변 - Featured Snippet용",
@@ -650,11 +664,12 @@ ${culture.trustSignals.map((t, i) => `${i + 1}. ${t}`).join('\n')}
       "context": "[링크를 넣을 문맥 설명]"
     }
   ],
-  "cta": {
+  "cta": ${hasCTA ? `{
     "messenger": "${culture.messenger}",
     "text": "${culture.messengerCTA}",
+    "url": "${culture.messengerUrl}",
     "urgency": "[이번 달 상담 자리 3자리 남음 등]"
-  }
+  }` : 'null'}
 }
 \`\`\`
 
@@ -677,7 +692,7 @@ ${additionalInstructions ? `# 추가 지시사항\n${additionalInstructions}` : 
 - [ ] **시맨틱 HTML 태그 사용** (h1, h2, h3, section, article 등)
 - [ ] **테이블에 thead/tbody 포함**
 - [ ] FAQ가 통역사 톤으로 답변됨 + Schema 마크업
-- [ ] CTA가 ${culture.messenger}로 설정됨
+${hasCTA ? `- [ ] CTA가 ${culture.messenger}로 설정됨` : '- [ ] CTA 설정 없음 (DB 설정 필요)'}
 - [ ] TL;DR 박스에 Featured Snippet용 직접 답변 있음
 - [ ] 이미지 3개 placeholder 포함
 - [ ] 글을 읽고 "연락해봐야겠다"는 느낌이 드는지?

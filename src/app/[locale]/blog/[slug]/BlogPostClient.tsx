@@ -160,12 +160,8 @@ function getDefaultAuthorBio(locale: string): string {
   return DEFAULT_AUTHOR.bio_en;
 }
 
-// Messenger configuration is now loaded from system_settings
-// This is kept as a fallback only
-const DEFAULT_MESSENGER_CONFIG: Record<string, { messenger: string; icon: string; link: string; label: string }> = {
-  'en': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'Get Free Consultation via WhatsApp' },
-  'ko': { messenger: 'whatsapp', icon: '📱', link: 'https://wa.me/821086081915', label: 'WhatsApp 무료상담' },
-};
+// CTA는 반드시 DB(system_settings)에서 가져온 값만 사용
+// fallback 없음 - DB에 설정이 없으면 CTA 표시 안함
 
 // Get localized author name
 function getLocalizedAuthorName(persona: AuthorPersona, locale: string): string {
@@ -184,33 +180,31 @@ function getLocalizedAuthorName(persona: AuthorPersona, locale: string): string 
   return (persona[key] as string | null) || persona.name_en;
 }
 
-// Get messenger CTA for locale - now uses system settings
+// Get messenger CTA for locale - DB 값만 사용 (fallback 없음)
 function getMessengerCTAFromSettings(
   locale: string,
   ctaSettings: CTASettings | null,
   persona?: AuthorPersona | null
-): { messenger: string; label: string; link: string } {
-  // First check system settings
+): { messenger: string; label: string; link: string } | null {
+  // DB system_settings에서만 CTA 가져옴
   const systemCTA = ctaSettings?.[locale];
-  if (systemCTA) {
-    // If persona has custom text, use it with system URL
-    if (persona?.messenger_cta_text?.[locale]) {
-      return {
-        messenger: systemCTA.type,
-        label: persona.messenger_cta_text[locale],
-        link: systemCTA.url,
-      };
-    }
+  if (!systemCTA) {
+    return null; // DB에 설정 없으면 null 반환
+  }
+
+  // If persona has custom text, use it with system URL
+  if (persona?.messenger_cta_text?.[locale]) {
     return {
       messenger: systemCTA.type,
-      label: systemCTA.text,
+      label: persona.messenger_cta_text[locale],
       link: systemCTA.url,
     };
   }
-
-  // Fall back to default config
-  const defaultConfig = DEFAULT_MESSENGER_CONFIG[locale] || DEFAULT_MESSENGER_CONFIG['en'];
-  return defaultConfig;
+  return {
+    messenger: systemCTA.type,
+    label: systemCTA.text,
+    link: systemCTA.url,
+  };
 }
 
 // Translations
@@ -937,29 +931,31 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
           {firstHalf}
         </ReactMarkdown>
 
-        {/* In-content CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="my-8 p-6 bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl border border-primary/20"
-        >
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-primary/20 rounded-xl">
-              <Phone className="w-6 h-6 text-primary" />
+        {/* In-content CTA - DB 설정 있을 때만 표시 */}
+        {messengerCTA && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="my-8 p-6 bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl border border-primary/20"
+          >
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-primary/20 rounded-xl">
+                <Phone className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-lg mb-1">{t('inContentCtaTitle')}</h4>
+                <p className="text-muted-foreground text-sm mb-4">{t('inContentCtaDesc')}</p>
+                <a href={messengerCTA.link} target="_blank" rel="noopener noreferrer">
+                  <Button className="gap-2">
+                    <MessageCircle className="w-4 h-4" />
+                    {t('inContentCtaButton')}
+                  </Button>
+                </a>
+              </div>
             </div>
-            <div className="flex-1">
-              <h4 className="font-semibold text-lg mb-1">{t('inContentCtaTitle')}</h4>
-              <p className="text-muted-foreground text-sm mb-4">{t('inContentCtaDesc')}</p>
-              <a href={messengerCTA.link} target="_blank" rel="noopener noreferrer">
-                <Button className="gap-2">
-                  <MessageCircle className="w-4 h-4" />
-                  {t('inContentCtaButton')}
-                </Button>
-              </a>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
@@ -1134,12 +1130,14 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
                     {authorExperience} {t('yearsExp')}
                   </p>
                 </div>
-                <a href={messengerCTA.link} target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" className="gap-2">
-                    <MessageCircle className="w-4 h-4" />
-                    {t('freeConsult')}
-                  </Button>
-                </a>
+                {messengerCTA && (
+                  <a href={messengerCTA.link} target="_blank" rel="noopener noreferrer">
+                    <Button size="sm" className="gap-2">
+                      <MessageCircle className="w-4 h-4" />
+                      {t('freeConsult')}
+                    </Button>
+                  </a>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -1471,20 +1469,22 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
                 </CardContent>
               </Card>
 
-              {/* CTA Card */}
-              <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-                <CardContent className="p-6 text-center">
-                  <MessageCircle className="w-10 h-10 mx-auto mb-3 opacity-90" />
-                  <h3 className="font-semibold mb-2">{t('ctaTitle')}</h3>
-                  <p className="text-sm opacity-90 mb-4">{t('ctaDesc')}</p>
-                  <a href={messengerCTA.link} target="_blank" rel="noopener noreferrer">
-                    <Button variant="secondary" className="w-full gap-2">
-                      <Phone className="w-4 h-4" />
-                      {t('ctaButton')}
-                    </Button>
-                  </a>
-                </CardContent>
-              </Card>
+              {/* CTA Card - DB 설정 있을 때만 표시 */}
+              {messengerCTA && (
+                <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+                  <CardContent className="p-6 text-center">
+                    <MessageCircle className="w-10 h-10 mx-auto mb-3 opacity-90" />
+                    <h3 className="font-semibold mb-2">{t('ctaTitle')}</h3>
+                    <p className="text-sm opacity-90 mb-4">{t('ctaDesc')}</p>
+                    <a href={messengerCTA.link} target="_blank" rel="noopener noreferrer">
+                      <Button variant="secondary" className="w-full gap-2">
+                        <Phone className="w-4 h-4" />
+                        {t('ctaButton')}
+                      </Button>
+                    </a>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </aside>
         </div>
@@ -1558,12 +1558,14 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
             >
               <Share2 className="w-5 h-5" />
             </Button>
-            <a href={messengerCTA.link} target="_blank" rel="noopener noreferrer">
-              <Button size="sm" className="gap-2">
-                <MessageCircle className="w-4 h-4" />
-                {t('freeConsult')}
-              </Button>
-            </a>
+            {messengerCTA && (
+              <a href={messengerCTA.link} target="_blank" rel="noopener noreferrer">
+                <Button size="sm" className="gap-2">
+                  <MessageCircle className="w-4 h-4" />
+                  {t('freeConsult')}
+                </Button>
+              </a>
+            )}
           </div>
 
           {/* Mobile share menu */}
