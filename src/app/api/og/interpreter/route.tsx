@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query = (supabase.from('author_personas') as any)
-      .select('name, photo_url, primary_specialty, languages')
+      .select('name, primary_specialty, languages')
       .eq('is_active', true);
 
     if (isUUID) {
@@ -67,7 +67,6 @@ export async function GET(request: NextRequest) {
     // Extract data
     const nameData = interpreter.name as Record<string, string>;
     const name = nameData?.[locale] || nameData?.['en'] || 'Medical Interpreter';
-    const photoUrl = interpreter.photo_url as string | null;
     const primarySpecialty = interpreter.primary_specialty as string | null;
     const specialty = specialtyNames[primarySpecialty || 'general-medical'] || 'Medical';
     const content = localeContent[locale] || localeContent.en;
@@ -110,7 +109,7 @@ export async function GET(request: NextRequest) {
               maxWidth: '1000px',
             }}
           >
-            {/* Photo */}
+            {/* Photo - Use initial letter for fast generation (no external fetch) */}
             <div
               style={{
                 display: 'flex',
@@ -123,34 +122,21 @@ export async function GET(request: NextRequest) {
                 marginBottom: '24px',
               }}
             >
-              {photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={photoUrl}
-                  alt=""
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-                    color: 'white',
-                    fontSize: '72px',
-                    fontWeight: 700,
-                  }}
-                >
-                  {name.charAt(0).toUpperCase()}
-                </div>
-              )}
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                  color: 'white',
+                  fontSize: '72px',
+                  fontWeight: 700,
+                }}
+              >
+                {name.charAt(0).toUpperCase()}
+              </div>
             </div>
 
             {/* Name */}
