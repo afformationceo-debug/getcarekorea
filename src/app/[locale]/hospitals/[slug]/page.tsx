@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: hospital } = await (supabase.from('hospitals') as any)
-    .select('name, description, category, city, district, avg_rating, review_count, google_photos, cover_image_url')
+    .select('name, description, category, city, district, avg_rating, review_count, google_photos, cover_image_url, specialties, languages')
     .eq('slug', slug)
     .in('status', ['published', 'draft'])
     .single();
@@ -38,9 +38,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = getLocalizedValue(descJson, locale) || `${hospitalName} - Top rated medical clinic in ${hospital.city}, Korea`;
   const image = hospital.google_photos?.[0] || hospital.cover_image_url;
 
+  // Generate keywords from available data
+  const specialties = (hospital.specialties || []) as string[];
+  const languages = (hospital.languages || []) as string[];
+  const keywordParts = [
+    hospitalName,
+    ...specialties,
+    hospital.category?.replace(/-/g, ' '),
+    hospital.city,
+    hospital.district,
+    'Korea',
+    'medical tourism',
+    ...languages.map((l: string) => `${l} speaking`),
+  ].filter(Boolean);
+  const keywords = [...new Set(keywordParts)].join(', ');
+
   return {
     title: `${hospitalName} | GetCareKorea`,
     description: description.slice(0, 160),
+    keywords,
     openGraph: {
       title: `${hospitalName} - Medical Tourism Korea`,
       description: description.slice(0, 160),
@@ -64,6 +80,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         'ja': `${baseUrl}/ja/hospitals/${slug}`,
         'zh-CN': `${baseUrl}/zh-CN/hospitals/${slug}`,
         'zh-TW': `${baseUrl}/zh-TW/hospitals/${slug}`,
+        'th': `${baseUrl}/th/hospitals/${slug}`,
+        'ru': `${baseUrl}/ru/hospitals/${slug}`,
+        'mn': `${baseUrl}/mn/hospitals/${slug}`,
       },
     },
   };

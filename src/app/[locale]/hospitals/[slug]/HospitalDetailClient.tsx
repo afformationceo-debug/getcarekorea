@@ -142,6 +142,73 @@ interface HospitalDetailClientProps {
 function generateSchemaMarkup(hospital: Hospital, locale: Locale) {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://getcarekorea.com';
 
+  // Parse opening hours for Schema.org format
+  const dayMapping: Record<string, string> = {
+    '월요일': 'Monday',
+    '화요일': 'Tuesday',
+    '수요일': 'Wednesday',
+    '목요일': 'Thursday',
+    '금요일': 'Friday',
+    '토요일': 'Saturday',
+    '일요일': 'Sunday',
+  };
+
+  const openingHoursSpecification = (hospital.opening_hours || [])
+    .map((hour: string) => {
+      try {
+        const parsed = typeof hour === 'string' && hour.startsWith('{')
+          ? JSON.parse(hour)
+          : hour;
+        if (typeof parsed === 'object' && parsed.day && parsed.hours) {
+          const dayOfWeek = dayMapping[parsed.day] || parsed.day;
+          if (parsed.hours === '휴무일' || parsed.hours.toLowerCase() === 'closed') {
+            return null; // Skip closed days
+          }
+          // Parse hours like "AM 10:00~PM 7:00" or "PM 2:00~7:00"
+          const hoursMatch = parsed.hours.match(/(\d{1,2}:\d{2}).*?(\d{1,2}:\d{2})/);
+          if (hoursMatch) {
+            return {
+              '@type': 'OpeningHoursSpecification',
+              dayOfWeek,
+              opens: hoursMatch[1],
+              closes: hoursMatch[2],
+            };
+          }
+        }
+        return null;
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+
+  // Generate review schema from google_reviews (limit to 5 for performance)
+  const reviews = (hospital.google_reviews || [])
+    .slice(0, 5)
+    .map((review: GoogleReview) => ({
+      '@type': 'Review',
+      author: {
+        '@type': 'Person',
+        name: review.author,
+      },
+      datePublished: review.date,
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: review.rating,
+        bestRating: '5',
+        worstRating: '1',
+      },
+      reviewBody: review.content?.slice(0, 500),
+    }));
+
+  // Calculate average rating from google_reviews if avg_rating is 0
+  let avgRating = hospital.avg_rating;
+  const googleReviews = hospital.google_reviews || [];
+  if (avgRating === 0 && googleReviews.length > 0) {
+    const totalRating = googleReviews.reduce((sum: number, r: GoogleReview) => sum + (r.rating || 0), 0);
+    avgRating = totalRating / googleReviews.length;
+  }
+
   // MedicalOrganization schema
   const medicalOrgSchema = {
     '@context': 'https://schema.org',
@@ -167,13 +234,14 @@ function generateSchemaMarkup(hospital: Hospital, locale: Locale) {
       latitude: hospital.latitude,
       longitude: hospital.longitude,
     } : undefined,
-    aggregateRating: hospital.review_count > 0 ? {
+    aggregateRating: hospital.review_count > 0 || reviews.length > 0 ? {
       '@type': 'AggregateRating',
-      ratingValue: hospital.avg_rating.toFixed(1),
-      reviewCount: hospital.review_count,
+      ratingValue: avgRating.toFixed(1),
+      reviewCount: hospital.review_count || reviews.length,
       bestRating: '5',
       worstRating: '1',
     } : undefined,
+    review: reviews.length > 0 ? reviews : undefined,
     medicalSpecialty: hospital.specialties?.map(s => ({
       '@type': 'MedicalSpecialty',
       name: s,
@@ -182,10 +250,11 @@ function generateSchemaMarkup(hospital: Hospital, locale: Locale) {
       '@type': 'Language',
       name: lang,
     })),
-    hasCredential: hospital.certifications?.map(cert => ({
+    hasCredential: hospital.certifications?.length > 0 ? hospital.certifications.map(cert => ({
       '@type': 'EducationalOccupationalCredential',
       credentialCategory: cert,
-    })),
+    })) : undefined,
+    openingHoursSpecification: openingHoursSpecification.length > 0 ? openingHoursSpecification : undefined,
     sameAs: [
       hospital.website,
       hospital.google_maps_url,

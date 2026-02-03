@@ -10,16 +10,7 @@ import {
   SlidersHorizontal,
   Star,
   MapPin,
-  Languages,
-  Shield,
-  Heart,
-  Camera,
-  User,
   X,
-  Grid3X3,
-  List,
-  Layers,
-  ArrowRight,
   Sparkles,
   Building2,
   Award,
@@ -69,12 +60,6 @@ interface HospitalsPageClientProps {
 // Specialty keys for translation lookup
 const specialtyKeys = ['all', 'plastic-surgery', 'dermatology', 'dental', 'ophthalmology', 'hair-transplant', 'health-checkup', 'fertility'];
 
-// City keys for translation lookup
-const cityKeys = ['all', 'gangnam', 'seoul', 'busan', 'incheon'];
-
-// Sort option keys for translation lookup
-const sortOptionKeys = ['rating', 'reviews', 'featured', 'newest'];
-
 // Helper to convert specialty name to translation key
 function specialtyToKey(specialty: string): string {
   return specialty
@@ -89,31 +74,11 @@ const knownSpecialtyKeys = [
   'hair-transplant', 'health-checkup', 'fertility', 'all'
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' as const },
-  },
-};
-
 export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientProps) {
   const t = useTranslations('hospitals');
   const [searchInput, setSearchInput] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('all');
-  const [selectedCity, setSelectedCity] = useState('all');
-  const [sortBy, setSortBy] = useState('rating');
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'grouped'>('grouped');
   const [showFilters, setShowFilters] = useState(false);
 
   // Apply search when button clicked or Enter pressed
@@ -138,26 +103,13 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
       hospital.specialties.some((s) =>
         s.toLowerCase().includes(selectedSpecialty.replace('-', ' '))
       );
-    const matchesCity =
-      selectedCity === 'all' ||
-      hospital.city.toLowerCase().includes(selectedCity.toLowerCase());
-    return matchesSearch && matchesSpecialty && matchesCity;
+    return matchesSearch && matchesSpecialty;
   });
 
-  // Sort hospitals
-  const sortedHospitals = [...filteredHospitals].sort((a, b) => {
-    switch (sortBy) {
-      case 'rating':
-        return b.rating - a.rating;
-      case 'reviews':
-        return b.reviews - a.reviews;
-      default:
-        return 0;
-    }
-  });
+  // Sort hospitals by rating (default)
+  const sortedHospitals = [...filteredHospitals].sort((a, b) => b.rating - a.rating);
 
-  const activeFiltersCount =
-    (selectedSpecialty !== 'all' ? 1 : 0) + (selectedCity !== 'all' ? 1 : 0);
+  const hasActiveFilters = selectedSpecialty !== 'all';
 
   return (
     <div className="min-h-screen bg-background">
@@ -305,9 +257,9 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
               >
                 <SlidersHorizontal className="h-4 w-4" />
                 {t('listing.filters.button')}
-                {activeFiltersCount > 0 && (
+                {hasActiveFilters && (
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-foreground text-xs font-bold text-primary">
-                    {activeFiltersCount}
+                    1
                   </span>
                 )}
               </Button>
@@ -336,76 +288,17 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
                       </SelectContent>
                     </Select>
 
-                    <Select value={selectedCity} onValueChange={setSelectedCity}>
-                      <SelectTrigger className="w-[160px] rounded-xl bg-background/50">
-                        <SelectValue placeholder={t('filters.city')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {cityKeys.map((key) => (
-                          <SelectItem key={key} value={key}>
-                            {t(`listing.cities.${key}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="w-[160px] rounded-xl bg-background/50">
-                        <SelectValue placeholder={t('sort.rating')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sortOptionKeys.map((key) => (
-                          <SelectItem key={key} value={key}>
-                            {t(`listing.sortOptions.${key}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    {activeFiltersCount > 0 && (
+                    {hasActiveFilters && (
                       <Button
                         variant="ghost"
                         size="sm"
                         className="gap-1 text-muted-foreground"
-                        onClick={() => {
-                          setSelectedSpecialty('all');
-                          setSelectedCity('all');
-                        }}
+                        onClick={() => setSelectedSpecialty('all')}
                       >
                         <X className="h-3 w-3" />
                         {t('listing.clearFilters')}
                       </Button>
                     )}
-
-                    <div className="ml-auto flex items-center gap-1 rounded-xl border bg-background/50 p-1">
-                      <button
-                        onClick={() => setViewMode('grid')}
-                        className={`rounded-lg p-2 transition-colors ${
-                          viewMode === 'grid' ? 'bg-primary text-white' : 'hover:bg-muted'
-                        }`}
-                        title={t('listing.viewModes.grid')}
-                      >
-                        <Grid3X3 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => setViewMode('list')}
-                        className={`rounded-lg p-2 transition-colors ${
-                          viewMode === 'list' ? 'bg-primary text-white' : 'hover:bg-muted'
-                        }`}
-                        title={t('listing.viewModes.list')}
-                      >
-                        <List className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => setViewMode('grouped')}
-                        className={`rounded-lg p-2 transition-colors ${
-                          viewMode === 'grouped' ? 'bg-primary text-white' : 'hover:bg-muted'
-                        }`}
-                        title={t('listing.viewModes.grouped')}
-                      >
-                        <Layers className="h-4 w-4" />
-                      </button>
-                    </div>
                   </div>
                 </motion.div>
               )}
@@ -420,41 +313,11 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
           </p>
         </div>
 
-        {/* Hospital Grid/List/Grouped */}
-        {viewMode === 'grouped' ? (
-          <GroupedHospitalsView
-            hospitals={sortedHospitals}
-            locale={locale}
-          />
-        ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className={
-              viewMode === 'grid'
-                ? 'grid gap-6 md:grid-cols-2 lg:grid-cols-3'
-                : 'flex flex-col gap-4'
-            }
-          >
-            <AnimatePresence mode="popLayout">
-              {sortedHospitals.map((hospital) => (
-                <motion.div
-                  key={hospital.id}
-                  layout
-                  variants={itemVariants}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                >
-                  {viewMode === 'grid' ? (
-                    <HospitalCard3D hospital={hospital} locale={locale} />
-                  ) : (
-                    <HospitalListCard hospital={hospital} locale={locale} />
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-        )}
+        {/* Hospital Grouped View */}
+        <GroupedHospitalsView
+          hospitals={sortedHospitals}
+          locale={locale}
+        />
 
         {/* No results */}
         {sortedHospitals.length === 0 && (
@@ -511,279 +374,6 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
         </motion.div>
       </div>
     </div>
-  );
-}
-
-function HospitalCard3D({ hospital, locale }: { hospital: Hospital; locale: Locale }) {
-  const t = useTranslations('hospitals');
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Helper to get translated specialty name
-  const getSpecialtyName = (specialty: string) => {
-    const key = specialtyToKey(specialty);
-    // Only translate known keys to avoid MISSING_MESSAGE errors
-    if (knownSpecialtyKeys.includes(key)) {
-      return t(`listing.specialties.${key}`);
-    }
-    return specialty;
-  };
-
-  return (
-    <Link href={`/hospitals/${hospital.slug}`} className="group block h-full">
-      <motion.div
-        onHoverStart={() => setIsHovered(true)}
-        onHoverEnd={() => setIsHovered(false)}
-        whileHover={{
-          y: -12,
-          rotateY: 3,
-          rotateX: -3,
-        }}
-        style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}
-        className="h-full overflow-hidden rounded-2xl border border-border/50 bg-card shadow-lg transition-all duration-500 hover:border-violet-500/30 hover:shadow-2xl hover:shadow-violet-500/10"
-      >
-        {/* Large Image Section */}
-        <div className="relative h-64 overflow-hidden">
-          <Image
-            src={hospital.image}
-            alt={hospital.name}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-
-          {/* Premium Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-          {/* Animated Shine Effect on Hover */}
-          <motion.div
-            initial={{ x: '-100%', opacity: 0 }}
-            animate={{ x: isHovered ? '100%' : '-100%', opacity: isHovered ? 1 : 0 }}
-            transition={{ duration: 0.6, ease: 'easeInOut' }}
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
-          />
-
-          {/* Top Badges */}
-          <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-            {hospital.certifications.includes('JCI') && (
-              <Badge className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-lg">
-                <Shield className="mr-1 h-3 w-3" />
-                JCI
-              </Badge>
-            )}
-            {hospital.badges.map((badge) => (
-              <Badge
-                key={badge}
-                className={
-                  badge === 'Featured'
-                    ? 'bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg'
-                    : badge === 'Top Rated'
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 shadow-lg'
-                    : 'bg-gradient-to-r from-blue-500 to-cyan-600 shadow-lg'
-                }
-              >
-                {badge}
-              </Badge>
-            ))}
-          </div>
-
-          {/* Favorite Button */}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:text-red-500"
-          >
-            <Heart className="h-5 w-5" />
-          </motion.button>
-
-          {/* Trust Badges */}
-          <div className="absolute bottom-16 left-3 flex gap-2">
-            {hospital.hasCCTV && (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm" title="CCTV Monitored">
-                <Camera className="h-4 w-4 text-gray-700" />
-              </div>
-            )}
-            {hospital.hasFemaleDoctor && (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur-sm" title="Female Doctor Available">
-                <User className="h-4 w-4 text-pink-500" />
-              </div>
-            )}
-          </div>
-
-          {/* Rating Badge */}
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-2 shadow-xl backdrop-blur-sm"
-          >
-            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span className="font-bold text-gray-900">{hospital.rating}</span>
-            <span className="text-sm text-gray-500">({hospital.reviews})</span>
-          </motion.div>
-
-          {/* Bottom Info Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <h3 className="text-xl font-bold text-white drop-shadow-lg">
-              {hospital.name}
-            </h3>
-            <div className="flex items-center gap-2 text-white/90">
-              <MapPin className="h-4 w-4" />
-              <span className="text-sm">{hospital.city}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-5">
-          <p className="mb-4 text-sm text-muted-foreground line-clamp-2">
-            {hospital.description}
-          </p>
-
-          {/* Specialties */}
-          <div className="mb-4 flex flex-wrap gap-1.5">
-            {hospital.specialties.slice(0, 3).map((specialty) => (
-              <Badge key={specialty} variant="secondary" className="bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300">
-                {getSpecialtyName(specialty)}
-              </Badge>
-            ))}
-            {hospital.specialties.length > 3 && (
-              <Badge variant="secondary" className="bg-muted">
-                +{hospital.specialties.length - 3}
-              </Badge>
-            )}
-          </div>
-
-          {/* Footer */}
-          <div className="flex items-center justify-between border-t border-border/50 pt-4">
-            <div className="flex items-center gap-2">
-              <Languages className="h-4 w-4 text-muted-foreground" />
-              <div className="flex gap-1">
-                {hospital.languages.slice(0, 3).map((lang) => (
-                  <span
-                    key={lang}
-                    className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium"
-                  >
-                    {lang}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <motion.div
-              initial={{ x: -10, opacity: 0 }}
-              animate={{ x: isHovered ? 0 : -10, opacity: isHovered ? 1 : 0 }}
-              className="flex items-center gap-1 text-sm font-medium text-primary"
-            >
-              View
-              <ArrowRight className="h-4 w-4" />
-            </motion.div>
-          </div>
-        </div>
-      </motion.div>
-    </Link>
-  );
-}
-
-function HospitalListCard({ hospital, locale }: { hospital: Hospital; locale: Locale }) {
-  const t = useTranslations('hospitals');
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Helper to get translated specialty name
-  const getSpecialtyName = (specialty: string) => {
-    const key = specialtyToKey(specialty);
-    if (knownSpecialtyKeys.includes(key)) {
-      return t(`listing.specialties.${key}`);
-    }
-    return specialty;
-  };
-
-  return (
-    <Link href={`/hospitals/${hospital.slug}`} className="group block">
-      <motion.div
-        onHoverStart={() => setIsHovered(true)}
-        onHoverEnd={() => setIsHovered(false)}
-        whileHover={{ x: 8 }}
-        className="flex gap-6 overflow-hidden rounded-2xl border border-border/50 bg-card p-4 shadow-lg transition-all duration-300 hover:border-violet-500/30 hover:shadow-xl hover:shadow-violet-500/5"
-      >
-        {/* Image */}
-        <div className="relative h-48 w-72 shrink-0 overflow-hidden rounded-xl">
-          <Image
-            src={hospital.image}
-            alt={hospital.name}
-            fill
-            sizes="288px"
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          {hospital.certifications.includes('JCI') && (
-            <Badge className="absolute left-2 top-2 bg-gradient-to-r from-emerald-500 to-green-600 shadow-lg">
-              <Shield className="mr-1 h-3 w-3" />
-              JCI
-            </Badge>
-          )}
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-sm shadow-lg">
-            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-            <span className="font-bold">{hospital.rating}</span>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex flex-1 flex-col justify-between py-1">
-          <div>
-            <div className="mb-2 flex items-start justify-between">
-              <div>
-                <h3 className="text-xl font-bold transition-colors group-hover:text-primary">
-                  {hospital.name}
-                </h3>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  {hospital.city}
-                  <span className="text-muted-foreground/50">•</span>
-                  <span>{hospital.reviews} reviews</span>
-                </div>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="flex h-9 w-9 items-center justify-center rounded-full border bg-background text-muted-foreground transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-500"
-              >
-                <Heart className="h-4 w-4" />
-              </motion.button>
-            </div>
-            <p className="mb-3 text-sm text-muted-foreground line-clamp-2">
-              {hospital.description}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {hospital.specialties.map((specialty) => (
-                <Badge key={specialty} variant="secondary" className="bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300">
-                  {getSpecialtyName(specialty)}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Languages className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{hospital.languages.join(', ')}</span>
-              </div>
-              <div className="text-sm font-semibold text-primary">{hospital.priceRange}</div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 rounded-full transition-all hover:bg-primary hover:text-primary-foreground"
-            >
-              {t('common.viewDetails') || 'View Details'}
-              <motion.span
-                animate={{ x: isHovered ? 4 : 0 }}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </motion.span>
-            </Button>
-          </div>
-        </div>
-      </motion.div>
-    </Link>
   );
 }
 
@@ -856,12 +446,6 @@ const categoryConfig: Record<string, { name: string; color: string; bgColor: str
     emoji: '🏨'
   },
 };
-
-// Legacy mapping for compatibility
-const categoryDisplayNames: Record<string, string> = Object.fromEntries(
-  Object.entries(categoryConfig).map(([key, value]) => [key, value.name])
-);
-
 
 // Grouped View Component - Category only
 function GroupedHospitalsView({
