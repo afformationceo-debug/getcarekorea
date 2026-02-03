@@ -9,10 +9,18 @@
  */
 
 import type { Locale } from '@/lib/i18n/config';
+import { createAdminClient } from '@/lib/supabase/server';
 
 // =====================================================
 // TYPES
 // =====================================================
+
+export interface CTAConfigFromDB {
+  type: 'whatsapp' | 'line' | 'kakao' | 'telegram';
+  url: string;
+  text: string;
+  color: string;
+}
 
 export interface LocalePromptConfig {
   locale: Locale;
@@ -493,4 +501,105 @@ export function getLocaleCTAPlatform(locale: Locale): string {
  */
 export function getLocalePrimaryCurrency(locale: Locale): string {
   return LOCALE_PROMPT_CONFIGS[locale].currencyPrimary;
+}
+
+// =====================================================
+// DATABASE CTA FUNCTIONS
+// =====================================================
+
+/**
+ * DB에서 CTA 설정 가져오기 (system_settings 테이블)
+ */
+export async function getCTAFromDatabase(): Promise<Record<string, CTAConfigFromDB> | null> {
+  try {
+    const supabase = await createAdminClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any)
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'cta_links')
+      .single();
+
+    if (error || !data?.value) {
+      console.warn('Failed to fetch CTA settings from database');
+      return null;
+    }
+
+    return data.value as Record<string, CTAConfigFromDB>;
+  } catch (error) {
+    console.error('Error fetching CTA settings:', error);
+    return null;
+  }
+}
+
+/**
+ * 로케일별 CTA 정보를 포함한 프롬프트 생성 (DB 기반)
+ */
+export async function generateLocalePromptWithCTA(locale: Locale): Promise<string> {
+  const config = LOCALE_PROMPT_CONFIGS[locale];
+  const ctaSettings = await getCTAFromDatabase();
+  const localeCTA = ctaSettings?.[locale];
+
+  // CTA 정보 구성
+  let ctaSection = `### Primary CTA Platform: ${config.ctaPlatform}`;
+
+  if (localeCTA) {
+    ctaSection = `### CTA Configuration (from database)
+- Platform: ${localeCTA.type.toUpperCase()}
+- URL: ${localeCTA.url}
+- Button Text: "${localeCTA.text}"
+- Style: ${localeCTA.color}
+
+### CTA Examples (use the URL above):`;
+  } else {
+    ctaSection += `\nExample CTAs:`;
+  }
+
+  return `
+## 🌐 LOCALE: ${config.languageName} (${locale})
+
+### Target Search Engines
+${config.searchEngines.join(', ')}
+
+### Communication Style
+${config.communicationStyle}
+
+### Trust Signals to Include
+${config.trustSignals.map((s, i) => `${i + 1}. ${s}`).join('\n')}
+
+${ctaSection}
+${config.ctaExamples.map(e => `- "${e}"`).join('\n')}
+
+${localeCTA ? `
+**IMPORTANT: When including CTA in content, always reference:**
+- Link: ${localeCTA.url}
+- Text: ${localeCTA.text}
+` : ''}
+
+### Currency Display
+- Primary: ${config.currencyPrimary}
+${config.currencySecondary ? `- Secondary: ${config.currencySecondary}` : ''}
+
+### Target SEO Keywords
+${config.seoKeywords.map(k => `- ${k}`).join('\n')}
+
+### Cultural Notes (IMPORTANT)
+${config.culturalNotes.map((n, i) => `${i + 1}. ${n}`).join('\n')}
+
+### Writing Guidelines
+${config.writingGuidelines.map(g => `✅ ${g}`).join('\n')}
+
+### Patterns to Avoid
+${config.avoidPatterns.map(p => `❌ ${p}`).join('\n')}
+
+${config.seasonalConsiderations ? `### Seasonal Considerations\n${config.seasonalConsiderations}` : ''}
+`.trim();
+}
+
+/**
+ * 특정 locale의 CTA 정보만 가져오기
+ */
+export async function getLocaleCTAFromDB(locale: Locale): Promise<CTAConfigFromDB | null> {
+  const ctaSettings = await getCTAFromDatabase();
+  return ctaSettings?.[locale] || null;
 }

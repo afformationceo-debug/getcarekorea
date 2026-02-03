@@ -8,7 +8,7 @@
  */
 
 import type { Locale } from '@/lib/i18n/config';
-import { generateLocalePrompt, LOCALE_PROMPT_CONFIGS } from './locale-prompts';
+import { generateLocalePrompt, generateLocalePromptWithCTA, LOCALE_PROMPT_CONFIGS, getLocaleCTAFromDB } from './locale-prompts';
 import { generateCategoryPrompt, CATEGORY_PROMPT_CONFIGS } from './category-prompts';
 import { CONTENT_SYSTEM_PROMPT_V3, RAG_CONTEXT_PROMPT, PROMPT_VERSION } from './system-prompt';
 import { buildEnhancedRAGContext } from '../learning-rag';
@@ -225,13 +225,21 @@ ${generateCategoryPrompt(category)}
   </content>
 </document>`);
 
-  // 1-4. 로케일 가이드라인
+  // 1-4. 로케일 가이드라인 (with DB CTA)
+  const localePromptWithCTA = await generateLocalePromptWithCTA(locale);
+  const localeCTA = await getLocaleCTAFromDB(locale);
+  const ctaInfo = localeCTA ? {
+    platform: localeCTA.type.toUpperCase(),
+    url: localeCTA.url,
+    text: localeCTA.text,
+  } : null;
+
   userPromptParts.push(`
 <document index="6">
   <source>locale_guidelines</source>
   <description>Language and cultural guidelines for ${locale}</description>
   <content>
-${generateLocalePrompt(locale)}
+${localePromptWithCTA}
   </content>
 </document>`);
 
@@ -270,7 +278,7 @@ Before writing, analyze the reference documents above and cite relevant informat
 
 Based on your citations above, generate the content following these requirements:
 
-${getGenerationInstructions(contentType, locale)}
+${getGenerationInstructions(contentType, locale, ctaInfo)}
 </generation_instructions>`);
 
   return {
@@ -304,10 +312,12 @@ function getContentTypeDescription(contentType: ContentType): string {
 }
 
 /**
- * 생성 지침 가져오기
+ * 생성 지침 가져오기 (with optional CTA from DB)
  */
-function getGenerationInstructions(contentType: ContentType, locale: Locale): string {
-  const ctaPlatform = LOCALE_PROMPT_CONFIGS[locale].ctaPlatform;
+function getGenerationInstructions(contentType: ContentType, locale: Locale, ctaInfo?: { platform: string; url: string; text: string } | null): string {
+  const ctaPlatform = ctaInfo?.platform || LOCALE_PROMPT_CONFIGS[locale].ctaPlatform;
+  const ctaUrl = ctaInfo?.url || '';
+  const ctaText = ctaInfo?.text || '';
 
   const baseInstructions = `
 ## 🎬 GENERATION INSTRUCTIONS
@@ -326,7 +336,9 @@ Generate a comprehensive, E-E-A-T optimized article that:
 - 5-7 FAQ items with Schema-ready Q&A format
 - Specific price ranges with currency and year
 - Real patient journey elements (consultation → procedure → recovery)
-- Clear CTA with ${ctaPlatform} as the primary contact method
+- Clear CTA with ${ctaPlatform} as the primary contact method${ctaUrl ? `
+  - CTA URL: ${ctaUrl}
+  - CTA Text: "${ctaText}"` : ''}
 
 ### AEO Checklist:
 - [ ] Definition paragraph for the primary topic
