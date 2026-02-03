@@ -22,14 +22,13 @@ import {
   User,
   Briefcase,
   GraduationCap,
-  Mail,
   Camera,
-  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PhotoCarousel } from '@/components/ui/photo-carousel';
 import type { Locale } from '@/lib/i18n/config';
 import { getCTAForLocale, type CTAConfig } from '@/lib/settings/cta';
 
@@ -331,9 +330,6 @@ export function InterpreterDetailClient({
                   {[
                     { key: 'about', label: t('detail.about') },
                     { key: 'services', label: t('detail.servicesTab') },
-                    ...(interpreter.working_photos && interpreter.working_photos.length > 0
-                      ? [{ key: 'gallery', label: t('detail.gallery') }]
-                      : []),
                   ].map((tab) => (
                     <TabsTrigger
                       key={tab.key}
@@ -352,12 +348,6 @@ export function InterpreterDetailClient({
                 <TabsContent value="services" className="mt-8">
                   <ServicesSection interpreter={interpreter} />
                 </TabsContent>
-
-                {interpreter.working_photos && interpreter.working_photos.length > 0 && (
-                  <TabsContent value="gallery" className="mt-8">
-                    <GallerySection photos={interpreter.working_photos} />
-                  </TabsContent>
-                )}
               </Tabs>
             </motion.div>
           </div>
@@ -367,6 +357,30 @@ export function InterpreterDetailClient({
             <SidebarSection interpreter={interpreter} locale={locale} />
           </div>
         </div>
+
+        {/* Working Photos Carousel */}
+        {interpreter.working_photos && interpreter.working_photos.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-12"
+          >
+            <Card className="border shadow-sm">
+              <CardHeader className="border-b py-4">
+                <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/30">
+                    <Camera className="h-4 w-4 text-violet-600" />
+                  </div>
+                  {t('detail.workingPhotos')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="py-6">
+                <PhotoCarousel photos={interpreter.working_photos} />
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </section>
     </div>
   );
@@ -560,92 +574,6 @@ function ServicesSection({ interpreter }: { interpreter: Interpreter }) {
           </div>
         </CardContent>
       </Card>
-      )}
-    </motion.div>
-  );
-}
-
-function GallerySection({ photos }: { photos: WorkingPhoto[] }) {
-  const t = useTranslations('interpreters');
-  const [selectedPhoto, setSelectedPhoto] = useState<WorkingPhoto | null>(null);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
-    >
-      <Card className="border shadow-sm">
-        <CardHeader className="border-b py-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/30">
-              <Camera className="h-3.5 w-3.5 text-violet-600" />
-            </div>
-            {t('detail.workingPhotos')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="py-4">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {photos.map((photo, index) => (
-              <motion.div
-                key={photo.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-                className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group"
-                onClick={() => setSelectedPhoto(photo)}
-              >
-                <Image
-                  src={photo.image_url}
-                  alt={photo.caption || `Photo ${index + 1}`}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
-                  sizes="(max-width: 768px) 50vw, 33vw"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                {photo.caption && (
-                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
-                    <p className="text-xs text-white truncate">{photo.caption}</p>
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Lightbox */}
-      {selectedPhoto && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
-          onClick={() => setSelectedPhoto(null)}
-        >
-          <button
-            className="absolute top-4 right-4 text-white hover:text-gray-300"
-            onClick={() => setSelectedPhoto(null)}
-          >
-            <X className="h-8 w-8" />
-          </button>
-          <div className="relative max-w-4xl max-h-[90vh] w-full h-full">
-            <Image
-              src={selectedPhoto.image_url}
-              alt={selectedPhoto.caption || 'Photo'}
-              fill
-              className="object-contain"
-              sizes="100vw"
-            />
-            {selectedPhoto.caption && (
-              <div className="absolute bottom-4 left-0 right-0 text-center">
-                <p className="text-white bg-black/50 inline-block px-4 py-2 rounded-lg">
-                  {selectedPhoto.caption}
-                </p>
-              </div>
-            )}
-          </div>
-        </motion.div>
       )}
     </motion.div>
   );

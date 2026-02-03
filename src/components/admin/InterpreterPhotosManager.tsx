@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
 import {
@@ -143,13 +142,6 @@ export function InterpreterPhotosManager({
     }
   };
 
-  // Update caption
-  const handleCaptionChange = (photoId: string, caption: string) => {
-    setPhotos((prev) =>
-      prev.map((p) => (p.id === photoId ? { ...p, caption } : p))
-    );
-  };
-
   // Drag and drop handlers
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
@@ -192,7 +184,6 @@ export function InterpreterPhotosManager({
           photos: photos.map((p, index) => ({
             id: p.id,
             display_order: index,
-            caption: p.caption,
           })),
         }),
       });
@@ -310,20 +301,10 @@ export function InterpreterPhotosManager({
                     <div className="aspect-[4/3] relative">
                       <Image
                         src={photo.image_url}
-                        alt={photo.caption || `사진 ${index + 1}`}
+                        alt={`사진 ${index + 1}`}
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 50vw, 33vw"
-                      />
-                    </div>
-
-                    {/* Caption Input */}
-                    <div className="p-2 bg-muted/50">
-                      <Input
-                        value={photo.caption || ''}
-                        onChange={(e) => handleCaptionChange(photo.id, e.target.value)}
-                        placeholder="캡션 (선택사항)"
-                        className="text-xs h-8"
                       />
                     </div>
                   </div>

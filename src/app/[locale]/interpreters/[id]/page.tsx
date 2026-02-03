@@ -183,7 +183,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let query = (supabase.from('author_personas') as any)
-    .select('name, bio_short, photo_url, primary_specialty, slug, languages')
+    .select('name, bio_short, photo_url, primary_specialty, secondary_specialties, slug, languages, location, years_of_experience, avg_rating, review_count')
     .eq('is_active', true);
 
   if (isUUID) {
@@ -214,9 +214,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const specialty = templates.specialties[specialtySlug] || specialtySlug;
 
   // Get localized language list
-  const languages = Array.isArray(interpreter.languages)
-    ? interpreter.languages.map((l: { code: string }) => langNames[l.code] || l.code).join(', ')
-    : '';
+  const languageCodes = Array.isArray(interpreter.languages)
+    ? interpreter.languages.map((l: { code: string }) => l.code)
+    : [];
+  const languages = languageCodes.map((code: string) => langNames[code] || code).join(', ');
 
   // Get bio or generate description
   const bioData = interpreter.bio_short as LocalizedField;
@@ -227,9 +228,52 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = templates.title(name);
   const ogTitle = templates.ogTitle(name);
 
+  // Get additional data for enhanced SEO
+  const location = (interpreter.location as string) || 'Seoul';
+  const experienceYears = (interpreter.years_of_experience as number) || 0;
+  const avgRating = parseFloat(String(interpreter.avg_rating || 0));
+  const reviewCount = (interpreter.review_count as number) || 0;
+
+  // Get all specialties for keywords
+  const allSpecialties = [
+    specialtySlug,
+    ...((interpreter.secondary_specialties as string[]) || []),
+  ].filter(Boolean);
+
+  // Generate keywords from existing data
+  const keywordsArray = [
+    'medical interpreter',
+    'Korea',
+    name,
+    specialty,
+    ...allSpecialties.map(s => templates.specialties[s] || s),
+    ...languageCodes.map((code: string) => langNames[code] || code),
+    location,
+    'medical tourism',
+    'healthcare',
+    'hospital interpreter',
+  ].filter(Boolean);
+
+  // Parse name for profile meta (handle Korean/English names)
+  const nameParts = name.split(' ');
+  const firstName = nameParts[0] || name;
+  const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
   return {
     title,
     description: description.slice(0, 160),
+    authors: [{ name }],
+    keywords: keywordsArray,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
     openGraph: {
       title: ogTitle,
       description: description.slice(0, 160),
@@ -243,18 +287,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       }],
       locale: locale,
       type: 'profile',
+      firstName: firstName,
+      lastName: lastName || undefined,
     },
     twitter: {
       card: 'summary_large_image',
       title: ogTitle,
       description: description.slice(0, 160),
       images: [`${baseUrl}/api/og/interpreter?id=${slug}&locale=${locale}`],
+      site: '@getcarekorea',
     },
     alternates: {
       canonical: `${baseUrl}/${locale}/interpreters/${slug}`,
       languages: Object.fromEntries(
         locales.map((loc) => [loc, `${baseUrl}/${loc}/interpreters/${slug}`])
       ),
+    },
+    other: {
+      'profile:first_name': firstName,
+      'profile:last_name': lastName || '',
+      'og:locale:alternate': locales.filter(l => l !== locale).join(','),
+      ...(avgRating > 0 && reviewCount > 0 ? {
+        'rating': avgRating.toFixed(1),
+        'review_count': String(reviewCount),
+      } : {}),
+      ...(experienceYears > 0 ? {
+        'experience_years': String(experienceYears),
+      } : {}),
     },
   };
 }
@@ -484,7 +543,20 @@ async function getInterpreter(idOrSlug: string, locale: string) {
     return null;
   }
 
-  return transformToInterpreter(data as Record<string, unknown>, locale);
+  const personaData = data as Record<string, unknown>;
+  const interpreter = transformToInterpreter(personaData, locale);
+
+  // Fetch working photos
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: photos, error: photosError } = await (supabase.from('interpreter_photos') as any)
+    .select('id, image_url, caption, display_order')
+    .eq('persona_id', personaData.id as string)
+    .order('display_order', { ascending: true });
+
+  return {
+    ...interpreter,
+    working_photos: photos || [],
+  };
 }
 
 export default async function InterpreterDetailPage({ params }: PageProps) {
