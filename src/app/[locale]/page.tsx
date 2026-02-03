@@ -154,12 +154,12 @@ export default async function HomePage({ params }: PageProps) {
   interface InterpreterRow {
     id: string;
     name: string;
-    profile_image_url: string | null;
+    photo_url: string | null;
     avg_rating: number;
     review_count: number;
     languages: unknown;
     specialties: unknown;
-    city: string;
+    location: string | null;
     is_available: boolean;
     is_featured: boolean;
   }
@@ -175,8 +175,7 @@ export default async function HomePage({ params }: PageProps) {
   // Fetch featured interpreters
   const { data: interpretersData } = await supabase
     .from('interpreters')
-    .select('id, name, profile_image_url, avg_rating, review_count, languages, specialties, city, is_available, is_featured')
-    .eq('status', 'active')
+    .select('id, name, photo_url, avg_rating, review_count, languages, specialties, location, is_available, is_featured')
     .eq('is_featured', true)
     .order('avg_rating', { ascending: false })
     .limit(6);
@@ -198,19 +197,25 @@ export default async function HomePage({ params }: PageProps) {
     is_featured: h.is_featured,
   }));
 
-  // Process interpreters data
-  const interpreters = ((interpretersData || []) as InterpreterRow[]).map(i => ({
-    id: i.id,
-    name: i.name,
-    profile_image_url: i.profile_image_url,
-    avg_rating: i.avg_rating,
-    review_count: i.review_count,
-    languages: (i.languages || []) as string[],
-    specialties: (i.specialties || []) as string[],
-    city: i.city,
-    is_available: i.is_available,
-    is_featured: i.is_featured,
-  }));
+  // Process interpreters data - languages can be objects or strings
+  const interpreters = ((interpretersData || []) as InterpreterRow[]).map(i => {
+    // Handle languages which can be [{code, name, level}] or string[]
+    const langs = i.languages as Array<{name?: string} | string> || [];
+    const languageStrings = langs.map(l => typeof l === 'string' ? l : l.name || '').filter(Boolean);
+
+    return {
+      id: i.id,
+      name: i.name,
+      profile_image_url: i.photo_url,
+      avg_rating: i.avg_rating,
+      review_count: i.review_count,
+      languages: languageStrings,
+      specialties: (i.specialties || []) as string[],
+      city: i.location || 'Seoul',
+      is_available: i.is_available,
+      is_featured: i.is_featured,
+    };
+  });
 
   return (
     <div className="flex flex-col overflow-x-hidden">
