@@ -1,12 +1,12 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
-import { createAdminClient } from '@/lib/supabase/server';
 
-// Use Node.js runtime for Supabase compatibility
-export const runtime = 'nodejs';
+// Use Edge runtime for fast response
+export const runtime = 'edge';
 
-// Force dynamic rendering
-export const dynamic = 'force-dynamic';
+// Supabase config
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 // Localized content
 const localeContent: Record<string, { title: string; subtitle: string }> = {
@@ -32,6 +32,11 @@ const specialtyNames: Record<string, string> = {
   'general-medical': 'General Medical',
 };
 
+const languageFlags: Record<string, string> = {
+  en: '🇺🇸', ko: '🇰🇷', ja: '🇯🇵', 'zh-CN': '🇨🇳', 'zh-TW': '🇹🇼',
+  th: '🇹🇭', mn: '🇲🇳', ru: '🇷🇺', vi: '🇻🇳', zh: '🇨🇳',
+};
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -42,23 +47,21 @@ export async function GET(request: NextRequest) {
       return new Response('Missing interpreter ID', { status: 400 });
     }
 
-    // Fetch interpreter data
-    const supabase = await createAdminClient();
-
+    // Fetch interpreter data via Supabase REST API (fast in Edge)
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const filterColumn = isUUID ? 'id' : 'slug';
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query = (supabase.from('author_personas') as any)
-      .select('name, primary_specialty, languages')
-      .eq('is_active', true);
+    const apiUrl = `${SUPABASE_URL}/rest/v1/author_personas?select=name,primary_specialty,languages,photo_url&${filterColumn}=eq.${encodeURIComponent(id)}&is_active=eq.true&limit=1`;
 
-    if (isUUID) {
-      query = query.eq('id', id);
-    } else {
-      query = query.eq('slug', id);
-    }
+    const response = await fetch(apiUrl, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    });
 
-    const { data: interpreter } = await query.single();
+    const data = await response.json();
+    const interpreter = data?.[0];
 
     if (!interpreter) {
       return new Response('Interpreter not found', { status: 404 });
@@ -67,15 +70,10 @@ export async function GET(request: NextRequest) {
     // Extract data
     const nameData = interpreter.name as Record<string, string>;
     const name = nameData?.[locale] || nameData?.['en'] || 'Medical Interpreter';
+    const photoUrl = interpreter.photo_url as string | null;
     const primarySpecialty = interpreter.primary_specialty as string | null;
     const specialty = specialtyNames[primarySpecialty || 'general-medical'] || 'Medical';
     const content = localeContent[locale] || localeContent.en;
-
-    // Language flags
-    const languageFlags: Record<string, string> = {
-      en: '🇺🇸', ko: '🇰🇷', ja: '🇯🇵', 'zh-CN': '🇨🇳', 'zh-TW': '🇹🇼',
-      th: '🇹🇭', mn: '🇲🇳', ru: '🇷🇺', vi: '🇻🇳', zh: '🇨🇳',
-    };
 
     const interpreterLanguages = interpreter.languages as Array<{ code: string }> | null;
     const languages = Array.isArray(interpreterLanguages)
@@ -93,10 +91,9 @@ export async function GET(request: NextRequest) {
             alignItems: 'center',
             justifyContent: 'center',
             background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #ddd6fe 100%)',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
           }}
         >
-          {/* Card Container */}
+          {/* Card */}
           <div
             style={{
               display: 'flex',
@@ -106,48 +103,58 @@ export async function GET(request: NextRequest) {
               backgroundColor: 'white',
               borderRadius: '24px',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
-              maxWidth: '1000px',
             }}
           >
-            {/* Photo - Use initial letter for fast generation (no external fetch) */}
+            {/* Avatar */}
             <div
               style={{
                 display: 'flex',
-                width: '180px',
-                height: '180px',
+                width: '160px',
+                height: '160px',
                 borderRadius: '50%',
-                overflow: 'hidden',
                 border: '4px solid #8b5cf6',
-                boxShadow: '0 10px 30px -5px rgba(139, 92, 246, 0.4)',
+                overflow: 'hidden',
+                alignItems: 'center',
+                justifyContent: 'center',
                 marginBottom: '24px',
               }}
             >
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-                  color: 'white',
-                  fontSize: '72px',
-                  fontWeight: 700,
-                }}
-              >
-                {name.charAt(0).toUpperCase()}
-              </div>
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt=""
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                    color: 'white',
+                    fontSize: '72px',
+                    fontWeight: 700,
+                  }}
+                >
+                  {name.charAt(0).toUpperCase()}
+                </div>
+              )}
             </div>
 
             {/* Name */}
             <div
               style={{
-                display: 'flex',
-                fontSize: '48px',
+                fontSize: '42px',
                 fontWeight: 700,
                 color: '#1f2937',
                 marginBottom: '8px',
-                textAlign: 'center',
               }}
             >
               {name}
@@ -157,7 +164,7 @@ export async function GET(request: NextRequest) {
             <div
               style={{
                 display: 'flex',
-                fontSize: '24px',
+                fontSize: '22px',
                 color: '#7c3aed',
                 fontWeight: 600,
                 marginBottom: '16px',
@@ -172,8 +179,8 @@ export async function GET(request: NextRequest) {
                 style={{
                   display: 'flex',
                   gap: '12px',
-                  fontSize: '36px',
-                  marginBottom: '24px',
+                  fontSize: '32px',
+                  marginBottom: '16px',
                 }}
               >
                 {languages.map((flag: string, i: number) => (
@@ -185,10 +192,8 @@ export async function GET(request: NextRequest) {
             {/* Subtitle */}
             <div
               style={{
-                display: 'flex',
-                fontSize: '18px',
+                fontSize: '16px',
                 color: '#6b7280',
-                textAlign: 'center',
               }}
             >
               {content.subtitle}
@@ -199,9 +204,8 @@ export async function GET(request: NextRequest) {
           <div
             style={{
               display: 'flex',
-              alignItems: 'center',
-              marginTop: '32px',
-              fontSize: '24px',
+              marginTop: '24px',
+              fontSize: '22px',
               fontWeight: 700,
               color: '#7c3aed',
             }}
