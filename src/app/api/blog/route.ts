@@ -16,6 +16,8 @@ import {
   secureLog,
 } from '@/lib/api/error-handler';
 
+import { getCategoryName } from '@/lib/i18n/translations';
+
 // Enable edge runtime for faster cold starts
 export const runtime = 'nodejs';
 export const revalidate = 60; // Cache for 60 seconds
@@ -115,6 +117,8 @@ export async function GET(request: NextRequest) {
       ...post,
       // Map cover_image_url to featured_image for frontend compatibility
       featured_image: post.cover_image_url || null,
+      // Translated category name
+      categoryDisplayName: getCategoryName(post.category, locale),
       // Extract meta from seo_meta JSONB
       meta_title: post.seo_meta?.meta_title || post.title,
       meta_description: post.seo_meta?.meta_description || post.excerpt,
