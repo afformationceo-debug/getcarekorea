@@ -7,6 +7,12 @@ import type { Metadata } from 'next';
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://getcarekorea.com';
 
+// Helper to get localized value from JSONB field
+function getLocalizedValue(jsonField: Record<string, string> | null | undefined, locale: string, fallbackLocale = 'en'): string {
+  if (!jsonField) return '';
+  return jsonField[locale] || jsonField[fallbackLocale] || jsonField['en'] || '';
+}
+
 // Generate metadata for SEO
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, slug } = await params;
@@ -14,7 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: hospital } = await (supabase.from('hospitals') as any)
-    .select('name_en, name_ko, description_en, category, city, district, avg_rating, review_count, google_photos, cover_image_url')
+    .select('name, description, category, city, district, avg_rating, review_count, google_photos, cover_image_url')
     .eq('slug', slug)
     .in('status', ['published', 'draft'])
     .single();
@@ -25,8 +31,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const hospitalName = hospital.name_en || hospital.name_ko;
-  const description = hospital.description_en || `${hospitalName} - Top rated medical clinic in ${hospital.city}, Korea`;
+  // Use JSONB fields
+  const nameJson = hospital.name as Record<string, string> | null;
+  const descJson = hospital.description as Record<string, string> | null;
+  const hospitalName = getLocalizedValue(nameJson, locale);
+  const description = getLocalizedValue(descJson, locale) || `${hospitalName} - Top rated medical clinic in ${hospital.city}, Korea`;
   const image = hospital.google_photos?.[0] || hospital.cover_image_url;
 
   return {
@@ -69,6 +78,7 @@ export default async function HospitalDetailPage({ params }: PageProps) {
   setRequestLocale(locale);
 
   const supabase = await createAdminClient();
+  // Keep localeSuffix for blog_posts and procedures tables which still use old column format
   const localeSuffix = locale.replace('-', '_').toLowerCase();
 
   // Fetch hospital from DB (include draft for testing, published for production)
@@ -89,8 +99,8 @@ export default async function HospitalDetailPage({ params }: PageProps) {
     const hospital = {
       id: fallbackHospital.id,
       slug: fallbackHospital.slug,
-      name: fallbackHospital.name_en,
-      description: fallbackHospital.description_en,
+      name: fallbackHospital.name,
+      description: fallbackHospital.description,
       logo_url: fallbackHospital.logo_url,
       cover_image_url: fallbackHospital.cover_image_url,
       gallery: fallbackHospital.gallery,
@@ -215,17 +225,16 @@ export default async function HospitalDetailPage({ params }: PageProps) {
     ? hospitalData.google_photos
     : hospitalData.gallery || [];
 
-  // Determine hospital name based on locale
-  // For English locales, only show English name. For others, show localized or fallback
-  const isEnglishLocale = locale === 'en';
-  const localizedName = hospitalData[`name_${localeSuffix}`];
-  const hospitalName = isEnglishLocale
-    ? (hospitalData.name_en || hospitalData.name_ko)
-    : (localizedName || hospitalData.name_en || hospitalData.name_ko);
+  // Get localized name and description from JSONB fields
+  const nameJson = hospitalData.name as Record<string, string> | null;
+  const descJson = hospitalData.description as Record<string, string> | null;
+
+  // Get localized name - use current locale, fallback to English, then Korean
+  const hospitalName = getLocalizedValue(nameJson, locale);
 
   // Keep both names for display purposes
-  const nameKo = hospitalData.name_ko;
-  const nameEn = hospitalData.name_en;
+  const nameKo = nameJson?.ko || '';
+  const nameEn = nameJson?.en || '';
 
   const hospital = {
     id: hospitalData.id,
@@ -233,7 +242,7 @@ export default async function HospitalDetailPage({ params }: PageProps) {
     name: hospitalName,
     name_ko: nameKo,
     name_en: nameEn,
-    description: hospitalData[`description_${localeSuffix}`] || hospitalData.description_en || hospitalData.description_ko,
+    description: getLocalizedValue(descJson, locale),
     logo_url: hospitalData.logo_url,
     cover_image_url: galleryImages[0] || hospitalData.cover_image_url,
     gallery: galleryImages,
@@ -260,10 +269,11 @@ export default async function HospitalDetailPage({ params }: PageProps) {
     longitude: hospitalData.longitude,
     category: hospitalData.category,
     source: hospitalData.source,
-    ai_summary: hospitalData[`ai_summary_${localeSuffix}`] || hospitalData.ai_summary_en,
-    // SEO meta
-    meta_title: hospitalData[`meta_title_${localeSuffix}`] || hospitalData.meta_title_en,
-    meta_description: hospitalData[`meta_description_${localeSuffix}`] || hospitalData.meta_description_en,
+    // Use JSONB ai_summary
+    ai_summary: (() => {
+      const aiSummaryJson = hospitalData.ai_summary as Record<string, string> | null;
+      return getLocalizedValue(aiSummaryJson, locale);
+    })(),
     // Crawl info
     crawled_at: hospitalData.crawled_at,
     // Google reviews
@@ -463,8 +473,8 @@ function createMockHospital(
   return {
     id,
     slug,
-    name_en: name,
-    description_en: description,
+    name: name, // Already localized for fallback
+    description: description,
     logo_url: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=200&h=200&fit=crop',
     cover_image_url: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1200&h=800&fit=crop',
     gallery,

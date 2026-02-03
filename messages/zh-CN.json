@@ -77,6 +77,79 @@
     "title": "顶级医院",
     "subtitle": "JCI认证机构，经验丰富的专家",
     "searchPlaceholder": "搜索医院、项目...",
+    "listing": {
+      "heroTitle1": "世界一流的",
+      "heroTitle2": "韩国医疗",
+      "aiBadge": "AI精选优质医疗机构",
+      "stats": {
+        "hospitals": "医院",
+        "accredited": "认证",
+        "verified": "已验证",
+        "support": "支持"
+      },
+      "filters": {
+        "button": "筛选"
+      },
+      "hospitalCount": "{count}家医院",
+      "clearFilters": "清除筛选",
+      "showing": "显示",
+      "hospitalsCount": "家医院",
+      "viewModes": {
+        "grid": "网格视图",
+        "list": "列表视图",
+        "grouped": "分组视图"
+      },
+      "specialties": {
+        "all": "所有专科",
+        "plastic-surgery": "整形外科",
+        "dermatology": "皮肤科",
+        "dental": "牙科",
+        "ophthalmology": "眼科",
+        "hair-transplant": "植发",
+        "health-checkup": "健康检查",
+        "fertility": "生殖医学"
+      },
+      "cities": {
+        "all": "所有城市",
+        "gangnam": "江南",
+        "seoul": "首尔",
+        "busan": "釜山",
+        "incheon": "仁川"
+      },
+      "sortOptions": {
+        "rating": "最高评分",
+        "reviews": "最多评论",
+        "featured": "推荐",
+        "newest": "最新"
+      },
+      "categories": {
+        "plastic-surgery": "整形外科",
+        "dermatology": "皮肤科",
+        "dental": "牙科",
+        "ophthalmology": "眼科",
+        "traditional-medicine": "韩医院",
+        "traditional-korean-medicine": "韩医院",
+        "university-hospital": "大学医院",
+        "hair-transplant": "植发",
+        "health-checkup": "健康检查",
+        "general": "综合医院",
+        "general-hospital": "综合医院",
+        "other": "其他诊所"
+      },
+      "viewAll": "查看全部{count}家医院",
+      "showLess": "收起",
+      "noHospitalsInCategory": "该类别暂无医院",
+      "hospital": "医院",
+      "noResults": {
+        "title": "未找到医院",
+        "description": "请尝试调整搜索条件或筛选"
+      },
+      "aiCta": {
+        "title": "不知道从哪里开始？",
+        "description": "AI将分析您的需求，推荐最适合您的医院。",
+        "button": "获取AI推荐"
+      }
+    },
     "filters": {
       "specialty": "专科",
       "city": "城市",
@@ -188,6 +261,11 @@
       "verifiedByGetCareKorea": "GetCareKorea认证",
       "basedOnReviews": "基于 {count} 条评论",
       "seeAllOnGoogleMaps": "在Google Maps上查看全部",
+      "readRealReviews": "阅读真实患者评价",
+      "viewAllReviews": "在Google Maps上查看{count}条认证评价",
+      "lookingForMoreReviews": "想了解更多患者体验？",
+      "readReviewsOnGoogle": "在Google Maps上阅读{count}条评价",
+      "readAllReviews": "阅读全部评价",
       "categoryTypes": {
         "plastic-surgery": "整形外科诊所",
         "dermatology": "皮肤科诊所",

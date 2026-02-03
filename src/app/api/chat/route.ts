@@ -46,15 +46,21 @@ You have access to tools to search for hospitals, procedures, and interpreters. 
 IMPORTANT: Always respond in the user's language (determined by the locale parameter).
 `;
 
-// Hospital result type for type assertions
+// Hospital result type for type assertions (using JSONB name field)
 interface HospitalSearchResult {
   slug: string;
-  name_en: string;
+  name: Record<string, string> | null; // JSONB: { en: "...", ko: "...", ... }
   city: string | null;
   specialties: string[];
   avg_rating: number;
   review_count: number;
   languages: string[];
+}
+
+// Helper to get localized value from JSONB field
+function getLocalizedValue(jsonField: Record<string, string> | null | undefined, locale = 'en'): string {
+  if (!jsonField) return '';
+  return jsonField[locale] || jsonField['en'] || Object.values(jsonField)[0] || '';
 }
 
 // Tool definitions for the chat - using actual database queries
@@ -71,7 +77,7 @@ const searchHospitalsTool = tool({
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let dbQuery = (supabase.from('hospitals') as any)
-        .select('slug, name_en, city, specialties, avg_rating, review_count, languages')
+        .select('slug, name, city, specialties, avg_rating, review_count, languages')
         .eq('status', 'published')
         .order('avg_rating', { ascending: false })
         .limit(5);
@@ -83,7 +89,8 @@ const searchHospitalsTool = tool({
         dbQuery = dbQuery.eq('city', city);
       }
       if (query) {
-        dbQuery = dbQuery.or(`name_en.ilike.%${query}%,description_en.ilike.%${query}%`);
+        // Search in JSONB fields
+        dbQuery = dbQuery.or(`name->en.ilike.%${query}%,name->ko.ilike.%${query}%`);
       }
 
       const { data, error } = await dbQuery;
@@ -97,7 +104,7 @@ const searchHospitalsTool = tool({
 
       return {
         hospitals: hospitals.map(h => ({
-          name: h.name_en,
+          name: getLocalizedValue(h.name),
           slug: h.slug,
           city: h.city,
           specialties: h.specialties,
@@ -130,7 +137,7 @@ interface ProcedureSearchResult {
   recovery_days: number | null;
   includes: string[];
   requirements: string[];
-  hospitals: { slug: string; name_en: string; city: string | null } | null;
+  hospitals: { slug: string; name: Record<string, string> | null; city: string | null } | null;
 }
 
 const getProcedureInfoTool = tool({
@@ -149,7 +156,7 @@ const getProcedureInfoTool = tool({
           slug, name_en, category, description_en,
           price_min, price_max, price_currency,
           duration_minutes, recovery_days, includes, requirements,
-          hospitals!inner(slug, name_en, city)
+          hospitals!inner(slug, name, city)
         `)
         .order('is_popular', { ascending: false })
         .limit(5);
@@ -195,7 +202,7 @@ const getProcedureInfoTool = tool({
           includes: p.includes || [],
           requirements: p.requirements || [],
           hospital: p.hospitals ? {
-            name: p.hospitals.name_en,
+            name: getLocalizedValue(p.hospitals.name),
             slug: p.hospitals.slug,
           } : null,
           link: `/procedures/${p.slug}`,

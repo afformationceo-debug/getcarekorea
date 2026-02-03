@@ -16,49 +16,47 @@ export interface CTASettings {
   [locale: string]: CTAConfig;
 }
 
-// Client-side cache
-let clientCache: CTASettings | null = null;
-let clientCacheTime = 0;
+// Client-side cache per locale
+const localeCache: Record<string, { data: CTAConfig | null; time: number }> = {};
 const CACHE_DURATION = 5 * 60 * 1000;
 
 /**
- * Fetch CTA settings from API (client-side)
+ * Get CTA for specific locale (client-side)
+ * API requires locale parameter - this is the primary way to fetch CTA
  */
-export async function getCTASettings(): Promise<CTASettings> {
-  // Check cache
-  if (clientCache && Date.now() - clientCacheTime < CACHE_DURATION) {
-    return clientCache;
+export async function getCTAForLocale(locale: string): Promise<CTAConfig | null> {
+  // Check cache for this locale
+  const cached = localeCache[locale];
+  if (cached && Date.now() - cached.time < CACHE_DURATION) {
+    return cached.data;
   }
 
   try {
-    const response = await fetch('/api/cta');
-    if (!response.ok) return {};
+    const response = await fetch(`/api/cta?locale=${locale}`);
+    if (!response.ok) return null;
 
     const result = await response.json();
-    if (result.success && result.data) {
-      const settings = result.data as CTASettings;
-      clientCache = settings;
-      clientCacheTime = Date.now();
-      return settings;
-    }
-    return {};
+    const data = result.success && result.data ? (result.data as CTAConfig) : null;
+
+    // Cache the result
+    localeCache[locale] = { data, time: Date.now() };
+    return data;
   } catch {
-    return {};
+    return null;
   }
 }
 
 /**
- * Get CTA for specific locale (client-side)
+ * @deprecated Use getCTAForLocale instead - API now requires locale parameter
  */
-export async function getCTAForLocale(locale: string): Promise<CTAConfig | null> {
-  const settings = await getCTASettings();
-  return settings[locale] || null;
+export async function getCTASettings(): Promise<CTASettings> {
+  console.warn('getCTASettings is deprecated. Use getCTAForLocale(locale) instead.');
+  return {};
 }
 
 /**
  * Clear CTA cache (call after admin updates)
  */
 export function clearCTACache() {
-  clientCache = null;
-  clientCacheTime = 0;
+  Object.keys(localeCache).forEach((key) => delete localeCache[key]);
 }

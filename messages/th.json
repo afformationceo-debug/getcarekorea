@@ -77,6 +77,79 @@
     "title": "โรงพยาบาลยอดนิยม",
     "subtitle": "สถานพยาบาลที่ได้รับการรับรอง JCI พร้อมผู้เชี่ยวชาญที่มีประสบการณ์",
     "searchPlaceholder": "ค้นหาโรงพยาบาล หัตถการ...",
+    "listing": {
+      "heroTitle1": "การแพทย์ระดับโลก",
+      "heroTitle2": "ในเกาหลี",
+      "aiBadge": "คัดสรรโดย AI สถานพยาบาลชั้นนำ",
+      "stats": {
+        "hospitals": "โรงพยาบาล",
+        "accredited": "ได้รับการรับรอง",
+        "verified": "ตรวจสอบแล้ว",
+        "support": "สนับสนุน"
+      },
+      "filters": {
+        "button": "ตัวกรอง"
+      },
+      "hospitalCount": "{count} โรงพยาบาล",
+      "clearFilters": "ล้างตัวกรอง",
+      "showing": "แสดง",
+      "hospitalsCount": "โรงพยาบาล",
+      "viewModes": {
+        "grid": "มุมมองตาราง",
+        "list": "มุมมองรายการ",
+        "grouped": "มุมมองกลุ่ม"
+      },
+      "specialties": {
+        "all": "ทุกสาขา",
+        "plastic-surgery": "ศัลยกรรมตกแต่ง",
+        "dermatology": "ผิวหนัง",
+        "dental": "ทันตกรรม",
+        "ophthalmology": "จักษุ",
+        "hair-transplant": "ปลูกผม",
+        "health-checkup": "ตรวจสุขภาพ",
+        "fertility": "การเจริญพันธุ์"
+      },
+      "cities": {
+        "all": "ทุกเมือง",
+        "gangnam": "คังนัม",
+        "seoul": "โซล",
+        "busan": "ปูซาน",
+        "incheon": "อินชอน"
+      },
+      "sortOptions": {
+        "rating": "คะแนนสูงสุด",
+        "reviews": "รีวิวมากที่สุด",
+        "featured": "แนะนำ",
+        "newest": "ล่าสุด"
+      },
+      "categories": {
+        "plastic-surgery": "ศัลยกรรมตกแต่ง",
+        "dermatology": "ผิวหนัง",
+        "dental": "ทันตกรรม",
+        "ophthalmology": "จักษุ",
+        "traditional-medicine": "แพทย์แผนเกาหลี",
+        "traditional-korean-medicine": "แพทย์แผนเกาหลี",
+        "university-hospital": "โรงพยาบาลมหาวิทยาลัย",
+        "hair-transplant": "ปลูกผม",
+        "health-checkup": "ตรวจสุขภาพ",
+        "general": "โรงพยาบาลทั่วไป",
+        "general-hospital": "โรงพยาบาลทั่วไป",
+        "other": "คลินิกอื่นๆ"
+      },
+      "viewAll": "ดูทั้งหมด {count} โรงพยาบาล",
+      "showLess": "แสดงน้อยลง",
+      "noHospitalsInCategory": "ยังไม่มีโรงพยาบาลในหมวดหมู่นี้",
+      "hospital": "โรงพยาบาล",
+      "noResults": {
+        "title": "ไม่พบโรงพยาบาล",
+        "description": "ลองปรับการค้นหาหรือตัวกรอง"
+      },
+      "aiCta": {
+        "title": "ไม่แน่ใจว่าจะเริ่มต้นที่ไหน?",
+        "description": "AI จะวิเคราะห์ความต้องการและแนะนำโรงพยาบาลที่เหมาะสมที่สุด",
+        "button": "รับคำแนะนำจาก AI"
+      }
+    },
     "filters": {
       "specialty": "สาขาเฉพาะทาง",
       "city": "เมือง",
@@ -188,6 +261,11 @@
       "verifiedByGetCareKorea": "ยืนยันโดย GetCareKorea",
       "basedOnReviews": "อ้างอิงจาก {count} รีวิว",
       "seeAllOnGoogleMaps": "ดูทั้งหมดบน Google Maps",
+      "readRealReviews": "อ่านรีวิวจากผู้ป่วยจริง",
+      "viewAllReviews": "ดูรีวิวที่ยืนยันแล้ว {count} รายการบน Google Maps",
+      "lookingForMoreReviews": "ต้องการดูประสบการณ์ผู้ป่วยเพิ่มเติม?",
+      "readReviewsOnGoogle": "อ่านรีวิว {count} รายการบน Google Maps",
+      "readAllReviews": "อ่านรีวิวทั้งหมด",
       "categoryTypes": {
         "plastic-surgery": "คลินิกศัลยกรรมความงาม",
         "dermatology": "คลินิกผิวหนัง",

@@ -523,15 +523,16 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
 
   const t = useCallback((key: string) => getTranslation(locale, key), [locale]);
 
-  // Fetch CTA settings from dedicated API
+  // Fetch CTA settings from dedicated API (locale-specific)
   useEffect(() => {
     async function loadCTASettings() {
       try {
-        const response = await fetch('/api/cta');
+        const response = await fetch(`/api/cta?locale=${locale}`);
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data) {
-            setCtaSettings(result.data);
+            // API returns single locale's CTA, wrap in settings object for compatibility
+            setCtaSettings({ [locale]: result.data });
           }
         }
       } catch (error) {
@@ -539,7 +540,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
       }
     }
     loadCTASettings();
-  }, []);
+  }, [locale]);
 
   // Fetch post data if not provided initially
   useEffect(() => {

@@ -77,6 +77,79 @@
     "title": "최고 평점 병원",
     "subtitle": "JCI 인증 시설과 숙련된 전문의",
     "searchPlaceholder": "병원, 시술 검색...",
+    "listing": {
+      "heroTitle1": "세계적 수준의",
+      "heroTitle2": "한국 의료 서비스",
+      "aiBadge": "AI가 선별한 의료 우수기관",
+      "stats": {
+        "hospitals": "병원",
+        "accredited": "인증",
+        "verified": "검증됨",
+        "support": "지원"
+      },
+      "filters": {
+        "button": "필터"
+      },
+      "hospitalCount": "{count}개 병원",
+      "clearFilters": "필터 초기화",
+      "showing": "총",
+      "hospitalsCount": "개 병원",
+      "viewModes": {
+        "grid": "그리드 보기",
+        "list": "목록 보기",
+        "grouped": "그룹 보기"
+      },
+      "specialties": {
+        "all": "전체 분야",
+        "plastic-surgery": "성형외과",
+        "dermatology": "피부과",
+        "dental": "치과",
+        "ophthalmology": "안과",
+        "hair-transplant": "모발이식",
+        "health-checkup": "건강검진",
+        "fertility": "난임치료"
+      },
+      "cities": {
+        "all": "전체 도시",
+        "gangnam": "강남",
+        "seoul": "서울",
+        "busan": "부산",
+        "incheon": "인천"
+      },
+      "sortOptions": {
+        "rating": "평점 높은 순",
+        "reviews": "리뷰 많은 순",
+        "featured": "추천",
+        "newest": "최신순"
+      },
+      "categories": {
+        "plastic-surgery": "성형외과",
+        "dermatology": "피부과",
+        "dental": "치과",
+        "ophthalmology": "안과",
+        "traditional-medicine": "한의원",
+        "traditional-korean-medicine": "한의원",
+        "university-hospital": "대학병원",
+        "hair-transplant": "모발이식",
+        "health-checkup": "건강검진",
+        "general": "종합병원",
+        "general-hospital": "종합병원",
+        "other": "기타 의원"
+      },
+      "viewAll": "전체 {count}개 병원 보기",
+      "showLess": "접기",
+      "noHospitalsInCategory": "이 카테고리에 등록된 병원이 없습니다",
+      "hospital": "병원",
+      "noResults": {
+        "title": "검색 결과가 없습니다",
+        "description": "검색어나 필터를 조정해 보세요"
+      },
+      "aiCta": {
+        "title": "어디서 시작해야 할지 모르겠나요?",
+        "description": "AI 상담을 통해 필요에 맞는 완벽한 병원을 추천받으세요.",
+        "button": "AI 추천 받기"
+      }
+    },
     "filters": {
       "specialty": "전문 분야",
       "city": "도시",
@@ -188,6 +261,11 @@
       "verifiedByGetCareKorea": "GetCareKorea 인증",
       "basedOnReviews": "{count}개 리뷰 기준",
       "seeAllOnGoogleMaps": "구글 지도에서 모두 보기",
+      "readRealReviews": "실제 환자 리뷰 읽기",
+      "viewAllReviews": "Google Maps에서 {count}개의 검증된 리뷰 보기",
+      "lookingForMoreReviews": "더 많은 환자 경험을 찾고 계신가요?",
+      "readReviewsOnGoogle": "Google Maps에서 {count}개 리뷰 읽기",
+      "readAllReviews": "모든 리뷰 보기",
       "categoryTypes": {
         "plastic-surgery": "성형외과",
         "dermatology": "피부과",

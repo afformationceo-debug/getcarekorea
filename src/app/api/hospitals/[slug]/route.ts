@@ -45,8 +45,22 @@ export async function GET(request: NextRequest, { params }: Params) {
       throw new APIError(ErrorCode.NOT_FOUND, 'Hospital not found', { slug }, locale);
     }
 
+    // Extract locale-specific data from JSONB fields
+    const localizedHospital = {
+      ...hospital,
+      name: typeof hospital.name === 'object' && hospital.name !== null
+        ? (hospital.name as Record<string, string>)[locale] || (hospital.name as Record<string, string>)['en'] || hospital.name
+        : hospital.name,
+      description: typeof hospital.description === 'object' && hospital.description !== null
+        ? (hospital.description as Record<string, string>)[locale] || (hospital.description as Record<string, string>)['en'] || hospital.description
+        : hospital.description,
+      ai_summary: typeof hospital.ai_summary === 'object' && hospital.ai_summary !== null
+        ? (hospital.ai_summary as Record<string, string>)[locale] || (hospital.ai_summary as Record<string, string>)['en'] || hospital.ai_summary
+        : hospital.ai_summary,
+    };
+
     // Build response with related data
-    const response: Record<string, unknown> = { ...hospital };
+    const response: Record<string, unknown> = { ...localizedHospital };
 
     // Fetch related data in parallel
     const relatedPromises: Promise<void>[] = [];

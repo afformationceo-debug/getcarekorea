@@ -77,6 +77,79 @@
     "title": "Шилдэг эмнэлгүүд",
     "subtitle": "JCI гэрчилгээтэй байгууллагууд, туршлагатай мэргэжилтнүүд",
     "searchPlaceholder": "Эмнэлэг, эмчилгээ хайх...",
+    "listing": {
+      "heroTitle1": "Дэлхийн түвшний",
+      "heroTitle2": "Солонгосын эмнэлэг",
+      "aiBadge": "AI сонгосон шилдэг эмнэлгүүд",
+      "stats": {
+        "hospitals": "Эмнэлэг",
+        "accredited": "Гэрчилгээтэй",
+        "verified": "Баталгаажсан",
+        "support": "Дэмжлэг"
+      },
+      "filters": {
+        "button": "Шүүлтүүр"
+      },
+      "hospitalCount": "{count} эмнэлэг",
+      "clearFilters": "Шүүлтүүр арилгах",
+      "showing": "Харуулж байна",
+      "hospitalsCount": "эмнэлэг",
+      "viewModes": {
+        "grid": "Торон харагдац",
+        "list": "Жагсаалт",
+        "grouped": "Бүлэглэсэн"
+      },
+      "specialties": {
+        "all": "Бүх мэргэжил",
+        "plastic-surgery": "Гоо сайхны мэс засал",
+        "dermatology": "Арьс судлал",
+        "dental": "Шүдний эмчилгээ",
+        "ophthalmology": "Нүдний эмчилгээ",
+        "hair-transplant": "Үс суулгах",
+        "health-checkup": "Эрүүл мэндийн үзлэг",
+        "fertility": "Үр хөврөлийн эмчилгээ"
+      },
+      "cities": {
+        "all": "Бүх хот",
+        "gangnam": "Каннам",
+        "seoul": "Сөүл",
+        "busan": "Пусан",
+        "incheon": "Инчон"
+      },
+      "sortOptions": {
+        "rating": "Хамгийн өндөр үнэлгээтэй",
+        "reviews": "Хамгийн олон сэтгэгдэлтэй",
+        "featured": "Онцлох",
+        "newest": "Хамгийн шинэ"
+      },
+      "categories": {
+        "plastic-surgery": "Гоо сайхны мэс засал",
+        "dermatology": "Арьс судлал",
+        "dental": "Шүдний эмчилгээ",
+        "ophthalmology": "Нүдний эмчилгээ",
+        "traditional-medicine": "Солонгос уламжлалт эмнэлэг",
+        "traditional-korean-medicine": "Солонгос уламжлалт эмнэлэг",
+        "university-hospital": "Их сургуулийн эмнэлэг",
+        "hair-transplant": "Үс суулгах",
+        "health-checkup": "Эрүүл мэндийн үзлэг",
+        "general": "Ерөнхий эмнэлэг",
+        "general-hospital": "Ерөнхий эмнэлэг",
+        "other": "Бусад клиник"
+      },
+      "viewAll": "Бүх {count} эмнэлгийг харах",
+      "showLess": "Хураах",
+      "noHospitalsInCategory": "Энэ ангилалд эмнэлэг байхгүй байна",
+      "hospital": "эмнэлэг",
+      "noResults": {
+        "title": "Эмнэлэг олдсонгүй",
+        "description": "Хайлт эсвэл шүүлтүүрийг тохируулна уу"
+      },
+      "aiCta": {
+        "title": "Хаанаас эхлэхээ мэдэхгүй байна уу?",
+        "description": "AI таны хэрэгцээг шинжилж, хамгийн тохиромжтой эмнэлгийг санал болгоно.",
+        "button": "AI санал авах"
+      }
+    },
     "filters": {
       "specialty": "Мэргэшил",
       "city": "Хот",
@@ -188,6 +261,11 @@
       "verifiedByGetCareKorea": "GetCareKorea баталгаажуулсан",
       "basedOnReviews": "{count} сэтгэгдэлд суурилсан",
       "seeAllOnGoogleMaps": "Google Maps дээр бүгдийг харах",
+      "readRealReviews": "Жинхэнэ өвчтөний сэтгэгдэл унших",
+      "viewAllReviews": "Google Maps дээр {count} баталгаажсан сэтгэгдэл харах",
+      "lookingForMoreReviews": "Өвчтөний туршлагын талаар дэлгэрэнгүй мэдэхийг хүсэж байна уу?",
+      "readReviewsOnGoogle": "Google Maps дээр {count} сэтгэгдэл унших",
+      "readAllReviews": "Бүх сэтгэгдлийг унших",
       "categoryTypes": {
         "plastic-surgery": "Гоо сайхны мэс заслын клиник",
         "dermatology": "Арьс өнгөний клиник",

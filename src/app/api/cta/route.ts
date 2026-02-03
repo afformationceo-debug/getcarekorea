@@ -1,20 +1,32 @@
 /**
  * CTA Settings API
  *
- * GET /api/cta - Get CTA settings for all locales (public, cached)
+ * GET /api/cta?locale=en - Get CTA for specific locale only
+ * locale parameter is REQUIRED - returns empty response if not provided
  *
  * This is a dedicated endpoint for CTA data only.
  * Does NOT expose other system_settings.
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 
-// Cache for 5 minutes
-export const revalidate = 300;
+// Dynamic route - uses query params
+export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const locale = searchParams.get('locale');
+
+    // locale is required - return empty if not provided
+    if (!locale) {
+      return NextResponse.json({
+        success: true,
+        data: null,
+      });
+    }
+
     const supabase = await createAdminClient();
 
     // Only fetch cta_links key - no other settings exposed
@@ -26,22 +38,23 @@ export async function GET() {
       .single();
 
     if (error || !data?.value) {
-      // Return empty object if no CTA settings (not an error)
       return NextResponse.json({
         success: true,
-        data: {},
+        data: null,
       });
     }
 
+    // Return only the specified locale's CTA
+    const localeData = data.value[locale] || null;
     return NextResponse.json({
       success: true,
-      data: data.value,
+      data: localeData,
     });
   } catch (error) {
     console.error('CTA API error:', error);
     return NextResponse.json({
       success: true,
-      data: {}, // Return empty on error, don't expose error details
+      data: null,
     });
   }
 }

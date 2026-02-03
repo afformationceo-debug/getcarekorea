@@ -21,8 +21,8 @@ export interface PhotoCarouselProps {
   className?: string;
   /** Height configuration: 'sm' | 'md' | 'lg' | 'auto' or custom Tailwind class */
   height?: 'sm' | 'md' | 'lg' | 'auto' | string;
-  /** How the image should fit: 'contain' | 'cover' */
-  objectFit?: 'contain' | 'cover';
+  /** How the image should fit: 'contain' | 'cover' | 'blur' (blur shows blurred background with contained image) */
+  objectFit?: 'contain' | 'cover' | 'blur';
   /** Show lightbox on click */
   showLightbox?: boolean;
   /** Show navigation arrows */
@@ -124,12 +124,24 @@ export function PhotoCarousel({
                   )}
                   style={useAspectRatio ? { aspectRatio } : undefined}
                 >
+                  {/* Blur background (Instagram style) */}
+                  {objectFit === 'blur' && (
+                    <Image
+                      src={photo.image_url}
+                      alt=""
+                      fill
+                      className="object-cover blur-xl scale-110 opacity-60"
+                      sizes="(max-width: 768px) 100vw, 800px"
+                      aria-hidden="true"
+                    />
+                  )}
                   <Image
                     src={photo.image_url}
                     alt={photo.alt || photo.caption || `Photo ${index + 1}`}
                     fill
                     className={cn(
-                      objectFit === 'contain' ? 'object-contain' : 'object-cover'
+                      objectFit === 'cover' ? 'object-cover' : 'object-contain',
+                      objectFit === 'blur' && 'relative z-10'
                     )}
                     sizes="(max-width: 768px) 100vw, 800px"
                   />

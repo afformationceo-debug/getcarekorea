@@ -77,6 +77,79 @@
     "title": "Лучшие клиники",
     "subtitle": "Аккредитованные JCI учреждения с опытными специалистами",
     "searchPlaceholder": "Поиск клиник, процедур...",
+    "listing": {
+      "heroTitle1": "Медицина мирового",
+      "heroTitle2": "уровня в Корее",
+      "aiBadge": "Отобрано ИИ - лучшие клиники",
+      "stats": {
+        "hospitals": "Клиники",
+        "accredited": "Аккредитация",
+        "verified": "Проверено",
+        "support": "Поддержка"
+      },
+      "filters": {
+        "button": "Фильтры"
+      },
+      "hospitalCount": "{count, plural, one {# клиника} few {# клиники} many {# клиник} other {# клиник}}",
+      "clearFilters": "Сбросить фильтры",
+      "showing": "Показано",
+      "hospitalsCount": "клиник",
+      "viewModes": {
+        "grid": "Сетка",
+        "list": "Список",
+        "grouped": "По группам"
+      },
+      "specialties": {
+        "all": "Все специальности",
+        "plastic-surgery": "Пластическая хирургия",
+        "dermatology": "Дерматология",
+        "dental": "Стоматология",
+        "ophthalmology": "Офтальмология",
+        "hair-transplant": "Пересадка волос",
+        "health-checkup": "Обследование",
+        "fertility": "Репродуктология"
+      },
+      "cities": {
+        "all": "Все города",
+        "gangnam": "Каннам",
+        "seoul": "Сеул",
+        "busan": "Пусан",
+        "incheon": "Инчхон"
+      },
+      "sortOptions": {
+        "rating": "По рейтингу",
+        "reviews": "По отзывам",
+        "featured": "Рекомендуемые",
+        "newest": "Новые"
+      },
+      "categories": {
+        "plastic-surgery": "Пластическая хирургия",
+        "dermatology": "Дерматология",
+        "dental": "Стоматология",
+        "ophthalmology": "Офтальмология",
+        "traditional-medicine": "Корейская медицина",
+        "traditional-korean-medicine": "Корейская медицина",
+        "university-hospital": "Университетская клиника",
+        "hair-transplant": "Пересадка волос",
+        "health-checkup": "Обследование",
+        "general": "Общая больница",
+        "general-hospital": "Общая больница",
+        "other": "Другие клиники"
+      },
+      "viewAll": "Смотреть все {count} клиник",
+      "showLess": "Свернуть",
+      "noHospitalsInCategory": "В этой категории пока нет клиник",
+      "hospital": "клиника",
+      "noResults": {
+        "title": "Клиники не найдены",
+        "description": "Попробуйте изменить параметры поиска"
+      },
+      "aiCta": {
+        "title": "Не знаете с чего начать?",
+        "description": "ИИ проанализирует ваши потребности и подберёт идеальную клинику.",
+        "button": "Получить рекомендацию ИИ"
+      }
+    },
     "filters": {
       "specialty": "Специализация",
       "city": "Город",
@@ -188,6 +261,11 @@
       "verifiedByGetCareKorea": "Проверено GetCareKorea",
       "basedOnReviews": "На основе {count} отзывов",
       "seeAllOnGoogleMaps": "Смотреть все на Google Maps",
+      "readRealReviews": "Читать отзывы реальных пациентов",
+      "viewAllReviews": "Посмотреть {count} проверенных отзывов на Google Maps",
+      "lookingForMoreReviews": "Ищете больше отзывов пациентов?",
+      "readReviewsOnGoogle": "Читать {count} отзывов на Google Maps",
+      "readAllReviews": "Читать все отзывы",
       "categoryTypes": {
         "plastic-surgery": "Клиника пластической хирургии",
         "dermatology": "Дерматологическая клиника",

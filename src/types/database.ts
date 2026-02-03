@@ -64,25 +64,16 @@ export interface Database {
         Row: {
           id: string;
           slug: string;
-          name_en: string;
-          name_zh_tw: string | null;
-          name_zh_cn: string | null;
-          name_ja: string | null;
-          name_th: string | null;
-          name_mn: string | null;
-          name_ru: string | null;
-          description_en: string | null;
-          description_zh_tw: string | null;
-          description_zh_cn: string | null;
-          description_ja: string | null;
-          description_th: string | null;
-          description_mn: string | null;
-          description_ru: string | null;
+          // JSONB multilingual columns
+          name: Json; // JSONB: { en: "...", ko: "...", "zh-TW": "...", ... }
+          description: Json | null; // JSONB: { en: "...", ko: "...", "zh-TW": "...", ... }
+          ai_summary: Json | null; // JSONB: { en: "...", ko: "...", ... }
           logo_url: string | null;
           cover_image_url: string | null;
           gallery: string[];
           address: string | null;
           city: string | null;
+          district: string | null;
           latitude: number | null;
           longitude: number | null;
           phone: string | null;
@@ -106,25 +97,15 @@ export interface Database {
         Insert: {
           id?: string;
           slug: string;
-          name_en: string;
-          name_zh_tw?: string | null;
-          name_zh_cn?: string | null;
-          name_ja?: string | null;
-          name_th?: string | null;
-          name_mn?: string | null;
-          name_ru?: string | null;
-          description_en?: string | null;
-          description_zh_tw?: string | null;
-          description_zh_cn?: string | null;
-          description_ja?: string | null;
-          description_th?: string | null;
-          description_mn?: string | null;
-          description_ru?: string | null;
+          name: Json; // JSONB: { en: "...", ko: "...", ... }
+          description?: Json | null;
+          ai_summary?: Json | null;
           logo_url?: string | null;
           cover_image_url?: string | null;
           gallery?: string[];
           address?: string | null;
           city?: string | null;
+          district?: string | null;
           latitude?: number | null;
           longitude?: number | null;
           phone?: string | null;

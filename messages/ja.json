@@ -77,6 +77,79 @@
     "title": "高評価の病院",
     "subtitle": "JCI認定施設と経験豊富な専門医",
     "searchPlaceholder": "病院、施術を検索...",
+    "listing": {
+      "heroTitle1": "世界クラスの",
+      "heroTitle2": "韓国医療",
+      "aiBadge": "AI厳選の優秀医療機関",
+      "stats": {
+        "hospitals": "病院",
+        "accredited": "認定",
+        "verified": "検証済",
+        "support": "サポート"
+      },
+      "filters": {
+        "button": "フィルター"
+      },
+      "hospitalCount": "{count}件の病院",
+      "clearFilters": "フィルターをクリア",
+      "showing": "表示中",
+      "hospitalsCount": "件の病院",
+      "viewModes": {
+        "grid": "グリッド表示",
+        "list": "リスト表示",
+        "grouped": "グループ表示"
+      },
+      "specialties": {
+        "all": "すべての専門科",
+        "plastic-surgery": "美容整形",
+        "dermatology": "皮膚科",
+        "dental": "歯科",
+        "ophthalmology": "眼科",
+        "hair-transplant": "植毛",
+        "health-checkup": "健康診断",
+        "fertility": "不妊治療"
+      },
+      "cities": {
+        "all": "すべての都市",
+        "gangnam": "江南",
+        "seoul": "ソウル",
+        "busan": "釜山",
+        "incheon": "仁川"
+      },
+      "sortOptions": {
+        "rating": "高評価順",
+        "reviews": "レビュー数順",
+        "featured": "おすすめ",
+        "newest": "新着順"
+      },
+      "categories": {
+        "plastic-surgery": "美容整形",
+        "dermatology": "皮膚科",
+        "dental": "歯科",
+        "ophthalmology": "眼科",
+        "traditional-medicine": "韓方医院",
+        "traditional-korean-medicine": "韓方医院",
+        "university-hospital": "大学病院",
+        "hair-transplant": "植毛",
+        "health-checkup": "健康診断",
+        "general": "総合病院",
+        "general-hospital": "総合病院",
+        "other": "その他のクリニック"
+      },
+      "viewAll": "全{count}件の病院を見る",
+      "showLess": "閉じる",
+      "noHospitalsInCategory": "このカテゴリには病院がまだありません",
+      "hospital": "病院",
+      "noResults": {
+        "title": "病院が見つかりません",
+        "description": "検索条件やフィルターを調整してください"
+      },
+      "aiCta": {
+        "title": "どこから始めればいいかわからない?",
+        "description": "AIがあなたのニーズを分析し、最適な病院をおすすめします。",
+        "button": "AIおすすめを見る"
+      }
+    },
     "filters": {
       "specialty": "専門科目",
       "city": "都市",
@@ -188,6 +261,11 @@
       "verifiedByGetCareKorea": "GetCareKorea認証",
       "basedOnReviews": "{count}件のレビューに基づく",
       "seeAllOnGoogleMaps": "Google Mapsで全て見る",
+      "readRealReviews": "実際の患者レビューを読む",
+      "viewAllReviews": "Google Mapsで{count}件の認証済みレビューを見る",
+      "lookingForMoreReviews": "もっと患者体験をお探しですか？",
+      "readReviewsOnGoogle": "Google Mapsで{count}件のレビューを読む",
+      "readAllReviews": "すべてのレビューを読む",
       "categoryTypes": {
         "plastic-surgery": "美容外科クリニック",
         "dermatology": "皮膚科クリニック",

@@ -46,10 +46,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           id,
           slug,
           name_en,
-          name_ko,
-          name_ja,
-          name_zh_cn,
-          name_zh_tw,
+          name,
           cover_image_url,
           city,
           avg_rating,
@@ -59,14 +56,21 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       `)
       .eq('procedure_id', proc.id);
 
+    // Helper to get localized value from JSONB field
+    const getLocalizedValue = (jsonField: Record<string, string> | null | undefined, fallbackLocale = 'en'): string => {
+      if (!jsonField) return '';
+      return jsonField[locale] || jsonField[fallbackLocale] || jsonField['en'] || '';
+    };
+
     const hospitals = (hospitalLinks || [])
       .filter((link: Record<string, unknown>) => link.hospitals)
       .map((link: Record<string, unknown>) => {
         const h = link.hospitals as Record<string, unknown>;
+        const nameJson = h.name as Record<string, string> | null;
         return {
           id: h.id,
           slug: h.slug,
-          name: h[`name_${locale}`] || h.name_en,
+          name: getLocalizedValue(nameJson) || (h.name_en as string),
           cover_image_url: h.cover_image_url,
           city: h.city,
           avg_rating: h.avg_rating,

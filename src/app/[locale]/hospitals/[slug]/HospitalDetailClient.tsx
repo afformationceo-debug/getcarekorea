@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Script from 'next/script';
 import Image from 'next/image';
 import { Link } from '@/lib/i18n/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
   Star,
@@ -19,7 +19,6 @@ import {
   ChevronRight,
   ChevronLeft,
   Heart,
-  Share2,
   MessageCircle,
   Calendar,
   Award,
@@ -38,6 +37,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { PhotoCarousel, CarouselPhoto } from '@/components/ui/photo-carousel';
+import { getCTAForLocale, CTAConfig } from '@/lib/settings/cta';
 import type { Locale } from '@/lib/i18n/config';
 
 interface GoogleReview {
@@ -147,7 +148,7 @@ function generateSchemaMarkup(hospital: Hospital, locale: Locale) {
     '@type': 'MedicalOrganization',
     '@id': `${baseUrl}/${locale}/hospitals/${hospital.slug}`,
     name: hospital.name,
-    alternateName: hospital.name_ko || hospital.name_en,
+    alternateName: hospital.name_ko || hospital.name,
     description: hospital.description,
     url: `${baseUrl}/${locale}/hospitals/${hospital.slug}`,
     logo: hospital.logo_url,
@@ -232,13 +233,25 @@ export function HospitalDetailClient({
   const tNav = useTranslations('navigation');
   const tCommon = useTranslations('common');
   const [activeTab, setActiveTab] = useState('overview');
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [ctaConfig, setCtaConfig] = useState<CTAConfig | null>(null);
 
-  const allImages = [
+  // Fetch CTA config for current locale
+  useEffect(() => {
+    getCTAForLocale(locale).then(setCtaConfig);
+  }, [locale]);
+
+  // External CTA link (WhatsApp/Line/Kakao/Telegram)
+  const externalCtaLink = ctaConfig?.url || '/contact';
+
+  // Convert images to CarouselPhoto format
+  const carouselPhotos: CarouselPhoto[] = [
     hospital.cover_image_url,
     ...hospital.gallery,
-  ].filter(Boolean) as string[];
+  ].filter(Boolean).map((url, index) => ({
+    id: `photo-${index}`,
+    image_url: url as string,
+    alt: `${hospital.name} - Photo ${index + 1}`,
+  }));
 
   // Generate schema markup
   const schemaMarkup = generateSchemaMarkup(hospital, locale);
@@ -275,182 +288,104 @@ export function HospitalDetailClient({
       </motion.div>
 
       {/* Hero Section with Gallery */}
+      {/* Option 2: 블러 배경 (인스타그램 스타일) */}
       <section className="relative">
-        <div className="relative h-[350px] lg:h-[500px] overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentImageIndex}
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.5 }}
-              className="absolute inset-0"
-            >
-              {allImages[currentImageIndex] ? (
-                <Image
-                  src={allImages[currentImageIndex]}
-                  alt={hospital.name}
-                  fill
-                  sizes="100vw"
-                  className="object-cover"
-                  priority
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-muted">
-                  <span className="text-muted-foreground">{t('detail.noImageAvailable')}</span>
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Gradient overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
-
-          {/* Gallery navigation */}
-          {allImages.length > 1 && (
-            <>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length)}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-colors hover:bg-black/70 cursor-pointer"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setCurrentImageIndex((prev) => (prev + 1) % allImages.length)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-colors hover:bg-black/70 cursor-pointer"
-                aria-label="Next image"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </motion.button>
-
-              {/* Image dots */}
-              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-                {allImages.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`h-2 rounded-full transition-all cursor-pointer ${
-                      index === currentImageIndex ? 'w-8 bg-white' : 'w-2 bg-white/50'
-                    }`}
-                    aria-label={`Go to image ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* Top actions */}
-          <div className="absolute right-4 top-4 flex gap-2">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setIsFavorite(!isFavorite)}
-              className={`rounded-full p-3 backdrop-blur-sm transition-colors ${
-                isFavorite ? 'bg-red-500 text-white' : 'bg-black/50 text-white hover:bg-black/70'
-              }`}
-            >
-              <Heart className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`} />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
-            >
-              <Share2 className="h-5 w-5" />
-            </motion.button>
+        {carouselPhotos.length > 0 ? (
+          <PhotoCarousel
+            photos={carouselPhotos}
+            height="md"
+            objectFit="blur"
+            showLightbox={true}
+            showArrows={true}
+            showDots={true}
+            loop={true}
+            activeDotColor="bg-primary"
+          />
+        ) : (
+          <div className="flex h-[300px] sm:h-[400px] md:h-[500px] w-full items-center justify-center bg-muted">
+            <span className="text-muted-foreground">{t('detail.noImageAvailable')}</span>
           </div>
+        )}
+      </section>
 
-          {/* Hospital Info Overlay */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white"
-          >
-            <div className="container">
-              <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-                <div className="flex items-start gap-3 sm:gap-4">
-                  {hospital.logo_url && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.3, type: 'spring' }}
-                      className="relative h-14 w-14 sm:h-20 sm:w-20 overflow-hidden rounded-xl sm:rounded-2xl border-2 sm:border-4 border-white bg-white shadow-xl shrink-0"
-                    >
-                      <Image
-                        src={hospital.logo_url}
-                        alt={`${hospital.name} logo`}
-                        fill
-                        sizes="80px"
-                        className="object-cover"
-                      />
-                    </motion.div>
+      {/* Hospital Info Section */}
+      <section className="border-b bg-background">
+        <div className="container py-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex items-start gap-3 sm:gap-4">
+              {hospital.logo_url && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.3, type: 'spring' }}
+                  className="relative h-14 w-14 sm:h-20 sm:w-20 overflow-hidden rounded-xl sm:rounded-2xl border-2 bg-white shadow-lg shrink-0"
+                >
+                  <Image
+                    src={hospital.logo_url}
+                    alt={`${hospital.name} logo`}
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                  />
+                </motion.div>
+              )}
+              <div className="min-w-0">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="mb-1 sm:mb-2 flex flex-wrap gap-1.5 sm:gap-2"
+                >
+                  {hospital.is_featured && (
+                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 border-0 text-xs">
+                      <Sparkles className="mr-1 h-3 w-3" />
+                      {t('badges.featured')}
+                    </Badge>
                   )}
-                  <div className="min-w-0">
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4 }}
-                      className="mb-1 sm:mb-2 flex flex-wrap gap-1.5 sm:gap-2"
-                    >
-                      {hospital.is_featured && (
-                        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 border-0 text-xs">
-                          <Sparkles className="mr-1 h-3 w-3" />
-                          {t('badges.featured')}
-                        </Badge>
-                      )}
-                      {hospital.certifications.includes('JCI') && (
-                        <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 border-0 text-xs">
-                          <Award className="mr-1 h-3 w-3" />
-                          {t('badges.jci')}
-                        </Badge>
-                      )}
-                      {hospital.is_verified && (
-                        <Badge variant="secondary" className="bg-white/20 backdrop-blur-sm text-xs">
-                          <BadgeCheck className="mr-1 h-3 w-3" />
-                          {t('badges.verified')}
-                        </Badge>
-                      )}
-                    </motion.div>
-                    <motion.h1
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 }}
-                      className="text-xl sm:text-3xl lg:text-4xl font-bold line-clamp-2"
-                    >
-                      {hospital.name}
-                    </motion.h1>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.6 }}
-                      className="mt-1 sm:mt-2 flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-white/90"
-                    >
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
-                        {hospital.city}{hospital.district ? `, ${hospital.district}` : ''}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold">{hospital.avg_rating.toFixed(1)}</span>
-                        <span className="text-white/70 hidden sm:inline">({hospital.review_count} reviews)</span>
-                      </div>
-                      <div className="hidden sm:flex items-center gap-1">
-                        <Languages className="h-4 w-4" />
-                        {hospital.languages.slice(0, 3).join(', ')}
-                      </div>
-                    </motion.div>
+                  {hospital.certifications.includes('JCI') && (
+                    <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 border-0 text-xs">
+                      <Award className="mr-1 h-3 w-3" />
+                      {t('badges.jci')}
+                    </Badge>
+                  )}
+                  {hospital.is_verified && (
+                    <Badge variant="secondary" className="text-xs">
+                      <BadgeCheck className="mr-1 h-3 w-3" />
+                      {t('badges.verified')}
+                    </Badge>
+                  )}
+                </motion.div>
+                <motion.h1
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-xl sm:text-3xl lg:text-4xl font-bold"
+                >
+                  {hospital.name}
+                </motion.h1>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                  className="mt-1 sm:mt-2 flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground"
+                >
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
+                    {hospital.city}{hospital.district ? `, ${hospital.district}` : ''}
                   </div>
-                </div>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="font-semibold">{hospital.avg_rating.toFixed(1)}</span>
+                    <span className="hidden sm:inline">({hospital.review_count} reviews)</span>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-1">
+                    <Languages className="h-4 w-4" />
+                    {hospital.languages.slice(0, 3).join(', ')}
+                  </div>
+                </motion.div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -505,7 +440,14 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
   const t = useTranslations('hospitals');
   const tBlog = useTranslations('blog');
   const [showAllImages, setShowAllImages] = useState(false);
+  const [ctaConfig, setCtaConfig] = useState<CTAConfig | null>(null);
   const displayImages = showAllImages ? hospital.gallery : hospital.gallery.slice(0, 6);
+
+  useEffect(() => {
+    getCTAForLocale(locale).then(setCtaConfig);
+  }, [locale]);
+
+  const externalCtaLink = ctaConfig?.url || '/contact';
 
   // Format category for display using translations
   const formatCategory = (cat?: string) => {
@@ -517,6 +459,21 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
       return cat.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     }
     return translated;
+  };
+
+  // Known specialty keys for translation
+  const knownSpecialtyKeys = [
+    'plastic-surgery', 'dermatology', 'dental', 'ophthalmology',
+    'hair-transplant', 'health-checkup', 'fertility', 'all'
+  ];
+
+  // Helper to translate specialty names
+  const getSpecialtyName = (specialty: string) => {
+    const key = specialty.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    if (knownSpecialtyKeys.includes(key)) {
+      return t(`listing.specialties.${key}` as Parameters<typeof t>[0]);
+    }
+    return specialty;
   };
 
   return (
@@ -533,7 +490,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
           transition={{ delay: 0.05 }}
         >
           <Card className="overflow-hidden border-0 shadow-lg border-l-4 border-l-primary">
-            <CardHeader className="bg-gradient-to-r from-primary/10 to-violet-500/10">
+            <CardHeader className="border-b py-3">
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
                 {t('detail.aiSummary')}
@@ -555,7 +512,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
         transition={{ delay: 0.1 }}
       >
         <Card className="overflow-hidden border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
+          <CardHeader className="border-b py-3">
             <CardTitle className="flex items-center gap-2">
               <Stethoscope className="h-5 w-5 text-primary" />
               {t('detail.aboutHospital', { name: hospital.name })}
@@ -566,40 +523,31 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
             <div className="space-y-4">
               <p className="text-muted-foreground leading-relaxed text-base">{hospital.description}</p>
 
-              {/* Auto-generated Extended Description based on hospital data */}
-              <div className="space-y-3 text-muted-foreground leading-relaxed">
+              {/* Hospital Info Summary */}
+              <div className="flex flex-wrap gap-4 pt-2">
                 {hospital.category && (
-                  <p>
-                    <span className="font-medium text-foreground">{hospital.name}</span> is a renowned {formatCategory(hospital.category)?.toLowerCase()}
-                    {hospital.district && ` located in the heart of ${hospital.district}, ${hospital.city}`}.
-                    {hospital.avg_rating >= 4.5 && ` With an outstanding rating of ${hospital.avg_rating.toFixed(1)} stars from ${hospital.review_count.toLocaleString()} patient reviews, this clinic has established itself as one of the most trusted medical facilities in Korea.`}
-                    {hospital.avg_rating >= 4.0 && hospital.avg_rating < 4.5 && ` Maintaining a solid rating of ${hospital.avg_rating.toFixed(1)} stars from ${hospital.review_count.toLocaleString()} reviews, this clinic is well-regarded for its quality care.`}
-                  </p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Award className="h-4 w-4 text-primary" />
+                    <span>{formatCategory(hospital.category)}</span>
+                  </div>
                 )}
-
+                {hospital.district && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    <span>{hospital.district}, {hospital.city}</span>
+                  </div>
+                )}
                 {hospital.specialties && hospital.specialties.length > 0 && (
-                  <p>
-                    The clinic specializes in <span className="font-medium text-foreground">{hospital.specialties.slice(0, 3).join(', ')}</span>
-                    {hospital.specialties.length > 3 && ` and ${hospital.specialties.length - 3} more specialties`},
-                    offering world-class treatments that attract patients from all over the world.
-                    Each procedure is performed by experienced specialists using state-of-the-art equipment and techniques.
-                  </p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Stethoscope className="h-4 w-4 text-primary" />
+                    <span>{hospital.specialties.slice(0, 3).map(s => getSpecialtyName(s)).join(', ')}</span>
+                  </div>
                 )}
-
-                {hospital.certifications && hospital.certifications.length > 0 && (
-                  <p>
-                    As a {hospital.certifications.includes('JCI') ? 'JCI-accredited' : 'certified'} medical institution,
-                    {hospital.name} meets the highest international standards for patient safety and quality of care.
-                    This accreditation ensures that international patients receive the same level of excellence as they would expect from top hospitals worldwide.
-                  </p>
-                )}
-
                 {hospital.languages && hospital.languages.length > 1 && (
-                  <p>
-                    To better serve international patients, the clinic provides multilingual support in {hospital.languages.slice(0, 4).join(', ')}
-                    {hospital.languages.length > 4 && ` and more`}.
-                    This ensures smooth communication throughout your medical journey, from initial consultation to post-treatment care.
-                  </p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Languages className="h-4 w-4 text-primary" />
+                    <span>{hospital.languages.slice(0, 4).join(', ')}</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -798,10 +746,10 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                   className="w-full gap-2 border-sky-300 text-sky-700 hover:bg-sky-100 dark:border-sky-700 dark:text-sky-300 dark:hover:bg-sky-900/50"
                   asChild
                 >
-                  <Link href={`/inquiry?hospital=${hospital.id}&service=interpreter`}>
+                  <a href={externalCtaLink} target="_blank" rel="noopener noreferrer">
                     <Languages className="h-5 w-5" />
                     {t('detail.bookWithInterpreter')}
-                  </Link>
+                  </a>
                 </Button>
                 <p className="text-center text-xs text-sky-600 dark:text-sky-400">
                   {t('detail.noFeesResponse')}
@@ -820,7 +768,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
           transition={{ delay: 0.15 }}
         >
           <Card className="overflow-hidden border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-indigo-500/5 to-indigo-500/10">
+            <CardHeader className="border-b py-3">
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Play className="h-5 w-5 text-indigo-500" />
@@ -873,7 +821,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
         transition={{ delay: 0.2 }}
       >
         <Card className="overflow-hidden border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-violet-500/5 to-violet-500/10">
+          <CardHeader className="border-b py-3">
             <CardTitle className="flex items-center gap-2">
               <Award className="h-5 w-5 text-violet-500" />
               {t('detail.specialties')}
@@ -892,7 +840,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                     variant="secondary"
                     className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-violet-500/10 to-purple-500/10 hover:from-violet-500/20 hover:to-purple-500/20 transition-colors"
                   >
-                    {specialty}
+                    {getSpecialtyName(specialty)}
                   </Badge>
                 </motion.div>
               ))}
@@ -909,7 +857,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
           transition={{ delay: 0.25 }}
         >
           <Card className="overflow-hidden border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-teal-500/5 to-teal-500/10">
+            <CardHeader className="border-b py-3">
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-teal-500" />
                 {t('detail.locationDirections')}
@@ -965,7 +913,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
         transition={{ delay: 0.3 }}
       >
         <Card className="overflow-hidden border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-emerald-500/5 to-emerald-500/10">
+          <CardHeader className="border-b py-3">
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-emerald-500" />
               {t('detail.trustSafety')}
@@ -1062,10 +1010,10 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
                   className="gap-2 rounded-full bg-white text-violet-700 hover:bg-white/90 font-semibold shadow-lg"
                   asChild
                 >
-                  <Link href={`/inquiry?hospital=${hospital.id}&service=interpreter`}>
+                  <a href={externalCtaLink} target="_blank" rel="noopener noreferrer">
                     <MessageCircle className="h-5 w-5" />
                     {t('detail.requestInterpreter')}
-                  </Link>
+                  </a>
                 </Button>
                 <Button
                   size="lg"
@@ -1091,7 +1039,7 @@ function OverviewSection({ hospital, locale, relatedBlogPosts = [] }: { hospital
           transition={{ delay: 0.4 }}
         >
           <Card className="overflow-hidden border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-rose-500/5 to-pink-500/10">
+            <CardHeader className="border-b py-3">
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-5 w-5 text-rose-500" />
@@ -1372,7 +1320,7 @@ function ReviewsSection({ hospital }: { hospital: Hospital }) {
         transition={{ delay: 0.1 }}
       >
         <Card className="overflow-hidden border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-amber-500/5 to-orange-500/10">
+          <CardHeader className="border-b py-3">
             <CardTitle className="flex items-center gap-2">
               <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
               {tReviews('title')}
@@ -1464,10 +1412,9 @@ function ReviewsSection({ hospital }: { hospital: Hospital }) {
                   <Award className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-green-700 dark:text-green-400">Highly Rated Clinic</h4>
+                  <h4 className="font-semibold text-green-700 dark:text-green-400">{t('detail.highlyRated')}</h4>
                   <p className="text-sm text-muted-foreground">
-                    This clinic maintains an excellent rating of <span className="font-semibold">{hospital.avg_rating.toFixed(1)} stars</span> from {hospital.review_count.toLocaleString()} patient reviews.
-                    Patients particularly appreciate the professional staff and quality of care.
+                    {t('detail.highlyRatedDesc', { rating: hospital.avg_rating.toFixed(1), count: hospital.review_count.toLocaleString() })}
                   </p>
                 </div>
               </div>
@@ -1496,9 +1443,9 @@ function ReviewsSection({ hospital }: { hospital: Hospital }) {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">Read Real Patient Reviews</h3>
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">{t('detail.readRealReviews') || 'Read Real Patient Reviews'}</h3>
                     <p className="text-sm text-muted-foreground">
-                      View all {hospital.review_count.toLocaleString()} verified reviews on Google Maps
+                      {t('detail.viewAllReviews', { count: hospital.review_count.toLocaleString() }) || `View all ${hospital.review_count.toLocaleString()} verified reviews on Google Maps`}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
                       {[1, 2, 3, 4, 5].map((star) => (
@@ -1624,13 +1571,13 @@ function ReviewsSection({ hospital }: { hospital: Hospital }) {
                     <MessageCircle className="h-5 w-5 text-amber-600" />
                   </div>
                   <div>
-                    <p className="font-medium">Looking for more patient experiences?</p>
-                    <p className="text-sm text-muted-foreground">Read {hospital.review_count.toLocaleString()} reviews on Google Maps for detailed insights</p>
+                    <p className="font-medium">{t('detail.lookingForMoreReviews') || 'Looking for more patient experiences?'}</p>
+                    <p className="text-sm text-muted-foreground">{t('detail.readReviewsOnGoogle', { count: hospital.review_count.toLocaleString() }) || `Read ${hospital.review_count.toLocaleString()} reviews on Google Maps for detailed insights`}</p>
                   </div>
                 </div>
                 <Button variant="outline" className="gap-2" asChild>
                   <a href={hospital.google_maps_url} target="_blank" rel="noopener noreferrer">
-                    Read All Reviews
+                    {t('detail.readAllReviews') || 'Read All Reviews'}
                     <ArrowRight className="h-4 w-4" />
                   </a>
                 </Button>
@@ -1645,15 +1592,23 @@ function ReviewsSection({ hospital }: { hospital: Hospital }) {
 
 // Mobile Fixed Bottom CTA Bar - Only visible on mobile
 function MobileBottomCTA({ hospital, locale }: { hospital: Hospital; locale: Locale }) {
+  const [ctaConfig, setCtaConfig] = useState<CTAConfig | null>(null);
+
+  useEffect(() => {
+    getCTAForLocale(locale).then(setCtaConfig);
+  }, [locale]);
+
+  const externalCtaLink = ctaConfig?.url || '/contact';
+
   const getCTAText = () => {
     const ctaMap: Record<string, { cta1: string; cta2: string }> = {
-      'en': { cta1: 'Free Quote', cta2: 'Book with Interpreter' },
-      'ja': { cta1: '無料見積', cta2: '通訳付き予約' },
-      'zh_cn': { cta1: '免费报价', cta2: '带翻译预约' },
-      'zh_tw': { cta1: '免費報價', cta2: '帶翻譯預約' },
-      'th': { cta1: 'ขอใบเสนอราคา', cta2: 'จองพร้อมล่าม' },
-      'ru': { cta1: 'Бесплатный расчет', cta2: 'С переводчиком' },
-      'mn': { cta1: 'Үнэ авах', cta2: 'Орчуулагчтай' },
+      'en': { cta1: 'Free Quote', cta2: 'Chat Now' },
+      'ja': { cta1: '無料見積', cta2: '今すぐチャット' },
+      'zh_cn': { cta1: '免费报价', cta2: '立即咨询' },
+      'zh_tw': { cta1: '免費報價', cta2: '立即諮詢' },
+      'th': { cta1: 'ขอใบเสนอราคา', cta2: 'แชทเลย' },
+      'ru': { cta1: 'Бесплатный расчет', cta2: 'Написать' },
+      'mn': { cta1: 'Үнэ авах', cta2: 'Чатлах' },
     };
     const normalizedLocale = locale.replace('-', '_').toLowerCase();
     return ctaMap[normalizedLocale] || ctaMap['en'];
@@ -1679,10 +1634,10 @@ function MobileBottomCTA({ hospital, locale }: { hospital: Hospital; locale: Loc
             className="flex-1 gap-1.5 rounded-xl py-5 text-sm font-semibold border-2 hover:bg-primary/5"
             asChild
           >
-            <Link href={`/inquiry?hospital=${hospital.id}&service=interpreter`}>
+            <a href={externalCtaLink} target="_blank" rel="noopener noreferrer">
               <Languages className="h-4 w-4" />
               {cta.cta2}
-            </Link>
+            </a>
           </Button>
         </div>
       </div>
@@ -1692,6 +1647,13 @@ function MobileBottomCTA({ hospital, locale }: { hospital: Hospital; locale: Loc
 
 function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Locale }) {
   const t = useTranslations('hospitals.detail');
+  const [ctaConfig, setCtaConfig] = useState<CTAConfig | null>(null);
+
+  useEffect(() => {
+    getCTAForLocale(locale).then(setCtaConfig);
+  }, [locale]);
+
+  const externalCtaLink = ctaConfig?.url || '/contact';
 
   // Get locale-specific CTA text
   const getCTAText = () => {
@@ -1763,8 +1725,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
       {/* Desktop: sticky in sidebar, Mobile: hidden (shown at bottom via MobileBottomCTA) */}
       {/* Desktop CTA - NOT sticky to avoid covering content */}
       <Card className="hidden lg:block overflow-hidden border-0 shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-violet-500/5 to-purple-500/5" />
-        <CardContent className="relative p-6">
+        <CardContent className="p-6">
           <div className="text-center mb-6">
             <motion.div
               animate={{ scale: [1, 1.05, 1] }}
@@ -1795,10 +1756,10 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
               className="w-full gap-2 rounded-xl py-6 text-lg border-2 hover:bg-primary/5"
               asChild
             >
-              <Link href={`/inquiry?hospital=${hospital.id}&service=interpreter`}>
+              <a href={externalCtaLink} target="_blank" rel="noopener noreferrer">
                 <Languages className="h-5 w-5" />
                 {cta.cta2}
-              </Link>
+              </a>
             </Button>
           </div>
 
@@ -1825,7 +1786,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
 
       {/* Contact Info */}
       <Card className="overflow-hidden border-0 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-muted/50 to-muted/30">
+        <CardHeader className="border-b py-3">
           <CardTitle className="text-base">{t('contactInfo')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 pt-4">
@@ -1900,6 +1861,22 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
                 <p className="text-xs text-muted-foreground">{t('operatingHours')}</p>
                 <div className="text-sm space-y-0.5 mt-1">
                   {hospital.opening_hours.slice(0, 7).map((hour, idx) => {
+                    // Day name translations
+                    const dayTranslations: Record<string, Record<string, string>> = {
+                      '월요일': { en: 'Monday', ja: '月曜日', 'zh-CN': '星期一', 'zh-TW': '星期一', th: 'วันจันทร์', ru: 'Понедельник', mn: 'Даваа', ko: '월요일' },
+                      '화요일': { en: 'Tuesday', ja: '火曜日', 'zh-CN': '星期二', 'zh-TW': '星期二', th: 'วันอังคาร', ru: 'Вторник', mn: 'Мягмар', ko: '화요일' },
+                      '수요일': { en: 'Wednesday', ja: '水曜日', 'zh-CN': '星期三', 'zh-TW': '星期三', th: 'วันพุธ', ru: 'Среда', mn: 'Лхагва', ko: '수요일' },
+                      '목요일': { en: 'Thursday', ja: '木曜日', 'zh-CN': '星期四', 'zh-TW': '星期四', th: 'วันพฤหัสบดี', ru: 'Четверг', mn: 'Пүрэв', ko: '목요일' },
+                      '금요일': { en: 'Friday', ja: '金曜日', 'zh-CN': '星期五', 'zh-TW': '星期五', th: 'วันศุกร์', ru: 'Пятница', mn: 'Баасан', ko: '금요일' },
+                      '토요일': { en: 'Saturday', ja: '土曜日', 'zh-CN': '星期六', 'zh-TW': '星期六', th: 'วันเสาร์', ru: 'Суббота', mn: 'Бямба', ko: '토요일' },
+                      '일요일': { en: 'Sunday', ja: '日曜日', 'zh-CN': '星期日', 'zh-TW': '星期日', th: 'วันอาทิตย์', ru: 'Воскресенье', mn: 'Ням', ko: '일요일' },
+                    };
+                    const hoursTranslations: Record<string, Record<string, string>> = {
+                      '휴무일': { en: 'Closed', ja: '定休日', 'zh-CN': '休息', 'zh-TW': '休息', th: 'ปิด', ru: 'Выходной', mn: 'Амарна', ko: '휴무일' },
+                    };
+                    const translateDay = (day: string) => dayTranslations[day]?.[locale] || day;
+                    const translateHours = (hours: string) => hoursTranslations[hours]?.[locale] || hours;
+
                     // Parse JSON string if needed
                     try {
                       const parsed = typeof hour === 'string' && hour.startsWith('{')
@@ -1908,7 +1885,7 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
                       if (typeof parsed === 'object' && parsed.day && parsed.hours) {
                         return (
                           <p key={idx} className="text-muted-foreground">
-                            <span className="font-medium">{parsed.day}:</span> {parsed.hours}
+                            <span className="font-medium">{translateDay(parsed.day)}:</span> {translateHours(parsed.hours)}
                           </p>
                         );
                       }
@@ -1971,9 +1948,9 @@ function SidebarSection({ hospital, locale }: { hospital: Hospital; locale: Loca
               <p className="text-xs text-muted-foreground">{t('chatWithUs')}</p>
             </div>
             <Button size="sm" className="bg-green-500 hover:bg-green-600" asChild>
-              <Link href={`/contact`}>
+              <a href={externalCtaLink} target="_blank" rel="noopener noreferrer">
                 {t('chat')}
-              </Link>
+              </a>
             </Button>
           </div>
         </CardContent>

@@ -77,6 +77,79 @@
     "title": "頂級醫院",
     "subtitle": "JCI認證機構，經驗豐富的專家",
     "searchPlaceholder": "搜尋醫院、療程...",
+    "listing": {
+      "heroTitle1": "世界級的",
+      "heroTitle2": "韓國醫療",
+      "aiBadge": "AI精選優質醫療機構",
+      "stats": {
+        "hospitals": "醫院",
+        "accredited": "認證",
+        "verified": "已驗證",
+        "support": "支援"
+      },
+      "filters": {
+        "button": "篩選"
+      },
+      "hospitalCount": "{count}家醫院",
+      "clearFilters": "清除篩選",
+      "showing": "顯示",
+      "hospitalsCount": "家醫院",
+      "viewModes": {
+        "grid": "網格檢視",
+        "list": "列表檢視",
+        "grouped": "分組檢視"
+      },
+      "specialties": {
+        "all": "所有專科",
+        "plastic-surgery": "整形外科",
+        "dermatology": "皮膚科",
+        "dental": "牙科",
+        "ophthalmology": "眼科",
+        "hair-transplant": "植髮",
+        "health-checkup": "健康檢查",
+        "fertility": "生殖醫學"
+      },
+      "cities": {
+        "all": "所有城市",
+        "gangnam": "江南",
+        "seoul": "首爾",
+        "busan": "釜山",
+        "incheon": "仁川"
+      },
+      "sortOptions": {
+        "rating": "最高評分",
+        "reviews": "最多評論",
+        "featured": "推薦",
+        "newest": "最新"
+      },
+      "categories": {
+        "plastic-surgery": "整形外科",
+        "dermatology": "皮膚科",
+        "dental": "牙科",
+        "ophthalmology": "眼科",
+        "traditional-medicine": "韓醫院",
+        "traditional-korean-medicine": "韓醫院",
+        "university-hospital": "大學醫院",
+        "hair-transplant": "植髮",
+        "health-checkup": "健康檢查",
+        "general": "綜合醫院",
+        "general-hospital": "綜合醫院",
+        "other": "其他診所"
+      },
+      "viewAll": "查看全部{count}家醫院",
+      "showLess": "收起",
+      "noHospitalsInCategory": "該類別暫無醫院",
+      "hospital": "醫院",
+      "noResults": {
+        "title": "未找到醫院",
+        "description": "請嘗試調整搜尋條件或篩選"
+      },
+      "aiCta": {
+        "title": "不知道從哪裡開始？",
+        "description": "AI將分析您的需求，推薦最適合您的醫院。",
+        "button": "獲取AI推薦"
+      }
+    },
     "filters": {
       "specialty": "專科",
       "city": "城市",
@@ -188,6 +261,11 @@
       "verifiedByGetCareKorea": "GetCareKorea認證",
       "basedOnReviews": "基於 {count} 則評論",
       "seeAllOnGoogleMaps": "在Google Maps上查看全部",
+      "readRealReviews": "閱讀真實患者評價",
+      "viewAllReviews": "在Google Maps上查看{count}條認證評價",
+      "lookingForMoreReviews": "想了解更多患者體驗？",
+      "readReviewsOnGoogle": "在Google Maps上閱讀{count}條評價",
+      "readAllReviews": "閱讀全部評價",
       "categoryTypes": {
         "plastic-surgery": "整形外科診所",
         "dermatology": "皮膚科診所",

@@ -29,6 +29,12 @@ export default async function ProcedureDetailPage({ params }: PageProps) {
   // Get locale field suffix
   const localeSuffix = locale.replace('-', '_').toLowerCase();
 
+  // Helper to get localized value from JSONB field
+  const getLocalizedValue = (jsonField: Record<string, string> | null | undefined, fallbackLocale = 'en'): string => {
+    if (!jsonField) return '';
+    return jsonField[locale] || jsonField[fallbackLocale] || jsonField['en'] || '';
+  };
+
   // Get related hospitals
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: hospitalLinks } = await (supabase.from('hospital_procedures') as any)
@@ -40,10 +46,7 @@ export default async function ProcedureDetailPage({ params }: PageProps) {
         id,
         slug,
         name_en,
-        name_ko,
-        name_ja,
-        name_zh_cn,
-        name_zh_tw,
+        name,
         cover_image_url,
         city,
         avg_rating,
@@ -58,10 +61,11 @@ export default async function ProcedureDetailPage({ params }: PageProps) {
     .filter((link: Record<string, unknown>) => link.hospitals)
     .map((link: Record<string, unknown>) => {
       const h = link.hospitals as Record<string, unknown>;
+      const nameJson = h.name as Record<string, string> | null;
       return {
         id: h.id as string,
         slug: h.slug as string,
-        name: (h[`name_${localeSuffix}`] || h.name_en) as string,
+        name: getLocalizedValue(nameJson) || (h.name_en as string),
         cover_image_url: h.cover_image_url as string | null,
         city: h.city as string,
         avg_rating: h.avg_rating as number,

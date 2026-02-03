@@ -86,7 +86,6 @@ export default async function HospitalsPage({ params }: PageProps) {
   setRequestLocale(locale);
 
   const supabase = await createAdminClient();
-  const localeSuffix = locale.replace('-', '_').toLowerCase();
 
   // Fetch hospitals from DB
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -96,6 +95,12 @@ export default async function HospitalsPage({ params }: PageProps) {
     .order('is_featured', { ascending: false })
     .order('avg_rating', { ascending: false });
 
+  // Helper to get localized value from JSONB field
+  const getLocalizedValue = (jsonField: Record<string, string> | null | undefined, fallbackLocale = 'en'): string => {
+    if (!jsonField) return '';
+    return jsonField[locale] || jsonField[fallbackLocale] || jsonField['en'] || '';
+  };
+
   const hospitals = (hospitalsData || []).map((h: Record<string, unknown>) => {
     // Use first Google photo if available, otherwise fall back to cover_image_url
     const googlePhotos = h.google_photos as string[] | null;
@@ -103,11 +108,15 @@ export default async function HospitalsPage({ params }: PageProps) {
       ? googlePhotos[0]
       : (h.cover_image_url || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=600&fit=crop');
 
+    // Get localized name and description from JSONB fields (with legacy fallback)
+    const nameJson = h.name as Record<string, string> | null;
+    const descJson = h.description as Record<string, string> | null;
+
     return {
       id: h.id as string,
       slug: h.slug as string,
-      name: (h[`name_${localeSuffix}`] || h.name_en || h.name_ko) as string,
-      description: (h[`description_${localeSuffix}`] || h.description_en || h.description_ko) as string,
+      name: getLocalizedValue(nameJson) || (h.name_en as string) || '',
+      description: getLocalizedValue(descJson) || (h.description_en as string) || '',
       image: coverImage as string,
       city: (h.city || 'Seoul') as string,
       district: h.district as string | undefined,

@@ -17,36 +17,24 @@ import {
 import type { Hospital } from '@/types/database';
 
 // Supported locales for multi-language fields
-const SUPPORTED_LOCALES = ['en', 'zh-TW', 'zh-CN', 'ja', 'th', 'mn', 'ru'] as const;
+const SUPPORTED_LOCALES = ['en', 'ko', 'zh-TW', 'zh-CN', 'ja', 'th', 'mn', 'ru'] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 
-// Map locale to database field suffix
-const localeFieldMap: Record<Locale, string> = {
-  en: 'en',
-  'zh-TW': 'zh_tw',
-  'zh-CN': 'zh_cn',
-  ja: 'ja',
-  th: 'th',
-  mn: 'mn',
-  ru: 'ru',
-};
-
-// Get name and description fields based on locale
-function getLocalizedFields(locale: Locale): string {
-  const suffix = localeFieldMap[locale] || 'en';
-  return `name_${suffix}, description_${suffix}`;
+// Helper to get localized value from JSONB field
+function getLocalizedValue(jsonField: Record<string, string> | null | undefined, locale: Locale, fallbackLocale: Locale = 'en'): string {
+  if (!jsonField) return '';
+  return jsonField[locale] || jsonField[fallbackLocale] || jsonField['en'] || '';
 }
 
 // Transform hospital data to include localized fields
-function transformHospital(hospital: Hospital, locale: Locale): Hospital & { name: string; description: string | null } {
-  const suffix = localeFieldMap[locale] || 'en';
-  const nameKey = `name_${suffix}` as keyof Hospital;
-  const descKey = `description_${suffix}` as keyof Hospital;
+function transformHospital(hospital: Hospital, locale: Locale): Hospital & { localizedName: string; localizedDescription: string | null } {
+  const nameJson = hospital.name as Record<string, string> | null;
+  const descJson = hospital.description as Record<string, string> | null;
 
   return {
     ...hospital,
-    name: (hospital[nameKey] as string) || hospital.name_en,
-    description: (hospital[descKey] as string | null) || hospital.description_en,
+    localizedName: getLocalizedValue(nameJson, locale),
+    localizedDescription: getLocalizedValue(descJson, locale) || null,
   };
 }
 
@@ -100,14 +88,14 @@ export async function GET(request: NextRequest) {
       query = query.eq('is_featured', true);
     }
 
-    // Text search
+    // Text search (search in JSONB fields)
     if (search) {
       const searchPattern = `%${search}%`;
-      query = query.or(`name_en.ilike.${searchPattern},description_en.ilike.${searchPattern}`);
+      query = query.or(`name->en.ilike.${searchPattern},name->ko.ilike.${searchPattern}`);
     }
 
     // Apply sorting
-    const validSortFields = ['avg_rating', 'review_count', 'name_en', 'created_at'];
+    const validSortFields = ['avg_rating', 'review_count', 'created_at'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'avg_rating';
     query = query.order(sortField, { ascending: sortOrder === 'asc' });
 
@@ -132,7 +120,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform data with locale-specific fields
-    const hospitals = (data || []).map(hospital => transformHospital(hospital, locale));
+    const hospitals = (data || []).map(hospital => {
+      const transformed = transformHospital(hospital, locale);
+      // Add backward-compatible 'name' and 'description' string fields
+      return {
+        ...transformed,
+        name: transformed.localizedName,
+        description: transformed.localizedDescription,
+      };
+    });
 
     return createSuccessResponse(hospitals, {
       page,
@@ -174,9 +170,14 @@ export async function POST(request: NextRequest) {
     // Parse request body
     const body = await request.json();
 
-    // Validate required fields
-    const requiredFields = ['slug', 'name_en'];
+    // Validate required fields (name must be JSONB with at least 'en' key)
+    const requiredFields = ['slug', 'name'];
     const missingFields = requiredFields.filter(field => !body[field]);
+
+    // Validate name has at least English
+    if (body.name && typeof body.name === 'object' && !body.name.en) {
+      missingFields.push('name.en');
+    }
 
     if (missingFields.length > 0) {
       throw new APIError(

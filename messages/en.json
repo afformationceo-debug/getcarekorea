@@ -77,6 +77,79 @@
     "title": "Top-Rated Hospitals",
     "subtitle": "JCI-accredited facilities with experienced specialists",
     "searchPlaceholder": "Search hospitals, procedures...",
+    "listing": {
+      "heroTitle1": "World-Class",
+      "heroTitle2": "Healthcare in Korea",
+      "aiBadge": "AI-Curated Medical Excellence",
+      "stats": {
+        "hospitals": "Hospitals",
+        "accredited": "Accredited",
+        "verified": "Verified",
+        "support": "Support"
+      },
+      "filters": {
+        "button": "Filters"
+      },
+      "hospitalCount": "{count, plural, =1 {# hospital} other {# hospitals}}",
+      "clearFilters": "Clear filters",
+      "showing": "Showing",
+      "hospitalsCount": "hospitals",
+      "viewModes": {
+        "grid": "Grid View",
+        "list": "List View",
+        "grouped": "Grouped View"
+      },
+      "specialties": {
+        "all": "All Specialties",
+        "plastic-surgery": "Plastic Surgery",
+        "dermatology": "Dermatology",
+        "dental": "Dental",
+        "ophthalmology": "Ophthalmology",
+        "hair-transplant": "Hair Transplant",
+        "health-checkup": "Health Checkup",
+        "fertility": "Fertility"
+      },
+      "cities": {
+        "all": "All Cities",
+        "gangnam": "Gangnam",
+        "seoul": "Seoul",
+        "busan": "Busan",
+        "incheon": "Incheon"
+      },
+      "sortOptions": {
+        "rating": "Highest Rated",
+        "reviews": "Most Reviewed",
+        "featured": "Featured",
+        "newest": "Newest"
+      },
+      "categories": {
+        "plastic-surgery": "Plastic Surgery",
+        "dermatology": "Dermatology",
+        "dental": "Dental",
+        "ophthalmology": "Ophthalmology",
+        "traditional-medicine": "Traditional Korean Medicine",
+        "traditional-korean-medicine": "Traditional Korean Medicine",
+        "university-hospital": "University Hospital",
+        "hair-transplant": "Hair Transplant",
+        "health-checkup": "Health Checkup",
+        "general": "General Hospital",
+        "general-hospital": "General Hospital",
+        "other": "Other Clinics"
+      },
+      "viewAll": "View all {count} hospitals",
+      "showLess": "Show less",
+      "noHospitalsInCategory": "No hospitals in this category yet",
+      "hospital": "hospital",
+      "noResults": {
+        "title": "No hospitals found",
+        "description": "Try adjusting your search or filter criteria"
+      },
+      "aiCta": {
+        "title": "Not sure where to start?",
+        "description": "Our AI-powered consultation will analyze your needs and recommend the perfect hospital for your medical journey.",
+        "button": "Get AI Recommendation"
+      }
+    },
     "filters": {
       "specialty": "Specialty",
       "city": "City",
@@ -188,6 +261,11 @@
       "verifiedByGetCareKorea": "Verified by GetCareKorea",
       "basedOnReviews": "Based on {count} reviews",
       "seeAllOnGoogleMaps": "See all on Google Maps",
+      "readRealReviews": "Read Real Patient Reviews",
+      "viewAllReviews": "View all {count} verified reviews on Google Maps",
+      "lookingForMoreReviews": "Looking for more patient experiences?",
+      "readReviewsOnGoogle": "Read {count} reviews on Google Maps",
+      "readAllReviews": "Read All Reviews",
       "categoryTypes": {
         "plastic-surgery": "Plastic Surgery Clinic",
         "dermatology": "Dermatology Clinic",

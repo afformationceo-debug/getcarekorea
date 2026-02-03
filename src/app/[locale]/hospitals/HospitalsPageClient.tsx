@@ -66,30 +66,27 @@ interface HospitalsPageClientProps {
   locale: Locale;
 }
 
-const specialties = [
-  { value: 'all', label: 'All Specialties' },
-  { value: 'plastic-surgery', label: 'Plastic Surgery' },
-  { value: 'dermatology', label: 'Dermatology' },
-  { value: 'dental', label: 'Dental' },
-  { value: 'ophthalmology', label: 'Ophthalmology' },
-  { value: 'hair-transplant', label: 'Hair Transplant' },
-  { value: 'health-checkup', label: 'Health Checkup' },
-  { value: 'fertility', label: 'Fertility' },
-];
+// Specialty keys for translation lookup
+const specialtyKeys = ['all', 'plastic-surgery', 'dermatology', 'dental', 'ophthalmology', 'hair-transplant', 'health-checkup', 'fertility'];
 
-const cities = [
-  { value: 'all', label: 'All Cities' },
-  { value: 'gangnam', label: 'Gangnam' },
-  { value: 'seoul', label: 'Seoul' },
-  { value: 'busan', label: 'Busan' },
-  { value: 'incheon', label: 'Incheon' },
-];
+// City keys for translation lookup
+const cityKeys = ['all', 'gangnam', 'seoul', 'busan', 'incheon'];
 
-const sortOptions = [
-  { value: 'rating', label: 'Highest Rated' },
-  { value: 'reviews', label: 'Most Reviewed' },
-  { value: 'featured', label: 'Featured' },
-  { value: 'newest', label: 'Newest' },
+// Sort option keys for translation lookup
+const sortOptionKeys = ['rating', 'reviews', 'featured', 'newest'];
+
+// Helper to convert specialty name to translation key
+function specialtyToKey(specialty: string): string {
+  return specialty
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+}
+
+// Known specialty keys that have translations
+const knownSpecialtyKeys = [
+  'plastic-surgery', 'dermatology', 'dental', 'ophthalmology',
+  'hair-transplant', 'health-checkup', 'fertility', 'all'
 ];
 
 const containerVariants = {
@@ -111,19 +108,31 @@ const itemVariants = {
 
 export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientProps) {
   const t = useTranslations('hospitals');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('all');
   const [selectedCity, setSelectedCity] = useState('all');
   const [sortBy, setSortBy] = useState('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'grouped'>('grouped');
   const [showFilters, setShowFilters] = useState(false);
-  const [groupBy, setGroupBy] = useState<'category' | 'district'>('category');
+
+  // Apply search when button clicked or Enter pressed
+  const handleSearch = () => {
+    setAppliedSearch(searchInput);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   // Filter hospitals
   const filteredHospitals = hospitals.filter((hospital) => {
     const matchesSearch =
-      hospital.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      hospital.description.toLowerCase().includes(searchQuery.toLowerCase());
+      appliedSearch === '' ||
+      hospital.name.toLowerCase().includes(appliedSearch.toLowerCase()) ||
+      hospital.description.toLowerCase().includes(appliedSearch.toLowerCase());
     const matchesSpecialty =
       selectedSpecialty === 'all' ||
       hospital.specialties.some((s) =>
@@ -209,14 +218,14 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
                 <Sparkles className="h-4 w-4 text-cyan-400" />
               </motion.div>
               <span className="text-sm font-medium text-white/90">
-                AI-Curated Medical Excellence
+                {t('listing.aiBadge')}
               </span>
             </motion.div>
 
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-white lg:text-6xl">
-              <span className="block">World-Class</span>
+              <span className="block">{t('listing.heroTitle1')}</span>
               <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
-                Healthcare in Korea
+                {t('listing.heroTitle2')}
               </span>
             </h1>
 
@@ -232,10 +241,10 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
               className="mx-auto grid max-w-3xl grid-cols-2 gap-4 md:grid-cols-4"
             >
               {[
-                { icon: Building2, value: '200+', label: 'Hospitals' },
-                { icon: Award, value: 'JCI', label: 'Accredited' },
-                { icon: CheckCircle2, value: '100%', label: 'Verified' },
-                { icon: HeartPulse, value: '24/7', label: 'Support' },
+                { icon: Building2, value: '200+', label: t('listing.stats.hospitals') },
+                { icon: Award, value: 'JCI', label: t('listing.stats.accredited') },
+                { icon: CheckCircle2, value: '100%', label: t('listing.stats.verified') },
+                { icon: HeartPulse, value: '24/7', label: t('listing.stats.support') },
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}
@@ -277,10 +286,17 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder={t('searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-14 rounded-xl border-0 bg-background/50 pl-12 text-base shadow-inner focus-visible:ring-2 focus-visible:ring-primary"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="h-14 rounded-xl border-0 bg-background/50 pl-12 pr-24 text-base shadow-inner focus-visible:ring-2 focus-visible:ring-primary"
                 />
+                <Button
+                  onClick={handleSearch}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-4 rounded-lg"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
               </div>
               <Button
                 variant={showFilters ? 'default' : 'outline'}
@@ -288,7 +304,7 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <SlidersHorizontal className="h-4 w-4" />
-                Filters
+                {t('listing.filters.button')}
                 {activeFiltersCount > 0 && (
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-foreground text-xs font-bold text-primary">
                     {activeFiltersCount}
@@ -309,12 +325,12 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
                   <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border/50 pt-4">
                     <Select value={selectedSpecialty} onValueChange={setSelectedSpecialty}>
                       <SelectTrigger className="w-[180px] rounded-xl bg-background/50">
-                        <SelectValue placeholder="Specialty" />
+                        <SelectValue placeholder={t('filters.specialty')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {specialties.map((specialty) => (
-                          <SelectItem key={specialty.value} value={specialty.value}>
-                            {specialty.label}
+                        {specialtyKeys.map((key) => (
+                          <SelectItem key={key} value={key}>
+                            {t(`listing.specialties.${key}`)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -322,12 +338,12 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
 
                     <Select value={selectedCity} onValueChange={setSelectedCity}>
                       <SelectTrigger className="w-[160px] rounded-xl bg-background/50">
-                        <SelectValue placeholder="City" />
+                        <SelectValue placeholder={t('filters.city')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {cities.map((city) => (
-                          <SelectItem key={city.value} value={city.value}>
-                            {city.label}
+                        {cityKeys.map((key) => (
+                          <SelectItem key={key} value={key}>
+                            {t(`listing.cities.${key}`)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -335,12 +351,12 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
 
                     <Select value={sortBy} onValueChange={setSortBy}>
                       <SelectTrigger className="w-[160px] rounded-xl bg-background/50">
-                        <SelectValue placeholder="Sort by" />
+                        <SelectValue placeholder={t('sort.rating')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {sortOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
+                        {sortOptionKeys.map((key) => (
+                          <SelectItem key={key} value={key}>
+                            {t(`listing.sortOptions.${key}`)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -357,7 +373,7 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
                         }}
                       >
                         <X className="h-3 w-3" />
-                        Clear filters
+                        {t('listing.clearFilters')}
                       </Button>
                     )}
 
@@ -367,7 +383,7 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
                         className={`rounded-lg p-2 transition-colors ${
                           viewMode === 'grid' ? 'bg-primary text-white' : 'hover:bg-muted'
                         }`}
-                        title="Grid View"
+                        title={t('listing.viewModes.grid')}
                       >
                         <Grid3X3 className="h-4 w-4" />
                       </button>
@@ -376,7 +392,7 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
                         className={`rounded-lg p-2 transition-colors ${
                           viewMode === 'list' ? 'bg-primary text-white' : 'hover:bg-muted'
                         }`}
-                        title="List View"
+                        title={t('listing.viewModes.list')}
                       >
                         <List className="h-4 w-4" />
                       </button>
@@ -385,7 +401,7 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
                         className={`rounded-lg p-2 transition-colors ${
                           viewMode === 'grouped' ? 'bg-primary text-white' : 'hover:bg-muted'
                         }`}
-                        title="Grouped View"
+                        title={t('listing.viewModes.grouped')}
                       >
                         <Layers className="h-4 w-4" />
                       </button>
@@ -400,7 +416,7 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
         {/* Results count */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing <span className="font-semibold text-foreground">{sortedHospitals.length}</span> hospitals
+            {t('listing.showing')} <span className="font-semibold text-foreground">{sortedHospitals.length}</span> {t('listing.hospitalsCount')}
           </p>
         </div>
 
@@ -408,8 +424,6 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
         {viewMode === 'grouped' ? (
           <GroupedHospitalsView
             hospitals={sortedHospitals}
-            groupBy={groupBy}
-            setGroupBy={setGroupBy}
             locale={locale}
           />
         ) : (
@@ -452,9 +466,9 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
             <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-violet-500/20 to-purple-500/20">
               <Search className="h-8 w-8 text-violet-500" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold">No hospitals found</h3>
+            <h3 className="mb-2 text-lg font-semibold">{t('listing.noResults.title')}</h3>
             <p className="text-muted-foreground">
-              Try adjusting your search or filter criteria
+              {t('listing.noResults.description')}
             </p>
           </motion.div>
         )}
@@ -480,17 +494,17 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
                 <Sparkles className="h-8 w-8 text-white" />
               </motion.div>
               <h3 className="mb-3 text-2xl font-bold text-white lg:text-3xl">
-                Not sure where to start?
+                {t('listing.aiCta.title')}
               </h3>
               <p className="mx-auto mb-6 max-w-xl text-white/70">
-                Our AI-powered consultation will analyze your needs and recommend the perfect hospital for your medical journey.
+                {t('listing.aiCta.description')}
               </p>
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/25"
               >
                 <Sparkles className="mr-2 h-4 w-4" />
-                Get AI Recommendation
+                {t('listing.aiCta.button')}
               </Button>
             </div>
           </div>
@@ -501,7 +515,18 @@ export function HospitalsPageClient({ hospitals, locale }: HospitalsPageClientPr
 }
 
 function HospitalCard3D({ hospital, locale }: { hospital: Hospital; locale: Locale }) {
+  const t = useTranslations('hospitals');
   const [isHovered, setIsHovered] = useState(false);
+
+  // Helper to get translated specialty name
+  const getSpecialtyName = (specialty: string) => {
+    const key = specialtyToKey(specialty);
+    // Only translate known keys to avoid MISSING_MESSAGE errors
+    if (knownSpecialtyKeys.includes(key)) {
+      return t(`listing.specialties.${key}`);
+    }
+    return specialty;
+  };
 
   return (
     <Link href={`/hospitals/${hospital.slug}`} className="group block h-full">
@@ -617,7 +642,7 @@ function HospitalCard3D({ hospital, locale }: { hospital: Hospital; locale: Loca
           <div className="mb-4 flex flex-wrap gap-1.5">
             {hospital.specialties.slice(0, 3).map((specialty) => (
               <Badge key={specialty} variant="secondary" className="bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300">
-                {specialty}
+                {getSpecialtyName(specialty)}
               </Badge>
             ))}
             {hospital.specialties.length > 3 && (
@@ -658,7 +683,17 @@ function HospitalCard3D({ hospital, locale }: { hospital: Hospital; locale: Loca
 }
 
 function HospitalListCard({ hospital, locale }: { hospital: Hospital; locale: Locale }) {
+  const t = useTranslations('hospitals');
   const [isHovered, setIsHovered] = useState(false);
+
+  // Helper to get translated specialty name
+  const getSpecialtyName = (specialty: string) => {
+    const key = specialtyToKey(specialty);
+    if (knownSpecialtyKeys.includes(key)) {
+      return t(`listing.specialties.${key}`);
+    }
+    return specialty;
+  };
 
   return (
     <Link href={`/hospitals/${hospital.slug}`} className="group block">
@@ -719,7 +754,7 @@ function HospitalListCard({ hospital, locale }: { hospital: Hospital; locale: Lo
             <div className="flex flex-wrap gap-1.5">
               {hospital.specialties.map((specialty) => (
                 <Badge key={specialty} variant="secondary" className="bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300">
-                  {specialty}
+                  {getSpecialtyName(specialty)}
                 </Badge>
               ))}
             </div>
@@ -738,7 +773,7 @@ function HospitalListCard({ hospital, locale }: { hospital: Hospital; locale: Lo
               size="sm"
               className="gap-2 rounded-full transition-all hover:bg-primary hover:text-primary-foreground"
             >
-              View Details
+              {t('common.viewDetails') || 'View Details'}
               <motion.span
                 animate={{ x: isHovered ? 4 : 0 }}
               >
@@ -802,6 +837,18 @@ const categoryConfig: Record<string, { name: string; color: string; bgColor: str
     bgColor: 'bg-emerald-100 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800',
     emoji: '🩺'
   },
+  'general': {
+    name: 'General Hospital',
+    color: 'text-teal-600 dark:text-teal-400',
+    bgColor: 'bg-teal-100 dark:bg-teal-950 border-teal-200 dark:border-teal-800',
+    emoji: '🏥'
+  },
+  'general-hospital': {
+    name: 'General Hospital',
+    color: 'text-teal-600 dark:text-teal-400',
+    bgColor: 'bg-teal-100 dark:bg-teal-950 border-teal-200 dark:border-teal-800',
+    emoji: '🏥'
+  },
   'other': {
     name: 'Other Clinics',
     color: 'text-gray-600 dark:text-gray-400',
@@ -815,66 +862,30 @@ const categoryDisplayNames: Record<string, string> = Object.fromEntries(
   Object.entries(categoryConfig).map(([key, value]) => [key, value.name])
 );
 
-// Group by options
-type GroupByOption = 'category' | 'district' | 'rating' | 'popularity';
 
-const groupByLabels: Record<GroupByOption, { label: string; icon: React.ReactNode }> = {
-  category: { label: 'Category', icon: <Building2 className="h-4 w-4" /> },
-  district: { label: 'District', icon: <MapPin className="h-4 w-4" /> },
-  rating: { label: 'Rating', icon: <Star className="h-4 w-4" /> },
-  popularity: { label: 'Popularity', icon: <HeartPulse className="h-4 w-4" /> },
-};
-
-// Grouped View Component
+// Grouped View Component - Category only
 function GroupedHospitalsView({
   hospitals,
-  groupBy,
-  setGroupBy,
   locale,
 }: {
   hospitals: Hospital[];
-  groupBy: 'category' | 'district';
-  setGroupBy: (value: 'category' | 'district') => void;
   locale: Locale;
 }) {
+  const t = useTranslations('hospitals');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-  const [localGroupBy, setLocalGroupBy] = useState<GroupByOption>(groupBy);
 
-  // Update parent state when local changes
-  const handleGroupByChange = (value: GroupByOption) => {
-    setLocalGroupBy(value);
-    if (value === 'category' || value === 'district') {
-      setGroupBy(value);
+  // Helper to get translated specialty name
+  const getSpecialtyName = (specialty: string) => {
+    const key = specialtyToKey(specialty);
+    if (knownSpecialtyKeys.includes(key)) {
+      return t(`listing.specialties.${key}`);
     }
+    return specialty;
   };
 
-  // Group hospitals based on groupBy option
+  // Group hospitals by category
   const groupedHospitals = hospitals.reduce((acc, hospital) => {
-    let key: string;
-
-    switch (localGroupBy) {
-      case 'category':
-        key = hospital.category || 'other';
-        break;
-      case 'district':
-        key = hospital.district || 'Seoul';
-        break;
-      case 'rating':
-        if (hospital.rating >= 4.8) key = 'excellent';
-        else if (hospital.rating >= 4.5) key = 'very-good';
-        else if (hospital.rating >= 4.0) key = 'good';
-        else key = 'standard';
-        break;
-      case 'popularity':
-        if (hospital.reviews >= 500) key = 'most-popular';
-        else if (hospital.reviews >= 100) key = 'popular';
-        else if (hospital.reviews >= 50) key = 'moderate';
-        else key = 'new';
-        break;
-      default:
-        key = hospital.category || 'other';
-    }
-
+    const key = hospital.category || 'other';
     if (!acc[key]) {
       acc[key] = [];
     }
@@ -882,47 +893,26 @@ function GroupedHospitalsView({
     return acc;
   }, {} as Record<string, Hospital[]>);
 
-  // Sort groups
-  const sortedGroups = Object.entries(groupedHospitals).sort((a, b) => {
-    if (localGroupBy === 'rating') {
-      const ratingOrder = ['excellent', 'very-good', 'good', 'standard'];
-      return ratingOrder.indexOf(a[0]) - ratingOrder.indexOf(b[0]);
-    }
-    if (localGroupBy === 'popularity') {
-      const popOrder = ['most-popular', 'popular', 'moderate', 'new'];
-      return popOrder.indexOf(a[0]) - popOrder.indexOf(b[0]);
-    }
-    return b[1].length - a[1].length;
-  });
+  // Get all categories from categoryConfig and merge with actual data
+  // This ensures all categories are shown even with 0 hospitals
+  const allCategories = Object.keys(categoryConfig);
+  const allGroups: [string, Hospital[]][] = allCategories.map((cat) => [
+    cat,
+    groupedHospitals[cat] || [],
+  ]);
 
-  // Group display names
-  const getGroupDisplayName = (key: string): { name: string; description?: string } => {
-    if (localGroupBy === 'category') {
-      return { name: categoryDisplayNames[key] || key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') };
+  // Sort groups by count (most hospitals first), keeping 0-count categories at the end
+  const sortedGroups = allGroups.sort((a, b) => {
+    // Both have hospitals - sort by count
+    if (a[1].length > 0 && b[1].length > 0) {
+      return b[1].length - a[1].length;
     }
-    if (localGroupBy === 'district') {
-      return { name: key };
-    }
-    if (localGroupBy === 'rating') {
-      const ratingNames: Record<string, { name: string; description: string }> = {
-        'excellent': { name: 'Excellent', description: '4.8+ Rating' },
-        'very-good': { name: 'Very Good', description: '4.5-4.8 Rating' },
-        'good': { name: 'Good', description: '4.0-4.5 Rating' },
-        'standard': { name: 'Standard', description: 'Below 4.0' },
-      };
-      return ratingNames[key] || { name: key };
-    }
-    if (localGroupBy === 'popularity') {
-      const popNames: Record<string, { name: string; description: string }> = {
-        'most-popular': { name: 'Most Popular', description: '500+ Reviews' },
-        'popular': { name: 'Popular', description: '100-500 Reviews' },
-        'moderate': { name: 'Growing', description: '50-100 Reviews' },
-        'new': { name: 'New & Promising', description: 'Under 50 Reviews' },
-      };
-      return popNames[key] || { name: key };
-    }
-    return { name: key };
-  };
+    // One has hospitals, one doesn't - hospitals first
+    if (a[1].length > 0) return -1;
+    if (b[1].length > 0) return 1;
+    // Both have 0 - maintain original order
+    return 0;
+  });
 
   const toggleGroup = (key: string) => {
     const newExpanded = new Set(expandedGroups);
@@ -936,32 +926,12 @@ function GroupedHospitalsView({
 
   return (
     <div className="space-y-8">
-      {/* Group By Toggle - Enhanced */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
-        <span className="text-sm text-muted-foreground font-medium">Group by:</span>
-        <div className="flex flex-wrap justify-center rounded-xl border bg-muted/30 p-1.5 gap-1">
-          {(Object.keys(groupByLabels) as GroupByOption[]).map((option) => (
-            <button
-              key={option}
-              onClick={() => handleGroupByChange(option)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all ${
-                localGroupBy === option
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {groupByLabels[option].icon}
-              {groupByLabels[option].label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Quick Stats - Category Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {sortedGroups.map(([group, groupHospitals]) => {
-          const displayInfo = getGroupDisplayName(group);
-          const config = localGroupBy === 'category' ? (categoryConfig[group] || categoryConfig['other']) : null;
+          const config = categoryConfig[group] || categoryConfig['other'];
+          const categoryKey = group === 'traditional-medicine' ? 'traditional-korean-medicine' : group;
+          const displayName = t(`listing.categories.${categoryKey}`);
 
           return (
             <motion.button
@@ -972,22 +942,17 @@ function GroupedHospitalsView({
                 const element = document.getElementById(`group-${group}`);
                 element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
-              className={`p-4 rounded-2xl border-2 transition-all text-left shadow-sm hover:shadow-md ${
-                config ? config.bgColor : 'bg-card border-border hover:border-primary/50'
-              }`}
+              className={`p-4 rounded-2xl border-2 transition-all text-left shadow-sm hover:shadow-md cursor-pointer ${config.bgColor}`}
             >
               <div className="flex items-center justify-between mb-2">
-                {config && <span className="text-2xl">{config.emoji}</span>}
-                <span className={`font-bold text-2xl ${config ? config.color : 'text-foreground'}`}>
+                <span className="text-2xl">{config.emoji}</span>
+                <span className={`font-bold text-2xl ${config.color}`}>
                   {groupHospitals.length}
                 </span>
               </div>
-              <p className={`font-semibold truncate ${config ? config.color : 'text-foreground'}`}>
-                {displayInfo.name}
+              <p className={`font-semibold truncate ${config.color}`}>
+                {displayName}
               </p>
-              {displayInfo.description && (
-                <p className="text-xs text-muted-foreground mt-1">{displayInfo.description}</p>
-              )}
             </motion.button>
           );
         })}
@@ -995,10 +960,11 @@ function GroupedHospitalsView({
 
       {/* Grouped Sections */}
       {sortedGroups.map(([group, groupHospitals]) => {
-        const displayInfo = getGroupDisplayName(group);
+        const config = categoryConfig[group] || categoryConfig['other'];
+        const categoryKey = group === 'traditional-medicine' ? 'traditional-korean-medicine' : group;
+        const displayName = t(`listing.categories.${categoryKey}`);
         const isExpanded = expandedGroups.has(group);
         const visibleHospitals = isExpanded ? groupHospitals : groupHospitals.slice(0, 8);
-        const config = localGroupBy === 'category' ? (categoryConfig[group] || categoryConfig['other']) : null;
 
         return (
         <motion.div
@@ -1008,35 +974,29 @@ function GroupedHospitalsView({
           animate={{ opacity: 1, y: 0 }}
           className="space-y-5 scroll-mt-24"
         >
-          {/* Group Header - Enhanced */}
-          <div className={`rounded-2xl p-5 border-2 ${config ? config.bgColor : 'bg-muted/30 border-border'}`}>
+          {/* Group Header */}
+          <div className={`rounded-2xl p-5 border-2 ${config.bgColor}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {config ? (
-                  <span className="text-3xl">{config.emoji}</span>
-                ) : (
-                  <>
-                    {localGroupBy === 'district' && <MapPin className="h-6 w-6 text-primary" />}
-                    {localGroupBy === 'rating' && <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />}
-                    {localGroupBy === 'popularity' && <HeartPulse className="h-6 w-6 text-rose-500" />}
-                  </>
-                )}
+                <span className="text-3xl">{config.emoji}</span>
                 <div>
-                  <h3 className={`text-xl font-bold ${config ? config.color : 'text-foreground'}`}>
-                    {displayInfo.name}
+                  <h3 className={`text-xl font-bold ${config.color}`}>
+                    {displayName}
                   </h3>
-                  {displayInfo.description && (
-                    <p className="text-sm text-muted-foreground">{displayInfo.description}</p>
-                  )}
                 </div>
               </div>
-              <Badge className={`text-sm px-3 py-1 ${config ? `${config.bgColor} ${config.color} border` : ''}`}>
-                {groupHospitals.length} {groupHospitals.length === 1 ? 'hospital' : 'hospitals'}
+              <Badge className={`text-sm px-3 py-1 ${config.bgColor} ${config.color} border`}>
+                {t('listing.hospitalCount', { count: groupHospitals.length })}
               </Badge>
             </div>
           </div>
 
           {/* Hospital Cards */}
+          {groupHospitals.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">
+              <p>{t('listing.noHospitalsInCategory') || 'No hospitals in this category yet'}</p>
+            </div>
+          ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {visibleHospitals.map((hospital) => (
               <Link
@@ -1084,7 +1044,7 @@ function GroupedHospitalsView({
                     <div className="flex flex-wrap gap-1">
                       {hospital.specialties.slice(0, 2).map((spec) => (
                         <Badge key={spec} variant="secondary" className="text-xs px-2 py-0">
-                          {spec}
+                          {getSpecialtyName(spec)}
                         </Badge>
                       ))}
                     </div>
@@ -1093,6 +1053,7 @@ function GroupedHospitalsView({
               </Link>
             ))}
           </div>
+          )}
 
           {/* Show More / Show Less */}
           {groupHospitals.length > 8 && (
@@ -1105,12 +1066,12 @@ function GroupedHospitalsView({
               >
                 {isExpanded ? (
                   <>
-                    Show less
+                    {t('listing.showLess')}
                     <ChevronUp className="h-4 w-4" />
                   </>
                 ) : (
                   <>
-                    View all {groupHospitals.length} hospitals
+                    {t('listing.viewAll', { count: groupHospitals.length })}
                     <ChevronDown className="h-4 w-4" />
                   </>
                 )}

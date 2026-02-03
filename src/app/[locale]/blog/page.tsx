@@ -355,9 +355,9 @@ export default function BlogPage() {
                   <Link href={`/blog/${post.slug}`}>
                     <motion.div
                       whileHover={{ y: -8 }}
-                      className="group h-full overflow-hidden rounded-2xl border border-border/50 bg-card shadow-lg transition-all hover:border-violet-500/30 hover:shadow-xl"
+                      className="group h-full flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card shadow-lg transition-all hover:border-violet-500/30 hover:shadow-xl"
                     >
-                      <div className="relative h-48 overflow-hidden">
+                      <div className="relative h-48 overflow-hidden flex-shrink-0">
                         <Image
                           src={post.featured_image || DEFAULT_IMAGE}
                           alt={post.title || post.title_en}
@@ -379,17 +379,21 @@ export default function BlogPage() {
                         </button>
                       </div>
 
-                      <div className="p-5">
-                        <h3 className="mb-2 font-bold line-clamp-2 group-hover:text-primary transition-colors">
-                          {post.title || post.title_en}
-                        </h3>
-                        {(post.excerpt || post.excerpt_en) && (
-                          <p className="mb-4 text-sm text-muted-foreground line-clamp-2">
-                            {post.excerpt || post.excerpt_en}
-                          </p>
-                        )}
+                      <div className="p-5 flex flex-col flex-1">
+                        {/* Content area - grows to fill space */}
+                        <div className="flex-1">
+                          <h3 className="mb-2 font-bold line-clamp-2 group-hover:text-primary transition-colors">
+                            {post.title || post.title_en}
+                          </h3>
+                          {(post.excerpt || post.excerpt_en) && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {post.excerpt || post.excerpt_en}
+                            </p>
+                          )}
+                        </div>
 
-                        <div className="flex items-center justify-between border-t border-border/50 pt-4">
+                        {/* Footer - always at bottom */}
+                        <div className="flex items-center justify-between border-t border-border/50 pt-4 mt-4">
                           <span className="text-sm text-muted-foreground">
                             {formatDate(post.published_at)}
                           </span>
