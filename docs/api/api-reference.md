@@ -269,6 +269,80 @@ Authorization: Bearer <access_token>
 
 ---
 
+## Content Management API (Admin)
+
+### List Content
+
+`GET /api/content`
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| page | number | Page number (default: 1) |
+| limit | number | Results per page (default: 20) |
+| status | string | Filter by status (draft, review, published, archived) |
+| category | string | Filter by category |
+| locale | string | Filter by language |
+| search | string | Search by title, slug, excerpt |
+| sortBy | string | Sort field (created_at, updated_at, view_count, title) |
+| sortOrder | string | asc or desc (default: desc) |
+
+### Get Single Content by Slug
+
+`GET /api/content?slug={slug}`
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| slug | string | Blog post slug (URL encoded for non-ASCII) |
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "slug": "best-rhinoplasty-korea",
+    "locale": "en",
+    "title": "Best Rhinoplasty in Korea",
+    "excerpt": "...",
+    "content": "...",
+    "category": "plastic-surgery",
+    "tags": ["rhinoplasty", "korea"],
+    "status": "published",
+    "cover_image_url": "https://...",
+    "view_count": 1234,
+    "seo_meta": { "meta_title": "...", "meta_description": "..." },
+    "generation_metadata": { "aiSummary": {...}, "faq_schema": [...] }
+  }
+}
+```
+
+### Update Content
+
+`PUT /api/content`
+
+**Request Body:**
+
+```json
+{
+  "id": "uuid",
+  "status": "published",
+  "title": "Updated Title",
+  "content": "Updated content...",
+  "published_at": "2026-02-03T00:00:00Z"
+}
+```
+
+### Delete Content
+
+`DELETE /api/content?id={id}`
+
+---
+
 ## Bookings API
 
 ### List Bookings (Authenticated)
@@ -406,5 +480,6 @@ The chat API uses Claude AI with the following tools:
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-02-03 | 1.2.0 | Added Content Management API with slug-based lookup |
 | 2026-01-20 | 1.1.0 | Added Bookings API, notification system |
 | 2026-01-20 | 1.0.0 | Initial API release |

@@ -15,9 +15,14 @@
 
 ```
 /src/app/[locale]/admin
-├── page.tsx              # 메인 대시보드
-└── keywords/
-    └── page.tsx          # 키워드 관리 페이지
+├── page.tsx                          # 메인 대시보드
+├── keywords/
+│   └── page.tsx                      # 키워드 관리 페이지
+└── content/
+    ├── page.tsx                      # 콘텐츠 관리 페이지
+    └── preview/
+        └── [slug]/
+            └── page.tsx              # 콘텐츠 미리보기 페이지
 ```
 
 ## Dashboard Metrics
@@ -119,13 +124,36 @@ korea dental implants,dental,en,8500,0.45,2
 | interpreter | 접근 불가 |
 | patient | 접근 불가 |
 
+## Content Preview Page
+
+`/admin/content/preview/[slug]` 페이지 기능:
+
+### 미리보기 기능
+- **실제 BlogPostClient UI 사용**: 실제 발행 시 보이는 UI와 동일하게 미리보기
+- **SEO 미리보기**: Google 검색 결과 및 소셜 미디어 미리보기
+- **Locale별 저자 목업 데이터**: 8개 언어 지원 (ko, en, ja, zh-CN, zh-TW, th, ru, mn)
+- **카테고리 번역**: `getCategoryName()` 사용하여 locale에 맞는 카테고리명 표시
+
+### URL 구조
+- 기존: `/admin/preview/[id]` (ID 기반)
+- 변경: `/admin/content/preview/[slug]` (Slug 기반)
+- 비영어 slug 지원: `encodeURIComponent()`/`decodeURIComponent()` 사용
+
+### 헤더 액션
+| 버튼 | 기능 |
+|------|------|
+| Back | 콘텐츠 관리 페이지로 이동 |
+| Refresh | 데이터 새로고침 |
+| Publish | 콘텐츠 발행 (draft/review 상태일 때) |
+| View Live | 발행된 블로그 포스트 보기 (published 상태일 때) |
+
 ## UI Components
 
 - **MetricCard**: 아이콘, 라벨, 값, 변화율
 - **InquiryTable**: 문의 목록 테이블
 - **ArticleList**: 콘텐츠 성과 목록
 - **KeywordManager**: 키워드 관리 인터페이스
-- **ContentPreview**: AI 생성 콘텐츠 미리보기
+- **ContentPreviewPage**: 실제 BlogPostClient를 사용한 콘텐츠 미리보기
 
 ## Future Improvements
 
@@ -139,4 +167,5 @@ korea dental implants,dental,en,8500,0.45,2
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-02-03 | 1.1.0 | Move preview to /admin/content/preview/[slug], add locale-specific mock author, fix non-ASCII slug encoding |
 | 2026-01-21 | 1.0.0 | Initial admin dashboard |
