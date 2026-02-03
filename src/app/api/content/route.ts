@@ -21,6 +21,22 @@ export async function GET(request: NextRequest) {
     const adminSupabase = await createAdminClient();
     const { searchParams } = new URL(request.url);
 
+    // Single post lookup by slug (for admin preview)
+    const slug = searchParams.get('slug');
+    if (slug) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: post, error } = await (adminSupabase.from('blog_posts') as any)
+        .select('*')
+        .eq('slug', slug)
+        .single();
+
+      if (error || !post) {
+        throw new APIError(ErrorCode.NOT_FOUND, 'Blog post not found');
+      }
+
+      return createSuccessResponse(post);
+    }
+
     const status = searchParams.get('status');
     const locale = searchParams.get('locale');
     const category = searchParams.get('category');

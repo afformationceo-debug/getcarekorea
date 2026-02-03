@@ -3,37 +3,22 @@
 import { useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import {
   Eye,
   Edit,
   Trash2,
   MoreHorizontal,
   FileText,
-  Globe,
   CheckCircle,
   Clock,
   Send,
   RefreshCw,
-  X,
   Archive,
   ExternalLink,
-  Tag,
-  Calendar,
-  User,
-  Heart,
-  Bookmark,
-  Share2,
-  ChevronRight,
-  Sparkles,
-  ArrowLeft,
   Key,
   MessageSquare,
   Upload,
   Link as LinkIcon,
-  Monitor,
-  Smartphone,
-  Tablet,
   Plus,
 } from 'lucide-react';
 import { DataTable, ColumnDef, FilterDef } from '@/components/ui/data-table';
@@ -69,7 +54,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { SEOPreview } from '@/components/admin/SEOPreview';
 
 // Types
 interface BlogPost {
@@ -100,7 +84,6 @@ interface Stats {
   totalViews: number;
 }
 
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200';
 const PAGE_SIZE = 40;
 
 export default function ContentPage() {
@@ -118,12 +101,9 @@ export default function ContentPage() {
   const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
 
   // Modal states
-  const [previewPost, setPreviewPost] = useState<BlogPost | null>(null);
   const [editPost, setEditPost] = useState<BlogPost | null>(null);
   const [deletePost, setDeletePost] = useState<BlogPost | null>(null);
   const [feedbackPost, setFeedbackPost] = useState<BlogPost | null>(null);
-  const [previewLocale, setPreviewLocale] = useState('en');
-  const [previewMode, setPreviewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
   // Action states
   const [feedbackText, setFeedbackText] = useState('');
@@ -178,7 +158,8 @@ export default function ContentPage() {
   const getPublishedUrl = (post: BlogPost): string | null => {
     if (post.status === 'published' && post.slug) {
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-      return `${baseUrl}/${currentLocale}/blog/${post.slug}`;
+      // Use post's locale, not admin page locale
+      return `${baseUrl}/${post.locale || 'en'}/blog/${post.slug}`;
     }
     return null;
   };
@@ -188,27 +169,6 @@ export default function ContentPage() {
     return new Date(dateString).toLocaleDateString(currentLocale, {
       year: 'numeric', month: 'long', day: 'numeric',
     });
-  };
-
-  const formatCategoryName = (category: string): string => {
-    return category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  };
-
-  const getReadTime = (content: string | null): string => {
-    if (!content) return '1 min read';
-    const wordCount = content.split(/\s+/).length;
-    return `${Math.ceil(wordCount / 200)} min read`;
-  };
-
-  const renderContent = (content: string): string => {
-    return content
-      .replace(/\n/g, '<br />')
-      .replace(/#{3} (.*)/g, '<h3 class="text-xl font-bold mt-6 mb-3">$1</h3>')
-      .replace(/#{2} (.*)/g, '<h2 class="text-2xl font-bold mt-8 mb-4">$1</h2>')
-      .replace(/#{1} (.*)/g, '<h1 class="text-3xl font-bold mt-8 mb-4">$1</h1>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      || '<p>No content available.</p>';
   };
 
   // Actions
@@ -446,7 +406,7 @@ export default function ContentPage() {
       headerClassName: 'text-center',
       cellClassName: 'text-center',
       cell: (row) => (
-        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setPreviewPost(row); setPreviewLocale(row.locale || 'en'); }} className="gap-1">
+        <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); window.open(`/${currentLocale}/admin/content/preview/${encodeURIComponent(row.slug)}`, '_blank'); }} className="gap-1">
           <Eye className="h-3 w-3" />
           {t('actions.preview')}
         </Button>
@@ -478,14 +438,14 @@ export default function ContentPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => { setPreviewPost(row); setPreviewLocale(row.locale || 'en'); }}>
+              <DropdownMenuItem onClick={() => window.open(`/${currentLocale}/admin/content/preview/${encodeURIComponent(row.slug)}`, '_blank')}>
                 <Eye className="mr-2 h-4 w-4" />{t('actions.preview')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setEditPost(row)}>
                 <Edit className="mr-2 h-4 w-4" />{t('actions.edit')}
               </DropdownMenuItem>
               {row.status === 'published' && (
-                <DropdownMenuItem onClick={() => window.open(`/${currentLocale}/blog/${row.slug}`, '_blank')}>
+                <DropdownMenuItem onClick={() => window.open(`/${row.locale || 'en'}/blog/${row.slug}`, '_blank')}>
                   <ExternalLink className="mr-2 h-4 w-4" />{t('actions.viewLive')}
                 </DropdownMenuItem>
               )}
@@ -582,7 +542,7 @@ export default function ContentPage() {
                       <p className="text-sm text-muted-foreground">Created {new Date(post.created_at).toLocaleDateString()}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => { setPreviewPost(post); setPreviewLocale(post.locale || 'en'); }}>
+                      <Button variant="outline" size="sm" onClick={() => window.open(`/${currentLocale}/admin/content/preview/${encodeURIComponent(post.slug)}`, '_blank')}>
                         <Eye className="mr-2 h-4 w-4" />{t('actions.preview')}
                       </Button>
                       <Button variant="default" size="sm" onClick={() => handleStatusChange(post.id, 'published')} disabled={actionLoading === post.id}>
@@ -625,139 +585,6 @@ export default function ContentPage() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* Preview Modal */}
-      <Dialog open={!!previewPost} onOpenChange={() => setPreviewPost(null)}>
-        <DialogContent className="max-w-[100vw] w-full h-[100vh] max-h-[100vh] p-0 m-0 rounded-none">
-          <DialogTitle className="sr-only">Content Preview</DialogTitle>
-          {previewPost && (
-            <div className="h-full overflow-y-auto bg-background">
-              {/* Preview Header */}
-              <div className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
-                <div className="container flex items-center justify-between h-14 px-4">
-                  <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="sm" onClick={() => setPreviewPost(null)}>
-                      <ArrowLeft className="mr-2 h-4 w-4" />Back
-                    </Button>
-                    <Separator orientation="vertical" className="h-6" />
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <Select value={previewLocale} onValueChange={setPreviewLocale}>
-                        <SelectTrigger className="w-[140px] h-8"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {getAvailableLocales(previewPost).map((loc) => (
-                            <SelectItem key={loc} value={loc}>{t(`languages.${loc}`)}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Separator orientation="vertical" className="h-6" />
-                    <div className="flex items-center gap-1 bg-muted rounded-md p-1">
-                      <Button variant={previewMode === 'desktop' ? 'secondary' : 'ghost'} size="sm" className="h-7 px-2" onClick={() => setPreviewMode('desktop')}><Monitor className="h-4 w-4" /></Button>
-                      <Button variant={previewMode === 'tablet' ? 'secondary' : 'ghost'} size="sm" className="h-7 px-2" onClick={() => setPreviewMode('tablet')}><Tablet className="h-4 w-4" /></Button>
-                      <Button variant={previewMode === 'mobile' ? 'secondary' : 'ghost'} size="sm" className="h-7 px-2" onClick={() => setPreviewMode('mobile')}><Smartphone className="h-4 w-4" /></Button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={previewPost.status} />
-                    <Button variant="outline" size="sm" onClick={() => { setEditPost(previewPost); setPreviewPost(null); }}>
-                      <Edit className="mr-2 h-4 w-4" />Edit
-                    </Button>
-                    {previewPost.status !== 'published' && (
-                      <Button size="sm" onClick={() => { handleStatusChange(previewPost.id, 'published'); setPreviewPost(null); }}>
-                        <CheckCircle className="mr-2 h-4 w-4" />Publish
-                      </Button>
-                    )}
-                    <Button variant="ghost" size="icon" onClick={() => setPreviewPost(null)}><X className="h-4 w-4" /></Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Preview Content */}
-              <div className={`min-h-screen bg-background mx-auto transition-all duration-300 ${previewMode === 'mobile' ? 'max-w-[375px] border-x shadow-lg' : previewMode === 'tablet' ? 'max-w-[768px] border-x shadow-lg' : 'max-w-full'}`}>
-                <div className="relative h-[400px] lg:h-[500px]">
-                  <Image src={previewPost.cover_image_url || DEFAULT_IMAGE} alt={getPostTitle(previewPost)} fill sizes="100vw" className="object-cover" priority />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                </div>
-
-                <div className="container relative -mt-32 pb-16">
-                  <div className="mx-auto max-w-4xl">
-                    <Card className="overflow-hidden border-0 shadow-2xl mb-8">
-                      <CardContent className="p-8 lg:p-12">
-                        <div className="mb-4 p-3 bg-muted rounded-lg">
-                          <p className="text-sm text-muted-foreground">
-                            <span className="font-medium">Preview URL:</span> <code className="bg-background px-2 py-1 rounded text-violet-600">{typeof window !== 'undefined' ? window.location.origin : ''}/{previewLocale}/blog/{previewPost.slug}</code>
-                          </p>
-                        </div>
-                        {/* SEO Preview */}
-                        <div className="mb-6">
-                          <SEOPreview
-                            type="blog"
-                            data={{
-                              title: previewPost.title,
-                              excerpt: previewPost.excerpt || undefined,
-                              cover_image_url: previewPost.cover_image_url || undefined,
-                              slug: previewPost.slug,
-                              locale: previewPost.locale,
-                              category: previewPost.category || undefined,
-                            }}
-                            defaultLocale={previewPost.locale || 'en'}
-                          />
-                        </div>
-                        <div className="mb-4 flex flex-wrap items-center gap-2">
-                          {previewPost.category && <Badge className="bg-violet-500 hover:bg-violet-600">{formatCategoryName(previewPost.category)}</Badge>}
-                          {previewPost.tags?.slice(0, 3).map((tag) => <Badge key={tag} variant="secondary"><Tag className="mr-1 h-3 w-3" />{tag}</Badge>)}
-                        </div>
-                        <h1 className="mb-6 text-3xl font-bold lg:text-4xl">{getPostTitle(previewPost)}</h1>
-                        {getPostExcerpt(previewPost) && <p className="mb-6 text-lg text-muted-foreground">{getPostExcerpt(previewPost)}</p>}
-                        <div className="mb-6 flex flex-wrap items-center gap-4 text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center"><User className="h-5 w-5 text-white" /></div>
-                            <p className="font-medium text-foreground">GetCareKorea Team</p>
-                          </div>
-                          <Separator orientation="vertical" className="h-8" />
-                          <div className="flex items-center gap-1"><Calendar className="h-4 w-4" />{formatDate(previewPost.published_at || previewPost.created_at)}</div>
-                          <div className="flex items-center gap-1"><Clock className="h-4 w-4" />{getReadTime(getPostContent(previewPost))}</div>
-                          <div className="flex items-center gap-1"><Eye className="h-4 w-4" />{(previewPost.view_count ?? 0).toLocaleString()} views</div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3">
-                          <Button variant="outline" size="sm" className="rounded-full gap-2"><Heart className="h-4 w-4" />Like</Button>
-                          <Button variant="outline" size="sm" className="rounded-full gap-2"><Bookmark className="h-4 w-4" />Save</Button>
-                          <div className="ml-auto flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">Share:</span>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full"><Share2 className="h-4 w-4" /></Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="overflow-hidden border-0 shadow-xl">
-                      <CardContent className="p-8 lg:p-12">
-                        <div className="prose prose-lg max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: renderContent(getPostContent(previewPost)) }} />
-                      </CardContent>
-                    </Card>
-
-                    <div className="mt-12">
-                      <div className="relative overflow-hidden rounded-2xl border border-violet-500/20 bg-gradient-to-r from-violet-950/50 via-purple-900/50 to-violet-950/50 p-8">
-                        <div className="absolute -left-10 -top-10 h-40 w-40 rounded-full bg-violet-500/20 blur-3xl" />
-                        <div className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-cyan-500/20 blur-3xl" />
-                        <div className="relative z-10 flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-                          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600"><Sparkles className="h-8 w-8 text-white" /></div>
-                          <div className="flex-1">
-                            <h3 className="mb-1 text-xl font-bold text-white">Ready to Start Your Journey?</h3>
-                            <p className="text-white/70">Get a free consultation with our medical tourism experts.</p>
-                          </div>
-                          <Button size="lg" className="bg-gradient-to-r from-violet-600 to-purple-600 text-white">Get Free Quote<ChevronRight className="ml-2 h-4 w-4" /></Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Edit Modal */}
       <Dialog open={!!editPost} onOpenChange={() => setEditPost(null)}>
@@ -837,7 +664,7 @@ export default function ContentPage() {
                     <p className="font-medium text-lg">{getPostTitle(feedbackPost)}</p>
                     <p className="text-sm text-muted-foreground">/{feedbackPost.slug}</p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => { setPreviewPost(feedbackPost); setFeedbackPost(null); }}>
+                  <Button variant="outline" size="sm" onClick={() => window.open(`/${currentLocale}/admin/content/preview/${encodeURIComponent(feedbackPost.slug)}`, '_blank')}>
                     <Eye className="mr-2 h-4 w-4" />{t('feedback.fullPreview')}
                   </Button>
                 </div>
