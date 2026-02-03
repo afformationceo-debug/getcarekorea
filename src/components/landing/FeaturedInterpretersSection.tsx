@@ -8,45 +8,30 @@ import { Star, Languages, MapPin, ArrowRight, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-const interpreters = [
-  {
-    id: '1',
-    name: 'Sarah Kim',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
-    rating: 5.0,
-    reviews: 127,
-    languages: ['English', 'Korean'],
-    specialties: ['Plastic Surgery', 'Dermatology'],
-    city: 'Seoul',
-    available: true,
-  },
-  {
-    id: '2',
-    name: 'Yuki Tanaka',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop',
-    rating: 4.9,
-    reviews: 203,
-    languages: ['Japanese', 'Korean', 'English'],
-    specialties: ['Dental', 'Ophthalmology'],
-    city: 'Seoul',
-    available: true,
-  },
-  {
-    id: '3',
-    name: 'Chen Wei',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop',
-    rating: 5.0,
-    reviews: 156,
-    languages: ['Mandarin', 'Korean', 'English'],
-    specialties: ['Health Checkup', 'Orthopedics'],
-    city: 'Seoul',
-    available: false,
-  },
-];
+interface Interpreter {
+  id: string;
+  name: string;
+  profile_image_url: string | null;
+  avg_rating: number;
+  review_count: number;
+  languages: string[];
+  specialties: string[];
+  city: string;
+  is_available: boolean;
+  is_featured: boolean;
+}
 
-export function FeaturedInterpretersSection() {
+interface FeaturedInterpretersSectionProps {
+  interpreters: Interpreter[];
+}
+
+export function FeaturedInterpretersSection({ interpreters }: FeaturedInterpretersSectionProps) {
   const t = useTranslations('landing.featuredInterpreters');
-  const tCommon = useTranslations('common');
+
+  // If no interpreters, don't render the section
+  if (!interpreters || interpreters.length === 0) {
+    return null;
+  }
 
   return (
     <section className="relative overflow-hidden bg-muted/30 py-20 lg:py-28">
@@ -85,93 +70,97 @@ export function FeaturedInterpretersSection() {
 
         {/* Interpreters Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {interpreters.map((interpreter, index) => (
-            <motion.div
-              key={interpreter.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Link href={`/interpreters/${interpreter.id}`} className="group block h-full">
-                <motion.div
-                  whileHover={{ y: -8 }}
-                  className="h-full overflow-hidden rounded-2xl border bg-background shadow-lg transition-shadow hover:shadow-xl"
-                >
-                  {/* Image & Availability */}
-                  <div className="relative aspect-square overflow-hidden">
-                    <Image
-                      src={interpreter.image}
-                      alt={interpreter.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                      className="object-cover transition-transform group-hover:scale-105"
-                      unoptimized={interpreter.image?.includes('.svg') || interpreter.image?.includes('dicebear')}
-                    />
-                    {interpreter.available && (
-                      <div className="absolute right-3 top-3">
-                        <Badge className="bg-green-500 text-white">
-                          <CheckCircle className="mr-1 h-3 w-3" />
-                          {t('available')}
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
+          {interpreters.slice(0, 3).map((interpreter, index) => {
+            const imageUrl = interpreter.profile_image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${interpreter.id}`;
 
-                  {/* Content */}
-                  <div className="p-5">
-                    {/* Name & Rating */}
-                    <div className="mb-3">
-                      <h3 className="mb-1 text-xl font-semibold">{interpreter.name}</h3>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          <span className="font-semibold">{interpreter.rating}</span>
+            return (
+              <motion.div
+                key={interpreter.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Link href={`/interpreters/${interpreter.id}`} className="group block h-full">
+                  <motion.div
+                    whileHover={{ y: -8 }}
+                    className="h-full overflow-hidden rounded-2xl border bg-background shadow-lg transition-shadow hover:shadow-xl"
+                  >
+                    {/* Image & Availability */}
+                    <div className="relative aspect-square overflow-hidden">
+                      <Image
+                        src={imageUrl}
+                        alt={interpreter.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                        className="object-cover transition-transform group-hover:scale-105"
+                        unoptimized={imageUrl?.includes('.svg') || imageUrl?.includes('dicebear')}
+                      />
+                      {interpreter.is_available && (
+                        <div className="absolute right-3 top-3">
+                          <Badge className="bg-green-500 text-white">
+                            <CheckCircle className="mr-1 h-3 w-3" />
+                            {t('available')}
+                          </Badge>
                         </div>
-                        <span className="text-sm text-muted-foreground">
-                          ({interpreter.reviews} reviews)
-                        </span>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-5">
+                      {/* Name & Rating */}
+                      <div className="mb-3">
+                        <h3 className="mb-1 text-xl font-semibold">{interpreter.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                            <span className="font-semibold">{interpreter.avg_rating?.toFixed(1) || '0.0'}</span>
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            ({interpreter.review_count || 0} reviews)
+                          </span>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Location */}
-                    <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      {interpreter.city}
-                    </div>
+                      {/* Location */}
+                      <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        {interpreter.city}
+                      </div>
 
-                    {/* Languages */}
-                    <div className="mb-3">
-                      <p className="mb-1 text-xs font-medium text-muted-foreground">
-                        {t('languages')}
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        {interpreter.languages.map((lang) => (
-                          <Badge key={lang} variant="secondary" className="text-xs">
-                            {lang}
+                      {/* Languages */}
+                      <div className="mb-3">
+                        <p className="mb-1 text-xs font-medium text-muted-foreground">
+                          {t('languages')}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {(interpreter.languages || []).slice(0, 3).map((lang) => (
+                            <Badge key={lang} variant="secondary" className="text-xs">
+                              {lang}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Specialties */}
+                      <div className="mb-4 flex flex-wrap gap-1">
+                        {(interpreter.specialties || []).slice(0, 2).map((specialty) => (
+                          <Badge key={specialty} variant="outline" className="text-xs">
+                            {specialty}
                           </Badge>
                         ))}
                       </div>
-                    </div>
 
-                    {/* Specialties */}
-                    <div className="mb-4 flex flex-wrap gap-1">
-                      {interpreter.specialties.map((specialty) => (
-                        <Badge key={specialty} variant="outline" className="text-xs">
-                          {specialty}
-                        </Badge>
-                      ))}
+                      {/* View Profile */}
+                      <div className="flex items-center justify-end border-t pt-4">
+                        <ArrowRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                      </div>
                     </div>
-
-                    {/* View Profile */}
-                    <div className="flex items-center justify-end border-t pt-4">
-                      <ArrowRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
-                    </div>
-                  </div>
-                </motion.div>
-              </Link>
-            </motion.div>
-          ))}
+                  </motion.div>
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

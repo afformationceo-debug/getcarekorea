@@ -161,7 +161,7 @@ export function CategoriesSection() {
             return (
               <motion.div key={category.key} variants={item}>
                 <Link
-                  href={`/procedures/${category.key}`}
+                  href="/hospitals"
                   className="group relative block"
                 >
                   <motion.div
