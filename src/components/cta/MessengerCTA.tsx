@@ -7,14 +7,6 @@ import { MessageCircle, Send } from 'lucide-react';
 import type { Locale } from '@/lib/i18n/config';
 import { getCTAForLocale, type CTAConfig } from '@/lib/settings/cta';
 
-// Default fallback config
-const DEFAULT_CONFIG: CTAConfig = {
-  type: 'whatsapp',
-  url: 'https://wa.me/821086081915',
-  text: 'Chat on WhatsApp',
-  color: 'from-green-500 to-green-600',
-};
-
 interface MessengerCTAProps {
   variant?: 'default' | 'floating' | 'inline';
   size?: 'sm' | 'md' | 'lg';
@@ -23,15 +15,15 @@ interface MessengerCTAProps {
 export function MessengerCTA({ variant = 'default', size = 'md' }: MessengerCTAProps) {
   const locale = useLocale() as Locale;
   const t = useTranslations('messenger');
-  const [config, setConfig] = useState<CTAConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<CTAConfig | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Fetch CTA config from database
+  // Fetch CTA config from database - no fallback
   useEffect(() => {
     async function loadConfig() {
       try {
         const ctaConfig = await getCTAForLocale(locale);
-        setConfig(ctaConfig);
+        setConfig(ctaConfig); // Can be null if not configured
       } catch (error) {
         console.error('Failed to load CTA config:', error);
       } finally {
@@ -42,6 +34,7 @@ export function MessengerCTA({ variant = 'default', size = 'md' }: MessengerCTAP
   }, [locale]);
 
   const getMessengerName = () => {
+    if (!config) return '';
     switch (config.type) {
       case 'whatsapp':
         return 'WhatsApp';
@@ -52,7 +45,7 @@ export function MessengerCTA({ variant = 'default', size = 'md' }: MessengerCTAP
       case 'telegram':
         return 'Telegram';
       default:
-        return 'WhatsApp';
+        return '';
     }
   };
 
@@ -79,6 +72,7 @@ export function MessengerCTA({ variant = 'default', size = 'md' }: MessengerCTAP
 
   // Get messenger icon based on type
   const MessengerIcon = () => {
+    if (!config) return <MessageCircle className="h-full w-full" />;
     if (config.type === 'whatsapp') {
       return (
         <svg viewBox="0 0 24 24" fill="currentColor" className="text-green-600">
@@ -110,8 +104,8 @@ export function MessengerCTA({ variant = 'default', size = 'md' }: MessengerCTAP
     return <MessageCircle className="h-full w-full" />;
   };
 
-  // Don't render until loaded to prevent flash
-  if (!isLoaded) {
+  // Don't render until loaded or if no CTA configured
+  if (!isLoaded || !config) {
     return null;
   }
 

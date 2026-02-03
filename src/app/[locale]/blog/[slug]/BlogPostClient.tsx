@@ -8,7 +8,7 @@ import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import { getCTASettings, type CTASettings } from '@/lib/settings/cta';
+import type { CTASettings } from '@/lib/settings/cta';
 import rehypeSanitize from 'rehype-sanitize';
 import {
   ArrowLeft,
@@ -16,19 +16,11 @@ import {
   Calendar,
   Eye,
   MessageCircle,
-  Share2,
-  Bookmark,
-  Heart,
   ChevronRight,
-  Facebook,
-  Twitter,
-  Linkedin,
-  Link2,
   Sparkles,
   User,
   Tag,
   AlertCircle,
-  X,
   Phone,
   CheckCircle,
   Award,
@@ -48,26 +40,17 @@ import type { Locale } from '@/lib/i18n/config';
 interface AuthorPersona {
   id: string;
   slug: string;
-  name_ko: string;
-  name_en: string;
-  name_zh_tw: string | null;
-  name_zh_cn: string | null;
-  name_ja: string | null;
-  name_th: string | null;
-  name_mn: string | null;
-  name_ru: string | null;
   photo_url: string | null;
   years_of_experience: number;
-  target_locales: string[];
   primary_specialty: string;
-  secondary_specialties: string[];
-  languages: Array<{ code: string; proficiency: string }>;
-  certifications: string[];
-  bio_short_en: string | null;
-  bio_full_en: string | null;
-  preferred_messenger: string | null;
-  messenger_cta_text: Record<string, string>;
+  primarySpecialtyDisplayName?: string;
+  secondary_specialties: Array<{ code: string; displayName: string } | string>;
+  languages: Array<{ code: string; displayName: string; proficiency: string }>;
+  certifications: Record<string, string[]> | string[];
   is_verified: boolean;
+  // JSONB fields - locale-keyed objects
+  name: Record<string, string>;      // { en: "...", ko: "...", ja: "..." }
+  bio_short: Record<string, string>; // { en: "...", ko: "..." }
 }
 
 interface GeneratedAuthor {
@@ -99,6 +82,7 @@ export interface BlogPost {
   metaDescription: string | null;
   cover_image_url: string | null;
   category: string;
+  categoryDisplayName?: string;
   tags: string[] | null;
   published_at: string | null;
   view_count: number;
@@ -163,42 +147,28 @@ function getDefaultAuthorBio(locale: string): string {
 // CTA는 반드시 DB(system_settings)에서 가져온 값만 사용
 // fallback 없음 - DB에 설정이 없으면 CTA 표시 안함
 
-// Get localized author name
+// Get localized author name from JSONB name object
 function getLocalizedAuthorName(persona: AuthorPersona, locale: string): string {
-  const nameMap: Record<string, keyof AuthorPersona> = {
-    'ko': 'name_ko',
-    'en': 'name_en',
-    'zh-TW': 'name_zh_tw',
-    'zh-CN': 'name_zh_cn',
-    'ja': 'name_ja',
-    'th': 'name_th',
-    'mn': 'name_mn',
-    'ru': 'name_ru',
-  };
+  const name = persona.name || {};
+  // Try exact locale, then fallback to en, then ko, then slug
+  return name[locale] || name['en'] || name['ko'] || persona.slug || 'Unknown';
+}
 
-  const key = nameMap[locale] || 'name_en';
-  return (persona[key] as string | null) || persona.name_en;
+// Get localized author bio from JSONB bio_short object
+function getLocalizedAuthorBio(persona: AuthorPersona, locale: string): string | null {
+  const bio = persona.bio_short || {};
+  return bio[locale] || bio['en'] || bio['ko'] || null;
 }
 
 // Get messenger CTA for locale - DB 값만 사용 (fallback 없음)
 function getMessengerCTAFromSettings(
   locale: string,
-  ctaSettings: CTASettings | null,
-  persona?: AuthorPersona | null
+  ctaSettings: CTASettings | null
 ): { messenger: string; label: string; link: string } | null {
   // DB system_settings에서만 CTA 가져옴
   const systemCTA = ctaSettings?.[locale];
   if (!systemCTA) {
     return null; // DB에 설정 없으면 null 반환
-  }
-
-  // If persona has custom text, use it with system URL
-  if (persona?.messenger_cta_text?.[locale]) {
-    return {
-      messenger: systemCTA.type,
-      label: persona.messenger_cta_text[locale],
-      link: systemCTA.url,
-    };
   }
   return {
     messenger: systemCTA.type,
@@ -548,20 +518,22 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
   const [post, setPost] = useState<BlogPost | null>(initialPost);
   const [loading, setLoading] = useState(!initialPost);
   const [error, setError] = useState<string | null>(null);
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [showShareMenu, setShowShareMenu] = useState(false);
   const [activeHeading, setActiveHeading] = useState<string>('');
   const [ctaSettings, setCtaSettings] = useState<CTASettings | null>(null);
 
   const t = useCallback((key: string) => getTranslation(locale, key), [locale]);
 
-  // Fetch CTA settings from system_settings
+  // Fetch CTA settings from dedicated API
   useEffect(() => {
     async function loadCTASettings() {
       try {
-        const settings = await getCTASettings();
-        setCtaSettings(settings);
+        const response = await fetch('/api/cta');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            setCtaSettings(result.data);
+          }
+        }
       } catch (error) {
         console.error('Failed to load CTA settings:', error);
       }
@@ -675,26 +647,29 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
 
   const readingTime = calculateReadingTime(post.content || '');
   const headings = extractHeadings(post.content || '');
-  const messengerCTA = getMessengerCTAFromSettings(locale, ctaSettings, post.authorPersona);
+  const messengerCTA = getMessengerCTAFromSettings(locale, ctaSettings);
 
   // Get author info
   const authorName = post.authorPersona
     ? getLocalizedAuthorName(post.authorPersona, locale)
     : post.generatedAuthor?.name || getDefaultAuthorName(locale);
 
-  const authorBio = post.authorPersona?.bio_short_en
-    || post.generatedAuthor?.bio_en
-    || getDefaultAuthorBio(locale);
+  const authorBio = post.authorPersona
+    ? getLocalizedAuthorBio(post.authorPersona, locale)
+    : (post.generatedAuthor?.bio_en || getDefaultAuthorBio(locale));
 
   const authorExperience = post.authorPersona?.years_of_experience
     || post.generatedAuthor?.years_of_experience
     || DEFAULT_AUTHOR.experience;
 
-  const authorSpecialties = post.authorPersona?.secondary_specialties
-    || post.generatedAuthor?.specialties
-    || DEFAULT_AUTHOR.specialties;
+  // Extract specialty display names - API returns {code, displayName} objects, but page.tsx may return strings
+  const authorSpecialties: string[] = post.authorPersona?.secondary_specialties
+    ? post.authorPersona.secondary_specialties.map((s) =>
+        typeof s === 'string' ? s : (s.displayName || s.code)
+      )
+    : (post.generatedAuthor?.specialties || DEFAULT_AUTHOR.specialties);
 
-  const authorLanguages = post.authorPersona?.languages?.map((l: { code: string }) => l.code)
+  const authorLanguages = post.authorPersona?.languages?.map((l: { displayName?: string; code: string }) => l.displayName || l.code)
     || post.generatedAuthor?.languages
     || DEFAULT_AUTHOR.languages;
 
@@ -1063,7 +1038,7 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
           {/* Category & Tags */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <Badge variant="secondary" className="text-xs">
-              {post.category}
+              {post.categoryDisplayName || post.category}
             </Badge>
             {post.tags?.slice(0, 3).map((tag) => (
               <Badge key={tag} variant="outline" className="text-xs">
@@ -1193,80 +1168,6 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
                 </Card>
               )}
 
-              {/* Action buttons */}
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant={isLiked ? 'default' : 'outline'}
-                  className="w-full justify-start gap-2"
-                  onClick={() => setIsLiked(!isLiked)}
-                >
-                  <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-                  {t('like')}
-                </Button>
-                <Button
-                  variant={isBookmarked ? 'default' : 'outline'}
-                  className="w-full justify-start gap-2"
-                  onClick={() => setIsBookmarked(!isBookmarked)}
-                >
-                  <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
-                  {t('bookmark')}
-                </Button>
-                <div className="relative">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start gap-2"
-                    onClick={() => setShowShareMenu(!showShareMenu)}
-                  >
-                    <Share2 className="w-4 h-4" />
-                    {t('share')}
-                  </Button>
-                  <AnimatePresence>
-                    {showShareMenu && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute top-full left-0 right-0 mt-2 bg-background border rounded-lg shadow-lg p-2 z-10"
-                      >
-                        <a
-                          href={shareLinks.facebook}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 p-2 rounded hover:bg-muted"
-                        >
-                          <Facebook className="w-4 h-4" />
-                          Facebook
-                        </a>
-                        <a
-                          href={shareLinks.twitter}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 p-2 rounded hover:bg-muted"
-                        >
-                          <Twitter className="w-4 h-4" />
-                          Twitter
-                        </a>
-                        <a
-                          href={shareLinks.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 p-2 rounded hover:bg-muted"
-                        >
-                          <Linkedin className="w-4 h-4" />
-                          LinkedIn
-                        </a>
-                        <button
-                          onClick={copyToClipboard}
-                          className="flex items-center gap-2 p-2 rounded hover:bg-muted w-full"
-                        >
-                          <Link2 className="w-4 h-4" />
-                          Copy Link
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
             </div>
           </aside>
 
@@ -1534,103 +1435,6 @@ export default function BlogPostClient({ initialPost, slug }: Props) {
           </motion.section>
         )}
 
-        {/* Mobile action bar */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t p-4 z-50">
-          <div className="flex items-center justify-between max-w-lg mx-auto">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsLiked(!isLiked)}
-            >
-              <Heart className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsBookmarked(!isBookmarked)}
-            >
-              <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-yellow-500 text-yellow-500' : ''}`} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowShareMenu(!showShareMenu)}
-            >
-              <Share2 className="w-5 h-5" />
-            </Button>
-            {messengerCTA && (
-              <a href={messengerCTA.link} target="_blank" rel="noopener noreferrer">
-                <Button size="sm" className="gap-2">
-                  <MessageCircle className="w-4 h-4" />
-                  {t('freeConsult')}
-                </Button>
-              </a>
-            )}
-          </div>
-
-          {/* Mobile share menu */}
-          <AnimatePresence>
-            {showShareMenu && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="absolute bottom-full left-0 right-0 mb-2 mx-4 bg-background border rounded-lg shadow-lg p-4"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-semibold">{t('share')}</h4>
-                  <button onClick={() => setShowShareMenu(false)}>
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                <div className="grid grid-cols-4 gap-4">
-                  <a
-                    href={shareLinks.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex flex-col items-center gap-1"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center">
-                      <Facebook className="w-6 h-6 text-white" />
-                    </div>
-                    <span className="text-xs">Facebook</span>
-                  </a>
-                  <a
-                    href={shareLinks.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex flex-col items-center gap-1"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-sky-500 flex items-center justify-center">
-                      <Twitter className="w-6 h-6 text-white" />
-                    </div>
-                    <span className="text-xs">Twitter</span>
-                  </a>
-                  <a
-                    href={shareLinks.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex flex-col items-center gap-1"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-blue-700 flex items-center justify-center">
-                      <Linkedin className="w-6 h-6 text-white" />
-                    </div>
-                    <span className="text-xs">LinkedIn</span>
-                  </a>
-                  <button
-                    onClick={copyToClipboard}
-                    className="flex flex-col items-center gap-1"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-gray-500 flex items-center justify-center">
-                      <Link2 className="w-6 h-6 text-white" />
-                    </div>
-                    <span className="text-xs">Copy</span>
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
       </div>
     </div>
   );

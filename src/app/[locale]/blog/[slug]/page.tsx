@@ -18,6 +18,47 @@ interface PageProps {
 // HELPERS
 // =====================================================
 
+// Category/Specialty translations (same as API route)
+const CATEGORY_NAMES: Record<string, Record<string, string>> = {
+  'plastic-surgery': { en: 'Plastic Surgery', ko: '성형외과', ja: '美容整形', 'zh-TW': '整形外科', 'zh-CN': '整形外科', th: 'ศัลยกรรมตกแต่ง', ru: 'Пластическая хирургия', mn: 'Гоо сайхны мэс засал' },
+  'dermatology': { en: 'Dermatology', ko: '피부과', ja: '皮膚科', 'zh-TW': '皮膚科', 'zh-CN': '皮肤科', th: 'ผิวหนัง', ru: 'Дерматология', mn: 'Арьс судлал' },
+  'dental': { en: 'Dental', ko: '치과', ja: '歯科', 'zh-TW': '牙科', 'zh-CN': '牙科', th: 'ทันตกรรม', ru: 'Стоматология', mn: 'Шүдний эмнэлэг' },
+  'ophthalmology': { en: 'Ophthalmology', ko: '안과', ja: '眼科', 'zh-TW': '眼科', 'zh-CN': '眼科', th: 'จักษุ', ru: 'Офтальмология', mn: 'Нүдний эмч' },
+  'orthopedics': { en: 'Orthopedics', ko: '정형외과', ja: '整形外科', 'zh-TW': '骨科', 'zh-CN': '骨科', th: 'กระดูก', ru: 'Ортопедия', mn: 'Ортопед' },
+  'health-checkup': { en: 'Health Checkup', ko: '건강검진', ja: '健康診断', 'zh-TW': '健康檢查', 'zh-CN': '健康检查', th: 'ตรวจสุขภาพ', ru: 'Медосмотр', mn: 'Эрүүл мэндийн үзлэг' },
+  'cardiology': { en: 'Cardiology', ko: '심장내과', ja: '循環器科', 'zh-TW': '心臟科', 'zh-CN': '心脏科', th: 'หัวใจ', ru: 'Кардиология', mn: 'Зүрхний эмч' },
+  'neurology': { en: 'Neurology', ko: '신경과', ja: '神経科', 'zh-TW': '神經科', 'zh-CN': '神经科', th: 'ประสาท', ru: 'Неврология', mn: 'Мэдрэлийн эмч' },
+  'oncology': { en: 'Oncology', ko: '종양내과', ja: '腫瘍科', 'zh-TW': '腫瘤科', 'zh-CN': '肿瘤科', th: 'มะเร็ง', ru: 'Онкология', mn: 'Хавдар судлал' },
+  'fertility': { en: 'Fertility', ko: '난임/불임', ja: '不妊治療', 'zh-TW': '生殖醫學', 'zh-CN': '生殖医学', th: 'ภาวะมีบุตรยาก', ru: 'Репродуктология', mn: 'Үргүйдэл' },
+  'hair-transplant': { en: 'Hair Transplant', ko: '모발이식', ja: '植毛', 'zh-TW': '植髮', 'zh-CN': '植发', th: 'ปลูกผม', ru: 'Пересадка волос', mn: 'Үс шилжүүлэн суулгах' },
+  'general': { en: 'General', ko: '일반', ja: '一般', 'zh-TW': '一般', 'zh-CN': '一般', th: 'ทั่วไป', ru: 'Общее', mn: 'Ерөнхий' },
+};
+
+// Language code to localized name mapping
+const LANGUAGE_NAMES: Record<string, Record<string, string>> = {
+  ko: { en: 'Korean', ko: '한국어', ja: '韓国語', 'zh-TW': '韓語', 'zh-CN': '韩语', th: 'เกาหลี', ru: 'Корейский', mn: 'Солонгос' },
+  en: { en: 'English', ko: '영어', ja: '英語', 'zh-TW': '英語', 'zh-CN': '英语', th: 'อังกฤษ', ru: 'Английский', mn: 'Англи' },
+  ja: { en: 'Japanese', ko: '일본어', ja: '日本語', 'zh-TW': '日語', 'zh-CN': '日语', th: 'ญี่ปุ่น', ru: 'Японский', mn: 'Япон' },
+  'zh-TW': { en: 'Chinese (Traditional)', ko: '중국어(번체)', ja: '中国語(繁体)', 'zh-TW': '中文(繁體)', 'zh-CN': '中文(繁体)', th: 'จีน(ตัวเต็ม)', ru: 'Китайский (традиционный)', mn: 'Хятад (уламжлалт)' },
+  'zh-CN': { en: 'Chinese (Simplified)', ko: '중국어(간체)', ja: '中国語(簡体)', 'zh-TW': '中文(簡體)', 'zh-CN': '中文(简体)', th: 'จีน(ตัวย่อ)', ru: 'Китайский (упрощенный)', mn: 'Хятад (хялбаршуулсан)' },
+  zh: { en: 'Chinese', ko: '중국어', ja: '中国語', 'zh-TW': '中文', 'zh-CN': '中文', th: 'จีน', ru: 'Китайский', mn: 'Хятад' },
+  th: { en: 'Thai', ko: '태국어', ja: 'タイ語', 'zh-TW': '泰語', 'zh-CN': '泰语', th: 'ไทย', ru: 'Тайский', mn: 'Тайланд' },
+  ru: { en: 'Russian', ko: '러시아어', ja: 'ロシア語', 'zh-TW': '俄語', 'zh-CN': '俄语', th: 'รัสเซีย', ru: 'Русский', mn: 'Орос' },
+  mn: { en: 'Mongolian', ko: '몽골어', ja: 'モンゴル語', 'zh-TW': '蒙古語', 'zh-CN': '蒙古语', th: 'มองโกเลีย', ru: 'Монгольский', mn: 'Монгол' },
+};
+
+function getCategoryName(code: string, targetLocale: string): string {
+  const names = CATEGORY_NAMES[code];
+  if (!names) return code;
+  return names[targetLocale] || names['en'] || code;
+}
+
+function getLanguageName(code: string, targetLocale: string): string {
+  const langNames = LANGUAGE_NAMES[code];
+  if (!langNames) return code;
+  return langNames[targetLocale] || langNames['en'] || code;
+}
+
 /**
  * Safely parse JSONB field that might be string or object
  */
@@ -83,10 +124,26 @@ async function getBlogPost(slug: string, locale: Locale): Promise<BlogPost | nul
         .single();
 
       if (persona) {
-        // Transform JSONB fields to match client interface
+        // Transform JSONB fields to match client interface (simplified)
         const nameObj = safeParseJson(persona.name);
         const bioShortObj = safeParseJson(persona.bio_short);
-        const bioFullObj = safeParseJson(persona.bio_full);
+
+        // Convert language codes to localized display names
+        const languages = Array.isArray(persona.languages)
+          ? persona.languages.map((lang: { code: string; proficiency: string }) => ({
+              code: lang.code,
+              displayName: getLanguageName(lang.code, locale),
+              proficiency: lang.proficiency,
+            }))
+          : [];
+
+        // Convert specialty codes to localized display names
+        const secondarySpecialties = Array.isArray(persona.secondary_specialties)
+          ? persona.secondary_specialties.map((spec: string) => ({
+              code: spec,
+              displayName: getCategoryName(spec, locale),
+            }))
+          : [];
 
         authorPersona = {
           id: persona.id,
@@ -94,25 +151,14 @@ async function getBlogPost(slug: string, locale: Locale): Promise<BlogPost | nul
           photo_url: persona.photo_url,
           years_of_experience: persona.years_of_experience,
           primary_specialty: persona.primary_specialty,
-          secondary_specialties: persona.secondary_specialties,
-          languages: persona.languages,
+          primarySpecialtyDisplayName: getCategoryName(persona.primary_specialty, locale),
+          secondary_specialties: secondarySpecialties,
+          languages,
           certifications: persona.certifications,
-          target_locales: persona.target_locales,
-          preferred_messenger: persona.preferred_messenger,
-          messenger_cta_text: persona.messenger_cta_text,
           is_verified: persona.is_verified,
-          // Map JSONB name to individual locale fields
-          name_en: (nameObj.en || nameObj.ko || persona.slug) as string,
-          name_ko: (nameObj.ko || nameObj.en || persona.slug) as string,
-          name_ja: (nameObj.ja || nameObj.en || null) as string | null,
-          name_zh_tw: (nameObj['zh-TW'] || nameObj.zh || null) as string | null,
-          name_zh_cn: (nameObj['zh-CN'] || nameObj.zh || null) as string | null,
-          name_th: (nameObj.th || null) as string | null,
-          name_mn: (nameObj.mn || null) as string | null,
-          name_ru: (nameObj.ru || null) as string | null,
-          // Map JSONB bio fields
-          bio_short_en: (bioShortObj.en || bioShortObj.ko || null) as string | null,
-          bio_full_en: (bioFullObj.en || bioFullObj.ko || null) as string | null,
+          // JSONB fields as locale-keyed objects
+          name: nameObj as Record<string, string>,
+          bio_short: bioShortObj as Record<string, string>,
         };
       }
     }
@@ -133,6 +179,7 @@ async function getBlogPost(slug: string, locale: Locale): Promise<BlogPost | nul
     const seoMeta = safeParseJson(post.seo_meta);
 
     // Build result and sanitize for safe JSON serialization
+    const categoryCode = post.category || 'general';
     const result: BlogPost = {
       id: post.id,
       slug: post.slug,
@@ -142,7 +189,8 @@ async function getBlogPost(slug: string, locale: Locale): Promise<BlogPost | nul
       metaTitle: (seoMeta.meta_title as string) || post.title,
       metaDescription: (seoMeta.meta_description as string) || post.excerpt,
       cover_image_url: post.cover_image_url,
-      category: post.category || 'General',
+      category: categoryCode,
+      categoryDisplayName: getCategoryName(categoryCode, locale),
       tags: post.tags,
       published_at: post.published_at,
       view_count: post.view_count || 0,
@@ -175,10 +223,10 @@ async function getPostMetadata(slug: string, locale: Locale) {
   try {
     const supabase = await createAdminClient();
 
-    // Fetch only metadata fields (no status filter for SEO purposes)
+    // Fetch metadata fields + author for SEO
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: post, error } = await (supabase.from('blog_posts') as any)
-      .select('id, slug, locale, title, excerpt, cover_image_url, category, tags, published_at, seo_meta')
+      .select('id, slug, locale, title, excerpt, content, cover_image_url, category, tags, published_at, updated_at, seo_meta, author_persona_id')
       .eq('slug', slug)
       .eq('locale', locale)
       .single();
@@ -187,17 +235,49 @@ async function getPostMetadata(slug: string, locale: Locale) {
       return null;
     }
 
+    // Fetch author persona if exists
+    let authorName = 'GetCareKorea Medical Team';
+    let authorSlug: string | null = null;
+    if (post.author_persona_id) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: persona } = await (supabase.from('author_personas') as any)
+        .select('slug, name')
+        .eq('id', post.author_persona_id)
+        .single();
+
+      if (persona?.name) {
+        const nameObj = typeof persona.name === 'string' ? JSON.parse(persona.name) : persona.name;
+        authorName = nameObj[locale] || nameObj['en'] || nameObj['ko'] || 'GetCareKorea Medical Team';
+        authorSlug = persona.slug;
+      }
+    }
+
     const seoMeta = post.seo_meta || {};
+
+    // Calculate word count and reading time
+    const plainText = post.content?.replace(/<[^>]*>/g, '') || '';
+    const wordCount = plainText.length; // For CJK, character count is more relevant
+    const readingTime = Math.ceil(wordCount / 500); // ~500 chars per minute for CJK
+
+    // Extract first image from content for OG image
+    const firstImageMatch = post.content?.match(/<img[^>]+src=["']([^"']+)["']/i);
+    const firstImageUrl = firstImageMatch ? firstImageMatch[1] : null;
+    const ogImage = firstImageUrl || post.cover_image_url;
 
     return {
       title: post.title,
       excerpt: post.excerpt,
       metaTitle: seoMeta.meta_title || post.title,
       metaDescription: seoMeta.meta_description || post.excerpt,
-      cover_image_url: post.cover_image_url,
+      cover_image_url: ogImage,
       category: post.category,
       tags: post.tags,
       published_at: post.published_at,
+      updated_at: post.updated_at,
+      authorName,
+      authorSlug,
+      wordCount,
+      readingTime,
     };
   } catch (error) {
     console.error('Error fetching post metadata:', error);
@@ -210,7 +290,9 @@ async function getPostMetadata(slug: string, locale: Locale) {
 // =====================================================
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale, slug: rawSlug } = await params;
+  // Decode URL-encoded slug (Japanese/Chinese characters may be encoded)
+  const slug = decodeURIComponent(rawSlug);
   const post = await getPostMetadata(slug, locale);
 
   if (!post) {
@@ -220,7 +302,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const title = post.metaTitle || post.title;
+  // Use metaTitle if available, otherwise use title
+  // Don't append "| GetCareKorea" if metaTitle already has it
+  const rawTitle = post.metaTitle || post.title;
+  const title = rawTitle.includes('GetCareKorea') ? rawTitle : `${rawTitle} | GetCareKorea`;
+  const ogTitle = rawTitle; // For OG, use clean title without site name suffix
   const description = post.metaDescription || post.excerpt || `Read about ${post.title} on GetCareKorea`;
   const imageUrl = post.cover_image_url || 'https://getcarekorea.com/og-image.jpg';
 
@@ -234,12 +320,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     alternateLanguages[loc] = `${baseUrl}/${loc}/blog/${slug}`;
   }
 
+  // Author URL if available
+  const authorUrl = post.authorSlug ? `${baseUrl}/${locale}/interpreters/${post.authorSlug}` : undefined;
+
   return {
-    title: `${title} | GetCareKorea`,
+    title,
     description,
     keywords: post.tags?.join(', '),
-    authors: [{ name: 'GetCareKorea Medical Team' }],
-    creator: 'GetCareKorea',
+    authors: [{ name: post.authorName, url: authorUrl }],
+    creator: post.authorName,
     publisher: 'GetCareKorea',
 
     // Open Graph
@@ -247,28 +336,30 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       type: 'article',
       locale: locale,
       url: canonicalUrl,
-      title,
+      title: ogTitle,
       description,
       siteName: 'GetCareKorea',
-      images: [
-        {
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
+      images: [{
+        url: imageUrl,
+        width: 1200,
+        height: 630,
+        alt: ogTitle,
+      }],
       publishedTime: post.published_at || undefined,
+      modifiedTime: post.updated_at || post.published_at || undefined,
+      authors: [post.authorName],
+      section: post.category || undefined,
       tags: post.tags || undefined,
     },
 
     // Twitter Card
     twitter: {
-      card: 'summary_large_image',
-      title,
+      card: imageUrl ? 'summary_large_image' : 'summary',
+      title: ogTitle,
       description,
-      images: [imageUrl],
+      ...(imageUrl && { images: [imageUrl] }),
       creator: '@getcarekorea',
+      site: '@getcarekorea',
     },
 
     // Canonical & Alternates
@@ -292,6 +383,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     // Additional meta
     category: post.category,
+
+    // Other metadata
+    other: {
+      'article:author': post.authorName,
+      'article:section': post.category || '',
+      'article:tag': post.tags?.join(',') || '',
+      'twitter:label1': 'Reading time',
+      'twitter:data1': `${post.readingTime} min read`,
+      'twitter:label2': 'Written by',
+      'twitter:data2': post.authorName,
+    },
   };
 }
 
@@ -302,22 +404,44 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 function generateJsonLd(post: BlogPost, locale: Locale, slug: string) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://getcarekorea.com';
 
+  // Get author info from authorPersona
+  const authorName = post.authorPersona?.name
+    ? (post.authorPersona.name[locale] || post.authorPersona.name['en'] || post.authorPersona.name['ko'] || 'GetCareKorea Medical Team')
+    : (post.generatedAuthor?.name || 'GetCareKorea Medical Team');
+
+  const authorSlug = post.authorPersona?.slug;
+  const authorUrl = authorSlug ? `${baseUrl}/${locale}/interpreters/${authorSlug}` : baseUrl;
+
+  // Calculate word count for structured data
+  const plainText = post.content?.replace(/<[^>]*>/g, '') || '';
+  const wordCount = plainText.length;
+
+  // Extract first image from content for structured data
+  const firstImageMatch = post.content?.match(/<img[^>]+src=["']([^"']+)["']/i);
+  const articleImage = firstImageMatch ? firstImageMatch[1] : (post.cover_image_url || 'https://getcarekorea.com/og-image.jpg');
+
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: post.title,
     description: post.excerpt || post.metaDescription,
-    image: post.cover_image_url,
+    image: {
+      '@type': 'ImageObject',
+      url: articleImage,
+      width: 1200,
+      height: 630,
+    },
     datePublished: post.published_at,
-    dateModified: post.published_at,
+    wordCount: wordCount,
     author: {
-      '@type': 'Organization',
-      name: 'GetCareKorea',
-      url: baseUrl,
+      '@type': 'Person',
+      name: authorName,
+      url: authorUrl,
     },
     publisher: {
       '@type': 'Organization',
       name: 'GetCareKorea',
+      url: baseUrl,
       logo: {
         '@type': 'ImageObject',
         url: `${baseUrl}/logo.png`,
@@ -327,7 +451,9 @@ function generateJsonLd(post: BlogPost, locale: Locale, slug: string) {
       '@type': 'WebPage',
       '@id': `${baseUrl}/${locale}/blog/${slug}`,
     },
+    articleSection: post.category,
     keywords: post.tags?.join(', '),
+    inLanguage: locale,
   };
 
   // Medical Web Page schema
@@ -396,7 +522,9 @@ function generateJsonLd(post: BlogPost, locale: Locale, slug: string) {
 // =====================================================
 
 export default async function BlogPostPage({ params }: PageProps) {
-  const { locale, slug } = await params;
+  const { locale, slug: rawSlug } = await params;
+  // Decode URL-encoded slug (Japanese/Chinese characters may be encoded)
+  const slug = decodeURIComponent(rawSlug);
   const post = await getBlogPost(slug, locale);
 
   // Generate JSON-LD

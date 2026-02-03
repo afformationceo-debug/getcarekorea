@@ -1,4 +1,9 @@
-import { createClient } from '@/lib/supabase/client';
+/**
+ * CTA Settings - Type definitions and client utilities
+ *
+ * Can be imported from both client and server components.
+ * For server-side data fetching, use cta.server.ts
+ */
 
 export interface CTAConfig {
   type: 'whatsapp' | 'line' | 'kakao' | 'telegram';
@@ -11,65 +16,49 @@ export interface CTASettings {
   [locale: string]: CTAConfig;
 }
 
-// Default fallback settings
-const DEFAULT_CTA: CTAConfig = {
-  type: 'whatsapp',
-  url: 'https://wa.me/821086081915',
-  text: 'Chat on WhatsApp',
-  color: 'from-green-500 to-green-600',
-};
-
-// Cache for CTA settings
-let cachedSettings: CTASettings | null = null;
-let cacheTimestamp: number = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+// Client-side cache
+let clientCache: CTASettings | null = null;
+let clientCacheTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000;
 
 /**
- * Fetch CTA settings from the database
+ * Fetch CTA settings from API (client-side)
  */
 export async function getCTASettings(): Promise<CTASettings> {
-  // Return cached settings if still valid
-  if (cachedSettings && Date.now() - cacheTimestamp < CACHE_DURATION) {
-    return cachedSettings;
+  // Check cache
+  if (clientCache && Date.now() - clientCacheTime < CACHE_DURATION) {
+    return clientCache;
   }
 
   try {
-    const supabase = createClient();
+    const response = await fetch('/api/cta');
+    if (!response.ok) return {};
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any)
-      .from('system_settings')
-      .select('value')
-      .eq('key', 'cta_links')
-      .single();
-
-    if (error || !data?.value) {
-      console.warn('Failed to fetch CTA settings, using defaults');
-      return {};
+    const result = await response.json();
+    if (result.success && result.data) {
+      const settings = result.data as CTASettings;
+      clientCache = settings;
+      clientCacheTime = Date.now();
+      return settings;
     }
-
-    cachedSettings = data.value as CTASettings;
-    cacheTimestamp = Date.now();
-
-    return cachedSettings;
-  } catch (error) {
-    console.error('Error fetching CTA settings:', error);
+    return {};
+  } catch {
     return {};
   }
 }
 
 /**
- * Get CTA config for a specific locale
+ * Get CTA for specific locale (client-side)
  */
-export async function getCTAForLocale(locale: string): Promise<CTAConfig> {
+export async function getCTAForLocale(locale: string): Promise<CTAConfig | null> {
   const settings = await getCTASettings();
-  return settings[locale] || DEFAULT_CTA;
+  return settings[locale] || null;
 }
 
 /**
- * Clear the CTA settings cache (call after updating settings)
+ * Clear CTA cache (call after admin updates)
  */
 export function clearCTACache() {
-  cachedSettings = null;
-  cacheTimestamp = 0;
+  clientCache = null;
+  clientCacheTime = 0;
 }
