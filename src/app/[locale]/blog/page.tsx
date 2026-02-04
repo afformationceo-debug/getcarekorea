@@ -175,10 +175,51 @@ export default function BlogPage() {
     return getCategoryName(category, locale);
   };
 
-  // Format date
+  // Format date with relative time for recent posts (within 7 days)
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return '';
     const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    // Relative time labels by locale
+    const relativeLabels: Record<string, { minute: string; hour: string; day: string; ago: string }> = {
+      en: { minute: 'minute', hour: 'hour', day: 'day', ago: 'ago' },
+      ko: { minute: '분', hour: '시간', day: '일', ago: '전' },
+      ja: { minute: '分', hour: '時間', day: '日', ago: '前' },
+      'zh-TW': { minute: '分鐘', hour: '小時', day: '天', ago: '前' },
+      'zh-CN': { minute: '分钟', hour: '小时', day: '天', ago: '前' },
+      th: { minute: 'นาที', hour: 'ชั่วโมง', day: 'วัน', ago: 'ที่แล้ว' },
+      ru: { minute: 'мин.', hour: 'ч.', day: 'д.', ago: 'назад' },
+      mn: { minute: 'мин', hour: 'цаг', day: 'өдөр', ago: 'өмнө' },
+    };
+
+    const labels = relativeLabels[locale] || relativeLabels.en;
+
+    // Within 7 days: show relative time
+    if (diffDays < 7) {
+      if (diffMinutes < 1) {
+        return locale === 'en' ? 'Just now' : labels.ago === '전' ? '방금' : labels.ago;
+      }
+      if (diffMinutes < 60) {
+        return locale === 'en'
+          ? `${diffMinutes} ${diffMinutes === 1 ? labels.minute : labels.minute + 's'} ${labels.ago}`
+          : `${diffMinutes}${labels.minute} ${labels.ago}`;
+      }
+      if (diffHours < 24) {
+        return locale === 'en'
+          ? `${diffHours} ${diffHours === 1 ? labels.hour : labels.hour + 's'} ${labels.ago}`
+          : `${diffHours}${labels.hour} ${labels.ago}`;
+      }
+      return locale === 'en'
+        ? `${diffDays} ${diffDays === 1 ? labels.day : labels.day + 's'} ${labels.ago}`
+        : `${diffDays}${labels.day} ${labels.ago}`;
+    }
+
+    // Older than 7 days: show full date
     return date.toLocaleDateString(locale, {
       month: 'short',
       day: 'numeric',
