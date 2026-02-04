@@ -17,9 +17,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages = [
     { path: '', priority: 1.0, changeFrequency: 'daily' as const },
     { path: 'hospitals', priority: 0.9, changeFrequency: 'daily' as const },
+    { path: 'procedures', priority: 0.9, changeFrequency: 'weekly' as const },
     { path: 'interpreters', priority: 0.8, changeFrequency: 'weekly' as const },
     { path: 'blog', priority: 0.8, changeFrequency: 'daily' as const },
     { path: 'about', priority: 0.6, changeFrequency: 'monthly' as const },
+    { path: 'faq', priority: 0.6, changeFrequency: 'monthly' as const },
     { path: 'inquiry', priority: 0.7, changeFrequency: 'monthly' as const },
   ];
 
@@ -70,6 +72,47 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'weekly',
         priority: 0.7,
       });
+    }
+  }
+
+  // Fetch active interpreters (from author_personas table)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: interpreters } = await (supabase.from('author_personas') as any)
+    .select('id, slug, updated_at')
+    .eq('is_active', true)
+    .order('review_count', { ascending: false });
+
+  if (interpreters) {
+    for (const interpreter of interpreters) {
+      const interpreterId = interpreter.slug || interpreter.id;
+      for (const locale of locales) {
+        urls.push({
+          url: `${baseUrl}/${locale}/interpreters/${interpreterId}`,
+          lastModified: interpreter.updated_at ? new Date(interpreter.updated_at) : new Date(),
+          changeFrequency: 'weekly',
+          priority: 0.7,
+        });
+      }
+    }
+  }
+
+  // Fetch active procedures
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: procedures } = await (supabase.from('procedures') as any)
+    .select('slug, updated_at')
+    .eq('is_active', true)
+    .order('name_en', { ascending: true });
+
+  if (procedures) {
+    for (const procedure of procedures) {
+      for (const locale of locales) {
+        urls.push({
+          url: `${baseUrl}/${locale}/procedures/${procedure.slug}`,
+          lastModified: procedure.updated_at ? new Date(procedure.updated_at) : new Date(),
+          changeFrequency: 'monthly',
+          priority: 0.7,
+        });
+      }
     }
   }
 
