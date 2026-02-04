@@ -8,7 +8,6 @@ import Image from 'next/image';
 import {
   Search,
   Sparkles,
-  Clock,
   TrendingUp,
   BookOpen,
   Eye,
@@ -174,12 +173,6 @@ export default function BlogPage() {
   // Format category name with locale-specific translation
   const formatCategoryName = (category: string): string => {
     return getCategoryName(category, locale);
-  };
-
-  // Get read time estimate
-  const getReadTime = (post: BlogPost): string => {
-    // Estimate based on typical article length
-    return '5 min read';
   };
 
   // Format date
@@ -397,15 +390,9 @@ export default function BlogPage() {
                           <span className="text-sm text-muted-foreground">
                             {formatDate(post.published_at)}
                           </span>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {getReadTime(post)}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Eye className="h-3 w-3" />
-                              {post.view_count?.toLocaleString() || 0}
-                            </span>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Eye className="h-3 w-3" />
+                            {post.view_count?.toLocaleString() || 0}
                           </div>
                         </div>
                       </div>
