@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Link } from '@/lib/i18n/navigation';
+import { Link, useRouter } from '@/lib/i18n/navigation';
 import { Shield, User, LogOut, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,9 +12,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
+import { createClient } from '@/lib/supabase/client';
 
 export function AdminHeader() {
   const t = useTranslations('admin.header');
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/auth/login');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -55,11 +63,9 @@ export function AdminHeader() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/auth/logout" className="text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {t('logout')}
-                </Link>
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
+                <LogOut className="mr-2 h-4 w-4" />
+                {t('logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

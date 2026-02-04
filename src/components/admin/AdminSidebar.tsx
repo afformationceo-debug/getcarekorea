@@ -2,7 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/lib/i18n/navigation';
+import { Link, useRouter } from '@/lib/i18n/navigation';
+import { createClient } from '@/lib/supabase/client';
 import {
   LayoutDashboard,
   Building2,
@@ -43,6 +44,13 @@ const navItems = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const t = useTranslations('admin.sidebar');
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/auth/login');
+  };
 
   // Check if current path matches nav item
   const isActive = (href: string, exact?: boolean) => {
@@ -114,12 +122,10 @@ export function AdminSidebar() {
           <Button
             variant="ghost"
             className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            asChild
+            onClick={handleLogout}
           >
-            <Link href="/auth/logout">
-              <LogOut className="mr-3 h-4 w-4" />
-              {t('logout')}
-            </Link>
+            <LogOut className="mr-3 h-4 w-4" />
+            {t('logout')}
           </Button>
         </div>
       </div>
