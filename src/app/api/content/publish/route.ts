@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { getKSTTimestamp } from '@/lib/utils';
 
 export const maxDuration = 60;
 
@@ -82,8 +83,8 @@ export async function POST(request: NextRequest) {
           howto_schema: draft.howto_schema,
           images: draft.images,
           hreflang_group: draft.hreflang_group,
-          published_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          published_at: getKSTTimestamp(),
+          updated_at: getKSTTimestamp(),
         },
         { onConflict: 'slug,locale' }
       )
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
     await (supabase.from('content_drafts') as any)
       .update({
         status: 'published',
-        published_at: new Date().toISOString(),
+        published_at: getKSTTimestamp(),
       })
       .eq('id', contentDraftId);
 
@@ -125,7 +126,7 @@ export async function POST(request: NextRequest) {
       slug,
       url: blogUrl,
       locale: draft.locale,
-      published_at: new Date().toISOString(),
+      published_at: getKSTTimestamp(),
     });
   } catch (error: any) {
     console.error('Publishing error:', error);

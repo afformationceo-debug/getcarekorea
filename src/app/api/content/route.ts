@@ -15,6 +15,7 @@ import {
   ErrorCode,
   secureLog,
 } from '@/lib/api/error-handler';
+import { getKSTTimestamp } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -156,7 +157,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Add updated_at timestamp
-    updateData.updated_at = new Date().toISOString();
+    updateData.updated_at = getKSTTimestamp();
 
     // If status is being changed to published, set published_at
     if (updateData.status === 'published') {
@@ -167,7 +168,7 @@ export async function PUT(request: NextRequest) {
         .single();
 
       if (!existingPost?.published_at) {
-        updateData.published_at = new Date().toISOString();
+        updateData.published_at = getKSTTimestamp();
       }
     }
 
@@ -187,7 +188,7 @@ export async function PUT(request: NextRequest) {
     if (updateData.status === 'published') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (adminSupabase.from('content_keywords') as any)
-        .update({ status: 'published', updated_at: new Date().toISOString() })
+        .update({ status: 'published', updated_at: getKSTTimestamp() })
         .eq('blog_post_id', id);
     }
 

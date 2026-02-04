@@ -20,6 +20,7 @@ import {
   type ImageMetadata,
 } from './imagen4-helper';
 import type { Locale } from './multi-language-generator';
+import { getKSTTimestamp } from '@/lib/utils';
 
 // =====================================================
 // TYPES
@@ -448,11 +449,11 @@ async function generateAndSaveContent(
         internal_links: generatedContent.internalLinks || [],
         author_persona_id: authorPersonaId,
         author_slug: authorData?.slug,
-        generated_at: new Date().toISOString(),
+        generated_at: getKSTTimestamp(),
       },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      published_at: autoPublish ? new Date().toISOString() : null,
+      created_at: getKSTTimestamp(),
+      updated_at: getKSTTimestamp(),
+      published_at: autoPublish ? getKSTTimestamp() : null,
     };
 
     const { data: savedPost, error: saveError } = await (supabase.from('blog_posts') as any)
@@ -473,7 +474,7 @@ async function generateAndSaveContent(
       .update({
         status: keywordStatus,
         blog_post_id: savedPost.id,
-        updated_at: new Date().toISOString(),
+        updated_at: getKSTTimestamp(),
       })
       .eq('id', keywordId);
 
@@ -530,7 +531,7 @@ async function rollbackKeywordStatus(
     const { error } = await (supabase.from('content_keywords') as any)
       .update({
         status: 'pending',
-        updated_at: new Date().toISOString(),
+        updated_at: getKSTTimestamp(),
       })
       .eq('id', keywordId);
 

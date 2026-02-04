@@ -20,6 +20,7 @@ import {
   type ContentGenerationInput,
 } from '@/lib/content/content-generation-pipeline';
 import type { Locale } from '@/lib/content/multi-language-generator';
+import { getKSTTimestamp } from '@/lib/utils';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5 minutes
@@ -128,7 +129,7 @@ async function logCronExecution(
       status,
       details,
       duration_ms: durationMs,
-      executed_at: new Date().toISOString(),
+      executed_at: getKSTTimestamp(),
     });
   } catch (error) {
     console.error('Failed to log cron execution:', error);
@@ -145,7 +146,7 @@ export async function GET(request: NextRequest) {
 
   console.log(`\n${'='.repeat(60)}`);
   console.log(`🟠 [${cronId}] AUTO-GENERATE CRON JOB STARTED`);
-  console.log(`   Time: ${new Date().toISOString()}`);
+  console.log(`   Time: ${getKSTTimestamp()}`);
   console.log(`${'='.repeat(60)}`);
 
   try {
@@ -196,7 +197,7 @@ export async function GET(request: NextRequest) {
       await logCronExecution(supabase, 'auto-generate', 'skipped', {
         reason: 'Schedule not matched',
         schedule: settings.schedule,
-        currentTime: new Date().toISOString(),
+        currentTime: getKSTTimestamp(),
       }, Date.now() - startTime);
 
       return NextResponse.json({
@@ -292,7 +293,7 @@ export async function GET(request: NextRequest) {
     await Promise.all(
       validKeywords.map(kw =>
         (supabase.from('content_keywords') as any)
-          .update({ status: 'generating', updated_at: new Date().toISOString() })
+          .update({ status: 'generating', updated_at: getKSTTimestamp() })
           .eq('id', kw.id)
       )
     );

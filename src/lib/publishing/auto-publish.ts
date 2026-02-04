@@ -9,6 +9,7 @@
 
 import { SupabaseClient } from '@supabase/supabase-js';
 import { scoreContentV3, QualityScoreV3 } from '@/lib/content/generator-v3';
+import { getKSTTimestamp } from '@/lib/utils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabaseClient = SupabaseClient<any, any, any>;
@@ -217,7 +218,7 @@ export async function autoPublishPost(
     .single();
 
   const previousStatus = post?.status || 'draft';
-  const publishedAt = new Date().toISOString();
+  const publishedAt = getKSTTimestamp();
 
   // 상태 업데이트
   const { error } = await supabase
@@ -371,7 +372,7 @@ export async function schedulePublication(
     .update({
       status: 'scheduled',
       scheduled_at: scheduledAt.toISOString(),
-      updated_at: new Date().toISOString(),
+      updated_at: getKSTTimestamp(),
     })
     .eq('id', blogPostId);
 
@@ -391,7 +392,7 @@ export async function schedulePublication(
 export async function processScheduledPosts(
   supabase: AnySupabaseClient
 ): Promise<BatchPublishResult> {
-  const now = new Date().toISOString();
+  const now = getKSTTimestamp();
 
   // 예약 시간이 지난 포스트 조회
   const { data: posts } = await supabase
@@ -426,7 +427,7 @@ export async function cancelScheduledPublication(
     .update({
       status: 'draft',
       scheduled_at: null,
-      updated_at: new Date().toISOString(),
+      updated_at: getKSTTimestamp(),
     })
     .eq('id', blogPostId)
     .eq('status', 'scheduled');

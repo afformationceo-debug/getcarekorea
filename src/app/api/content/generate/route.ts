@@ -13,6 +13,7 @@ import {
   runContentGenerationPipeline,
   type ContentGenerationInput,
 } from '@/lib/content/content-generation-pipeline';
+import { getKSTTimestamp } from '@/lib/utils';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5 minutes
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
 
         // Update status to generating
         await (adminClient.from('content_keywords') as any)
-          .update({ status: 'generating', updated_at: new Date().toISOString() })
+          .update({ status: 'generating', updated_at: getKSTTimestamp() })
           .eq('id', finalKeywordId);
       } else {
         // Create new keyword entry
@@ -73,8 +74,8 @@ export async function POST(request: NextRequest) {
             locale,
             category,
             status: 'generating',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            created_at: getKSTTimestamp(),
+            updated_at: getKSTTimestamp(),
           })
           .select('id')
           .single();
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Update existing keyword status to generating
       await (adminClient.from('content_keywords') as any)
-        .update({ status: 'generating', updated_at: new Date().toISOString() })
+        .update({ status: 'generating', updated_at: getKSTTimestamp() })
         .eq('id', finalKeywordId);
     }
 
@@ -142,7 +143,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Reset keyword status on failure
       await (adminClient.from('content_keywords') as any)
-        .update({ status: 'pending', updated_at: new Date().toISOString() })
+        .update({ status: 'pending', updated_at: getKSTTimestamp() })
         .eq('id', finalKeywordId);
 
       return NextResponse.json(

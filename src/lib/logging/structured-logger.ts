@@ -6,6 +6,7 @@
  */
 
 import { createAdminClient } from '@/lib/supabase/server';
+import { getKSTTimestamp } from '@/lib/utils';
 
 // =====================================================
 // TYPES
@@ -152,7 +153,7 @@ class StructuredLogger {
     }
 
     const entry: LogEntry = {
-      timestamp: new Date().toISOString(),
+      timestamp: getKSTTimestamp(),
       level,
       message: this.truncateMessage(message),
       context: this.redactSensitiveData({
